@@ -1,65 +1,49 @@
-# Notie
 <div align="center">
-
-<h1 style="border-bottom: none">
+  <h1 style="border-bottom: none">
     <b><a href="https://notie.app">Notie</a></b><br />
     The Ultimate Note-Taking Experience<br>
-</h1>
-<a href="https://notie.app/download">
+  </h1>
+  <a href="https://notie.app/download">
     <img alt="Notie logo" src="https://via.placeholder.com/1000x500.png?text=Notie+Hero+Image" style="width: 100%">
-</a>
-<br/>
-<p align="center">
-  A modern, feature-rich, privacy-focused, and open-source note-taking app built for creators, professionals, and productivity enthusiasts.
-</p>
-
-<br/>
-<br />
-
-<div align="center">
-<em>Where creativity meets functionality — unleash your ideas with Notie!</em>
+  </a>
 </div>
-<br />
-
-<div align="center">
-<img src="https://via.placeholder.com/1000x500.png?text=Notie+Showcase" style="width: 100%"/>
-</div>
-
-## Getting started & staying updated
-
-Star this repository to receive the latest updates and release notifications!
-
-<img src="https://via.placeholder.com/1000x500.png?text=Gif+Showcasing+Star+Feature" style="width: 100%"/>
 
 ## What is Notie?
 
-[Notie](https://notie.app) is a cutting-edge note-taking application designed for a seamless experience across all your devices. Whether you're brainstorming ideas, managing tasks, or organizing your knowledge base, Notie combines the power of ElectronJS, BunJS, React, ExpressJS, and SQLite for an unparalleled experience.
+[Notie](https://notie.app) is a cutting-edge note-taking application designed for a seamless experience across all your devices. Whether you're brainstorming ideas, managing tasks, or organizing your knowledge base, Notie combines the power of **ElectronJS**, **BunJS**, **React**, **ExpressJS**, and **SQLite** for an unparalleled experience.
 
+
+
+<img src="https://via.placeholder.com/1000x500.png?text=Notie+Showcase" style="width: 100%" />
+<p align="center">
+    A modern, feature-rich, privacy-focused, and open-source note-taking app built for creators, professionals, and productivity enthusiasts.
+</p>
+  
 ## Features
 
-**📝 Advanced Note-Taking Tools**
+### 📝 Advanced Note-Taking Tools
 
-- Effortlessly create rich text, markdown notes, and interactive to-do lists.  
+- Create rich text, markdown notes, and interactive to-do lists effortlessly.  
 - Drag and drop images, links, and media directly into your notes.
 
-**📂 Local-First Data Storage**
+### 📂 Local-First Data Storage
 
-- Your notes are stored locally, ensuring complete privacy and offline accessibility.  
+- Your notes are stored locally, ensuring complete privacy and offline accessibility.
 
-**⚡ Built with JAMstack for Performance**
+### ⚡ Built with JAMstack for Performance
 
-- Leveraging BunJS, ExpressJS, and SQLite ensures lightning-fast performance and efficient note management.
+- Leveraging **BunJS**, **ExpressJS**, and **SQLite** ensures lightning-fast performance and efficient note management.
 
-**🛠️ Extensible and Customizable**
+### 🛠️ Extensible and Customizable
 
-- Customize your Notie experience with themes and plugins.  
+- Customize your Notie experience with themes and plugins.
 
 ## Acknowledgements
 
-Inspired by the best:  
+Notie draws inspiration from some of the best note-taking apps, including:
 
-- **Notion** for its block-based design.  
-- **Roam Research** for backlinking concepts.  
+- **Notion** for its block-based design.
+- **Roam Research** for backlinking concepts.
 - **Obsidian** for local-first data control and graph view.
 - **Trello** for Kanban-style boards.
 
@@ -67,21 +51,22 @@ Notie combines these inspirations into a single, cohesive platform with addition
 
 ## Contributing
 
-| **Report Bugs**                                    | **Request Features**                              | **Ask Questions**                              | **Join the Community**                      |
-|---------------------------------------------------|-------------------------------------------------|-----------------------------------------------|---------------------------------------------|
+We welcome contributions of all kinds! Here's how you can get involved:
+
+| **Report Bugs** | **Request Features** | **Ask Questions** | **Join the Community** |
+|-----------------|----------------------|-------------------|------------------------|
 | [Submit Bug Report](https://github.com/notie/Notie/issues/new?template=bug_report.md) | [Feature Request](https://github.com/notie/Notie/issues/new?template=feature_request.md) | [GitHub Discussions](https://github.com/notie/Notie/discussions) | [Join Discord](https://discord.gg/notie) |
 
-We welcome contributions of all kinds! For more details, check our [Contributing Guide](https://github.com/notie/Notie/blob/main/CONTRIBUTING.md).
+For more details, check out our [Contributing Guide](https://github.com/notie/Notie/blob/main/CONTRIBUTING.md).
 
 ## Upstreams
 
-A huge thanks to these amazing technologies that make Notie possible:  
+A huge thanks to the amazing technologies that make Notie possible:
 
-- [Electron](https://github.com/electron/electron) - Cross-platform desktop apps.  
-- [React](https://github.com/facebook/react) - User interface library.  
-- [SQLite](https://www.sqlite.org/) - Lightweight and reliable database engine.  
-- [BunJS](https://bun.sh/) - Fast JavaScript runtime.  
+- [Electron](https://github.com/electron/electron) - Cross-platform desktop apps.
+- [React](https://github.com/facebook/react) - User interface library.
+- [SQLite](https://www.sqlite.org/) - Lightweight and reliable database engine.
+- [BunJS](https://bun.sh/) - Fast JavaScript runtime.
 
----
-
-Thank you for exploring Notie! 🎉 Get started at [notie.app](https://notie.app).
+Thank you for exploring Notie! 🎉  
+Get started at [notie.app](https://notie.app).
