@@ -14,30 +14,8 @@
 </p>
 
 <br/>
-
-<br/>
-<a href="https://www.producthunt.com/posts/notie" target="_blank">
-    <img src="https://via.placeholder.com/250x54.png?text=Product+Hunt+Badge" alt="Notie - Product Hunt" style="width: 250px; height: 54px;" width="250" height="54">
-</a>
-<br/>
-<br/>
-
-<div align="center">
-    <a href="https://notie.app">Home Page</a> |
-    <a href="https://discord.gg/notie">Discord</a> |
-    <a href="https://demo.notie.app">Live Demo</a> |
-    <a href="https://notie.app/blog/">Blog</a> |
-    <a href="https://docs.notie.app/">Documentation</a>
-</div>
-<br/>
-
-[![Releases](https://img.shields.io/github/downloads/notie/Notie/total)](https://github.com/notie/Notie/releases/latest)
-[![License](https://img.shields.io/github/license/notie/Notie)](https://github.com/notie/Notie/blob/main/LICENSE)
-[![Stars](https://img.shields.io/github/stars/notie/Notie?style=social)](https://github.com/notie/Notie)
-
-</div>
-
 <br />
+
 <div align="center">
 <em>Where creativity meets functionality — unleash your ideas with Notie!</em>
 </div>
