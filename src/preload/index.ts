@@ -25,6 +25,12 @@ const api = {
     watchDirectory: (dirPath: string): Promise<void> =>
       ipcRenderer.invoke('fs:watchDirectory', dirPath),
     closeWatcher: (): Promise<void> => ipcRenderer.invoke('fs:closeWatcher'),
+    getGraphData: (
+      dirPath: string
+    ): Promise<{
+      nodes: Array<{ id: string; name: string }>
+      links: Array<{ source: string; target: string }>
+    }> => ipcRenderer.invoke('fs:getGraphData', dirPath),
     onWorkspaceChanged: (
       callback: (data: {
         eventType: string

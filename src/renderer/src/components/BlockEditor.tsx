@@ -23,6 +23,7 @@ interface BlockEditorProps {
   value: string
   onChange: (value: string) => void
   activeFilePath: string
+  onWikilinkClick?: (path: string) => void
 }
 
 interface EditorJSBlock {
@@ -45,6 +46,38 @@ interface EditorJSBlock {
 
 interface EditorJSData {
   blocks: EditorJSBlock[]
+}
+
+// Helper to parse Wikilinks [[Target]] or [[Target|Label]] to HTML anchors
+function parseWikilinksToHTML(text: string): string {
+  if (!text) return ''
+  return text.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, path, label) => {
+    const targetPath = path.trim()
+    const targetLabel = label ? label.trim() : targetPath
+    return `<a class="wikilink" data-path="${targetPath}">${targetLabel}</a>`
+  })
+}
+
+// Helper to convert HTML anchors back to Wikilinks
+function convertHTMLToWikilinks(html: string): string {
+  if (!html) return ''
+  let processed = html.replace(
+    /<a\s+[^>]*class=["']wikilink["'][^>]*data-path=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi,
+    (_, path, label) => {
+      const cleanPath = path.trim()
+      const cleanLabel = label.trim()
+      return cleanPath === cleanLabel ? `[[${cleanPath}]]` : `[[${cleanPath}|${cleanLabel}]]`
+    }
+  )
+  processed = processed.replace(
+    /<a\s+[^>]*data-path=["']([^"']+)["'][^>]*class=["']wikilink["'][^>]*>(.*?)<\/a>/gi,
+    (_, path, label) => {
+      const cleanPath = path.trim()
+      const cleanLabel = label.trim()
+      return cleanPath === cleanLabel ? `[[${cleanPath}]]` : `[[${cleanPath}|${cleanLabel}]]`
+    }
+  )
+  return processed
 }
 
 // Simple Markdown parser to Editor.js JSON data
@@ -86,7 +119,7 @@ function parseMarkdownToEditorJS(text: string): EditorJSData {
       blocks.push({
         type: 'heading3',
         data: {
-          text: trimmed.replace(/^### /, '').trim(),
+          text: parseWikilinksToHTML(trimmed.replace(/^### /, '').trim()),
           level: 3
         }
       })
@@ -94,7 +127,7 @@ function parseMarkdownToEditorJS(text: string): EditorJSData {
       blocks.push({
         type: 'heading2',
         data: {
-          text: trimmed.replace(/^## /, '').trim(),
+          text: parseWikilinksToHTML(trimmed.replace(/^## /, '').trim()),
           level: 2
         }
       })
@@ -102,7 +135,7 @@ function parseMarkdownToEditorJS(text: string): EditorJSData {
       blocks.push({
         type: 'heading1',
         data: {
-          text: trimmed.replace(/^# /, '').trim(),
+          text: parseWikilinksToHTML(trimmed.replace(/^# /, '').trim()),
           level: 1
         }
       })
@@ -117,7 +150,7 @@ function parseMarkdownToEditorJS(text: string): EditorJSData {
       blocks.push({
         type: 'quote',
         data: {
-          text: quoteLines.join('<br>'),
+          text: parseWikilinksToHTML(quoteLines.join('<br>')),
           alignment: 'left'
         }
       })
@@ -138,7 +171,7 @@ function parseMarkdownToEditorJS(text: string): EditorJSData {
         type: 'list',
         data: {
           style: 'unordered',
-          items: items
+          items: items.map((item) => parseWikilinksToHTML(item))
         }
       })
     } else if (/^\d+\.\s/.test(trimmed)) {
@@ -156,7 +189,7 @@ function parseMarkdownToEditorJS(text: string): EditorJSData {
         type: 'list',
         data: {
           style: 'ordered',
-          items: items
+          items: items.map((item) => parseWikilinksToHTML(item))
         }
       })
     } else {
@@ -165,7 +198,7 @@ function parseMarkdownToEditorJS(text: string): EditorJSData {
       blocks.push({
         type: 'paragraph',
         data: {
-          text: htmlText
+          text: parseWikilinksToHTML(htmlText)
         }
       })
     }
@@ -189,28 +222,28 @@ function serializeEditorJSToMarkdown(data: EditorJSData): string {
     .map((b: EditorJSBlock) => {
       switch (b.type) {
         case 'heading1': {
-          return `# ${b.data.text || ''}`
+          return `# ${convertHTMLToWikilinks(b.data.text || '')}`
         }
         case 'heading2': {
-          return `## ${b.data.text || ''}`
+          return `## ${convertHTMLToWikilinks(b.data.text || '')}`
         }
         case 'heading3': {
-          return `### ${b.data.text || ''}`
+          return `### ${convertHTMLToWikilinks(b.data.text || '')}`
         }
         case 'header': {
           const level = b.data.level || 2
           const hashes = '#'.repeat(level)
-          return `${hashes} ${b.data.text || ''}`
+          return `${hashes} ${convertHTMLToWikilinks(b.data.text || '')}`
         }
         case 'list': {
           const items = b.data.items || []
           const prefix = b.data.style === 'ordered' ? '1. ' : '- '
-          return items.map((item: string) => `${prefix}${item}`).join('\n')
+          return items.map((item: string) => `${prefix}${convertHTMLToWikilinks(item)}`).join('\n')
         }
         case 'quote': {
           const text = b.data.text || ''
           const lines = text.replace(/<br\s*\/?>/gi, '\n').split('\n')
-          return lines.map((line) => `> ${line}`).join('\n')
+          return lines.map((line) => `> ${convertHTMLToWikilinks(line)}`).join('\n')
         }
         case 'image': {
           const url = b.data.file?.url || ''
@@ -223,17 +256,45 @@ function serializeEditorJSToMarkdown(data: EditorJSData): string {
         case 'paragraph':
         default: {
           const cleanText = b.data.text ? b.data.text.replace(/<br\s*\/?>/gi, '\n') : ''
-          return cleanText
+          return convertHTMLToWikilinks(cleanText)
         }
       }
     })
     .join('\n\n')
 }
 
+// Helper to extend sanitization rules of a tool to allow wikilink elements
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function allowWikilinksInSanitizer(toolClass: any): void {
+  if (!toolClass) return
+  const originalSanitize = toolClass.sanitize
+  Object.defineProperty(toolClass, 'sanitize', {
+    get() {
+      const rules =
+        typeof originalSanitize === 'function' ? originalSanitize() : originalSanitize || {}
+      return {
+        ...rules,
+        a: {
+          ...(rules.a === true ? { href: true } : rules.a || {}),
+          class: 'wikilink',
+          'data-path': true
+        }
+      }
+    },
+    configurable: true
+  })
+}
+
+// Apply to all text tools
+allowWikilinksInSanitizer(Header)
+allowWikilinksInSanitizer(List)
+allowWikilinksInSanitizer(Quote)
+
 export default function BlockEditor({
   value,
   onChange,
-  activeFilePath
+  activeFilePath,
+  onWikilinkClick
 }: BlockEditorProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const editorInstanceRef = useRef<EditorJS | null>(null)
@@ -252,6 +313,12 @@ export default function BlockEditor({
   useEffect(() => {
     onChangeRef.current = onChange
   }, [onChange])
+
+  // Track onWikilinkClick callback in a ref to satisfy React hook rules
+  const onWikilinkClickRef = useRef(onWikilinkClick)
+  useEffect(() => {
+    onWikilinkClickRef.current = onWikilinkClick
+  }, [onWikilinkClick])
 
   // Initialize/reinitialize editor when file changes
   // Safe helper to destroy an EditorJS instance
@@ -304,6 +371,13 @@ export default function BlockEditor({
       editor = new EditorJS({
         holder: containerRef.current || 'editorjs-container',
         data: parsedData,
+        sanitizer: {
+          a: {
+            class: 'wikilink',
+            'data-path': true,
+            href: true
+          }
+        },
         tools: {
           heading1: {
             class: Header as unknown as BlockToolConstructable,
@@ -376,6 +450,16 @@ export default function BlockEditor({
                     }
                     reader.onerror = reject
                     reader.readAsDataURL(file)
+                  })
+                },
+                uploadByUrl(url: string) {
+                  return new Promise((resolve) => {
+                    resolve({
+                      success: 1,
+                      file: {
+                        url: url
+                      }
+                    })
                   })
                 }
               }
@@ -482,6 +566,79 @@ export default function BlockEditor({
       container.removeEventListener('keydown', handleKeyDown, true)
     }
   }, [activeFilePath])
+
+  // Delegated click listener to catch wikilink clicks (both HTML anchors and raw [[Link]] text)
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const handleMouseClick = (e: MouseEvent): void => {
+      const target = e.target as HTMLElement
+      const wikilinkEl = target.closest('.wikilink')
+      if (wikilinkEl) {
+        e.preventDefault()
+        e.stopPropagation()
+        const path = wikilinkEl.getAttribute('data-path')
+        if (path && onWikilinkClickRef.current) {
+          onWikilinkClickRef.current(path)
+        }
+        return
+      }
+
+      let range: Range | null = null
+      if (document.caretRangeFromPoint) {
+        range = document.caretRangeFromPoint(e.clientX, e.clientY)
+      } else {
+        const firefoxEvent = e as MouseEvent & { rangeParent?: Node; rangeOffset?: number }
+        if (firefoxEvent.rangeParent !== undefined && firefoxEvent.rangeOffset !== undefined) {
+          range = document.createRange()
+          range.setStart(firefoxEvent.rangeParent, firefoxEvent.rangeOffset)
+        }
+      }
+
+      if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
+        const textNode = range.startContainer as Text
+        const offset = range.startOffset
+        const text = textNode.textContent || ''
+
+        let startIdx = -1
+        for (let i = offset; i >= 0; i--) {
+          if (text[i] === '[' && text[i - 1] === '[') {
+            startIdx = i - 1
+            break
+          }
+          if (text[i] === '\n' || text[i] === '\r') break
+        }
+
+        if (startIdx !== -1) {
+          let endIdx = -1
+          for (let i = offset; i < text.length; i++) {
+            if (text[i] === ']' && text[i + 1] === ']') {
+              endIdx = i + 1
+              break
+            }
+            if (text[i] === '\n' || text[i] === '\r') break
+          }
+
+          if (endIdx !== -1) {
+            const wikilinkContent = text.substring(startIdx + 2, endIdx - 1)
+            const parts = wikilinkContent.split('|')
+            const path = parts[0].trim()
+            if (path && onWikilinkClickRef.current) {
+              e.preventDefault()
+              e.stopPropagation()
+              onWikilinkClickRef.current(path)
+            }
+          }
+        }
+      }
+    }
+
+    container.addEventListener('click', handleMouseClick, true)
+    return () => {
+      container.removeEventListener('click', handleMouseClick, true)
+    }
+  }, [])
 
   return (
     <div className="block-editor-container">

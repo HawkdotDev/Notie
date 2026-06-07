@@ -3,7 +3,7 @@ import { join, basename, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import * as fs from 'fs/promises'
-import { watch, type FSWatcher } from 'fs'
+import { watch, type FSWatcher, readFileSync, readdirSync, statSync } from 'fs'
 
 let workspaceWatcher: FSWatcher | null = null
 
@@ -177,6 +177,76 @@ app.whenReady().then(() => {
     if (workspaceWatcher) {
       workspaceWatcher.close()
       workspaceWatcher = null
+    }
+  })
+
+  function getMarkdownFiles(dir: string, fileList: string[] = []): string[] {
+    try {
+      const files = readdirSync(dir)
+      for (const file of files) {
+        const filePath = join(dir, file)
+        try {
+          const fileStat = statSync(filePath)
+          if (fileStat.isDirectory()) {
+            if (
+              !file.startsWith('.') &&
+              file !== 'node_modules' &&
+              file !== 'out' &&
+              file !== 'build'
+            ) {
+              getMarkdownFiles(filePath, fileList)
+            }
+          } else if (file.endsWith('.md')) {
+            fileList.push(filePath)
+          }
+        } catch {
+          // Ignore inaccessible files
+        }
+      }
+    } catch {
+      // Ignore inaccessible directories
+    }
+    return fileList
+  }
+
+  ipcMain.handle('fs:getGraphData', async (_, rootPath: string) => {
+    try {
+      const fileList: string[] = []
+      getMarkdownFiles(rootPath, fileList)
+
+      const nodes = fileList.map((filePath) => {
+        const name = basename(filePath).replace(/\.md$/, '')
+        return {
+          id: filePath,
+          name
+        }
+      })
+
+      const links: { source: string; target: string }[] = []
+
+      for (const filePath of fileList) {
+        try {
+          const content = readFileSync(filePath, 'utf-8')
+          const matches = content.matchAll(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g)
+          for (const match of matches) {
+            const targetName = match[1].trim()
+            const targetNode = nodes.find((n) => n.name.toLowerCase() === targetName.toLowerCase())
+            if (targetNode) {
+              links.push({
+                source: filePath,
+                target: targetNode.id
+              })
+            }
+          }
+        } catch {
+          // Ignore inaccessible files that cannot be read
+        }
+      }
+
+      return { nodes, links }
+    } catch (error) {
+      console.error('Failed to generate graph data:', error)
+      return { nodes: [], links: [] }
     }
   })
 

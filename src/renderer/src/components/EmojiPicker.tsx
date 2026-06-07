@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react'
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void
   onClose: () => void
+  onRemove?: () => void
 }
 
 const popularEmojis = [
@@ -58,7 +59,11 @@ const popularEmojis = [
   '🐶'
 ]
 
-export default function EmojiPicker({ onSelect, onClose }: EmojiPickerProps): React.JSX.Element {
+export default function EmojiPicker({
+  onSelect,
+  onClose,
+  onRemove
+}: EmojiPickerProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -77,9 +82,22 @@ export default function EmojiPicker({ onSelect, onClose }: EmojiPickerProps): Re
     <div ref={containerRef} className="emoji-picker-popover">
       <div className="emoji-picker-header">
         <span>Select Icon</span>
-        <button className="emoji-picker-close-btn" onClick={onClose}>
-          &times;
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {onRemove && (
+            <button
+              className="emoji-picker-remove-btn"
+              onClick={(): void => {
+                onRemove()
+                onClose()
+              }}
+            >
+              Remove
+            </button>
+          )}
+          <button className="emoji-picker-close-btn" onClick={onClose}>
+            &times;
+          </button>
+        </div>
       </div>
       <div className="emoji-picker-grid">
         {popularEmojis.map((emoji) => (

@@ -18,6 +18,10 @@ interface FileSystemAPI {
   showSaveDialog(defaultName: string): Promise<string | null>
   watchDirectory(dirPath: string): Promise<void>
   closeWatcher(): Promise<void>
+  getGraphData(dirPath: string): Promise<{
+    nodes: Array<{ id: string; name: string }>
+    links: Array<{ source: string; target: string }>
+  }>
   onWorkspaceChanged(
     callback: (data: {
       eventType: string

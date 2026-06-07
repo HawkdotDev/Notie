@@ -7,13 +7,27 @@ import {
   Plus,
   FolderPlus,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  MoreHorizontal
 } from 'lucide-react'
 
 interface FileNode {
   name: string
   path: string
   isDir: boolean
+}
+
+const normalizePath = (p: string): string => {
+  if (!p) return p
+  let normalized = p.replace(/\\/g, '/')
+  if (normalized.match(/^[A-Za-z]:/)) {
+    normalized = normalized.charAt(0).toLowerCase() + normalized.slice(1)
+  }
+  return normalized
+}
+
+const getPathKey = (p: string): string => {
+  return normalizePath(p).toLowerCase()
 }
 
 function parseLocalMetadata(fileContent: string): { icon?: string; banner?: string } | null {
@@ -55,7 +69,10 @@ export default function FileTree({
   fileIcons,
   onMetadataLoaded
 }: FileTreeProps): React.JSX.Element {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({ [rootPath]: true })
+  const normalizedRoot = normalizePath(rootPath)
+  const rootKey = getPathKey(rootPath)
+
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({ [rootKey]: true })
   const expandedRef = useRef(expanded)
   useEffect(() => {
     expandedRef.current = expanded
@@ -67,13 +84,69 @@ export default function FileTree({
     type: 'file' | 'folder'
   } | null>(null)
   const [creatingName, setCreatingName] = useState('')
+  const [dragOverPath, setDragOverPath] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  interface ContextMenuState {
+    x: number
+    y: number
+    path: string
+    isDir: boolean
+    parentPath: string
+  }
+
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent, path: string, isDir: boolean, parentPath: string): void => {
+      e.preventDefault()
+      e.stopPropagation()
+      setContextMenu({
+        x: e.clientX,
+        y: e.clientY,
+        path: normalizePath(path),
+        isDir,
+        parentPath: normalizePath(parentPath)
+      })
+    },
+    [setContextMenu]
+  )
+
+  const handleThreeDotsClick = useCallback(
+    (e: React.MouseEvent, path: string, isDir: boolean, parentPath: string): void => {
+      e.stopPropagation()
+      e.preventDefault()
+      const rect = e.currentTarget.getBoundingClientRect()
+      setContextMenu({
+        x: rect.left,
+        y: rect.bottom + 4,
+        path: normalizePath(path),
+        isDir,
+        parentPath: normalizePath(parentPath)
+      })
+    },
+    [setContextMenu]
+  )
+
+  useEffect(() => {
+    const handleOutsideClick = (): void => {
+      setContextMenu(null)
+    }
+    window.addEventListener('click', handleOutsideClick)
+    return (): void => window.removeEventListener('click', handleOutsideClick)
+  }, [setContextMenu])
 
   // Load directory children
   const loadDirectory = useCallback(
     async (dirPath: string): Promise<void> => {
       try {
-        const children = await window.api.fs.readDirectory(dirPath)
-        setContents((prev) => ({ ...prev, [dirPath]: children }))
+        const rawChildren = await window.api.fs.readDirectory(dirPath)
+        const dirKey = getPathKey(dirPath)
+        // Only keep directories and markdown files
+        const children = rawChildren
+          .filter((child) => child.isDir || child.name.endsWith('.md'))
+          .map((child) => ({ ...child, path: normalizePath(child.path) }))
+        setContents((prev) => ({ ...prev, [dirKey]: children }))
 
         if (onMetadataLoaded) {
           for (const child of children) {
@@ -101,12 +174,17 @@ export default function FileTree({
   useEffect(() => {
     let active = true
     if (rootPath) {
+      const rootKey = getPathKey(rootPath)
       window.api.fs
         .readDirectory(rootPath)
-        .then(async (children) => {
+        .then(async (rawChildren) => {
           if (active) {
-            setContents((prev) => ({ ...prev, [rootPath]: children }))
-            setExpanded({ [rootPath]: true })
+            // Only keep directories and markdown files
+            const children = rawChildren
+              .filter((child) => child.isDir || child.name.endsWith('.md'))
+              .map((child) => ({ ...child, path: normalizePath(child.path) }))
+            setContents((prev) => ({ ...prev, [rootKey]: children }))
+            setExpanded({ [rootKey]: true })
 
             if (onMetadataLoaded) {
               for (const child of children) {
@@ -139,8 +217,10 @@ export default function FileTree({
     if (!rootPath) return
 
     const unsubscribe = window.api.fs.onWorkspaceChanged(async (data) => {
+      const parentKey = getPathKey(data.parentPath)
+      const rootKey = getPathKey(rootPath)
       // Refresh directory if it is rootPath, or if it is currently expanded
-      if (data.parentPath === rootPath || expandedRef.current[data.parentPath]) {
+      if (parentKey === rootKey || expandedRef.current[parentKey]) {
         await loadDirectory(data.parentPath)
       }
     })
@@ -152,11 +232,12 @@ export default function FileTree({
 
   // Helper to toggle expand status
   const toggleExpand = async (dirPath: string): Promise<void> => {
-    const isExpanded = !!expanded[dirPath]
-    setExpanded((prev) => ({ ...prev, [dirPath]: !isExpanded }))
+    const dirKey = getPathKey(dirPath)
+    const isExpanded = !!expanded[dirKey]
+    setExpanded((prev) => ({ ...prev, [dirKey]: !isExpanded }))
 
     // Fetch if expanding and not loaded yet
-    if (!isExpanded && !contents[dirPath]) {
+    if (!isExpanded && !contents[dirKey]) {
       await loadDirectory(dirPath)
     }
   }
@@ -167,14 +248,18 @@ export default function FileTree({
 
     try {
       if (creatingType.type === 'file') {
-        const newPath = await window.api.fs.createFile(parentPath, creatingName.trim())
+        let name = creatingName.trim()
+        if (!name.endsWith('.md')) {
+          name += '.md'
+        }
+        const newPath = await window.api.fs.createFile(parentPath, name)
         await loadDirectory(parentPath)
-        onFileSelect(newPath)
+        onFileSelect(normalizePath(newPath))
       } else {
         await window.api.fs.createFolder(parentPath, creatingName.trim())
         await loadDirectory(parentPath)
         // Auto expand parent
-        setExpanded((prev) => ({ ...prev, [parentPath]: true }))
+        setExpanded((prev) => ({ ...prev, [getPathKey(parentPath)]: true }))
       }
       setCreatingType(null)
       setCreatingName('')
@@ -184,11 +269,11 @@ export default function FileTree({
   }
 
   const handleDelete = async (
-    e: React.MouseEvent,
+    e: React.MouseEvent | null,
     itemPath: string,
     parentPath: string
   ): Promise<void> => {
-    e.stopPropagation()
+    if (e) e.stopPropagation()
     if (confirm(`Are you sure you want to delete ${itemPath}?`)) {
       try {
         await window.api.fs.deletePath(itemPath)
@@ -199,27 +284,117 @@ export default function FileTree({
     }
   }
 
+  // HTML5 Drag and Drop handlers
+  const handleDragStart = (e: React.DragEvent, path: string): void => {
+    setIsDragging(true)
+    e.dataTransfer.setData('text/plain', path)
+  }
+
+  const handleDragEnd = (): void => {
+    setIsDragging(false)
+    setDragOverPath(null)
+  }
+
+  const handleDragOver = (e: React.DragEvent): void => {
+    e.preventDefault()
+  }
+
+  const handleDrop = async (e: React.DragEvent, targetParentPath: string): Promise<void> => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    setDragOverPath(null)
+
+    const sourcePath = e.dataTransfer.getData('text/plain')
+    if (!sourcePath) return
+
+    const sourceKey = getPathKey(sourcePath)
+    const targetParentKey = getPathKey(targetParentPath)
+
+    if (sourceKey === targetParentKey) return
+
+    // Prevent dragging a folder inside its own subfolders
+    if (targetParentKey.startsWith(sourceKey + '/')) {
+      alert('Cannot move a folder into its own subfolder.')
+      return
+    }
+
+    const name = sourcePath.split(/[\\/]/).pop()!
+    const separator = sourcePath.includes('\\') ? '\\' : '/'
+    const newPath =
+      targetParentPath + (targetParentPath.endsWith(separator) ? '' : separator) + name
+    const newPathKey = getPathKey(newPath)
+
+    if (sourceKey === newPathKey) return
+
+    try {
+      await window.api.fs.renamePath(sourcePath, newPath)
+
+      const getParentPath = (p: string): string => {
+        const lastIndex = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\'))
+        return lastIndex !== -1 ? p.substring(0, lastIndex) : p
+      }
+
+      const sourceParent = getParentPath(sourcePath)
+      await loadDirectory(sourceParent)
+      await loadDirectory(targetParentPath)
+
+      if (activeFilePath && getPathKey(activeFilePath) === sourceKey) {
+        onFileSelect(normalizePath(newPath))
+      }
+    } catch (err) {
+      alert(`Failed to move item: ${err}`)
+    }
+  }
+
+  const handleContainerDrop = async (e: React.DragEvent): Promise<void> => {
+    e.preventDefault()
+    setIsDragging(false)
+    setDragOverPath(null)
+    await handleDrop(e, rootPath)
+  }
+
   // Recursive Tree Node Renderer
   const renderNode = (node: FileNode, parentPath: string): React.JSX.Element => {
-    const isNodeExpanded = !!expanded[node.path]
-    const isSelected = activeFilePath === node.path
-    const children = contents[node.path] || []
+    const nodeKey = getPathKey(node.path)
+    const isNodeExpanded = !!expanded[nodeKey]
+    const isSelected = activeFilePath ? getPathKey(activeFilePath) === nodeKey : false
+    const children = contents[nodeKey] || []
 
     if (node.isDir) {
       return (
-        <div key={node.path} className="tree-node">
+        <div key={nodeKey} className="tree-node">
           <div
-            className={`tree-node-item ${isSelected ? 'active' : ''}`}
+            className={`tree-node-item ${isSelected ? 'active' : ''} ${dragOverPath === nodeKey ? 'drag-over' : ''}`}
             onClick={(): void => {
               toggleExpand(node.path)
+            }}
+            onContextMenu={(e): void => {
+              handleContextMenu(e, node.path, true, parentPath)
+            }}
+            draggable={node.path !== rootPath}
+            onDragStart={(e): void => handleDragStart(e, node.path)}
+            onDragEnd={handleDragEnd}
+            onDragOver={handleDragOver}
+            onDragEnter={(e): void => {
+              e.preventDefault()
+              setDragOverPath(nodeKey)
+            }}
+            onDragLeave={(): void => {
+              setDragOverPath(null)
+            }}
+            onDrop={(e): Promise<void> => {
+              setDragOverPath(null)
+              setIsDragging(false)
+              return handleDrop(e, node.path)
             }}
           >
             <span className="tree-node-left">
               {isNodeExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               {isNodeExpanded ? (
-                <FolderOpen size={16} style={{ color: '#48a37e' }} />
+                <FolderOpen size={16} fill="#48a37e" style={{ color: '#48a37e' }} />
               ) : (
-                <Folder size={16} style={{ color: '#48a37e' }} />
+                <Folder size={16} fill="#48a37e" style={{ color: '#48a37e' }} />
               )}
               <span>{node.name}</span>
             </span>
@@ -227,44 +402,20 @@ export default function FileTree({
             <span className="tree-node-actions">
               <button
                 className="tree-node-action-btn"
-                title="New File"
+                title="Options"
                 onClick={(e): void => {
-                  e.stopPropagation()
-                  setCreatingType({ parent: node.path, type: 'file' })
-                  setExpanded((prev) => ({ ...prev, [node.path]: true }))
+                  handleThreeDotsClick(e, node.path, true, parentPath)
                 }}
               >
-                <Plus size={12} />
+                <MoreHorizontal size={12} />
               </button>
-              <button
-                className="tree-node-action-btn"
-                title="New Folder"
-                onClick={(e): void => {
-                  e.stopPropagation()
-                  setCreatingType({ parent: node.path, type: 'folder' })
-                  setExpanded((prev) => ({ ...prev, [node.path]: true }))
-                }}
-              >
-                <FolderPlus size={12} />
-              </button>
-              {node.path !== rootPath && (
-                <button
-                  className="tree-node-action-btn"
-                  title="Delete Folder"
-                  onClick={(e): void => {
-                    handleDelete(e, node.path, parentPath)
-                  }}
-                >
-                  <Trash2 size={12} />
-                </button>
-              )}
             </span>
           </div>
 
           {isNodeExpanded && (
             <div className="tree-node-children">
               {/* Inline input for creating file/folder */}
-              {creatingType && creatingType.parent === node.path && (
+              {creatingType && getPathKey(creatingType.parent) === nodeKey && (
                 <form
                   onSubmit={(e): Promise<void> => handleCreateSubmit(e, node.path)}
                   style={{ padding: '4px 8px 4px 28px' }}
@@ -277,8 +428,16 @@ export default function FileTree({
                     placeholder={`New ${creatingType.type} name...`}
                     onChange={(e): void => setCreatingName(e.target.value)}
                     onBlur={(): void => {
-                      setCreatingType(null)
-                      setCreatingName('')
+                      setTimeout(() => {
+                        setCreatingType(null)
+                        setCreatingName('')
+                      }, 100)
+                    }}
+                    onKeyDown={(e): void => {
+                      if (e.key === 'Escape') {
+                        setCreatingType(null)
+                        setCreatingName('')
+                      }
                     }}
                   />
                 </form>
@@ -293,25 +452,45 @@ export default function FileTree({
 
     // File Node
     const getRelativePath = (absPath: string): string => {
-      return absPath.startsWith(rootPath)
-        ? absPath.slice(rootPath.length).replace(/^[\\/]/, '')
-        : absPath
+      const normalizedAbs = normalizePath(absPath)
+      return normalizedAbs.toLowerCase().startsWith(normalizedRoot.toLowerCase())
+        ? normalizedAbs.slice(normalizedRoot.length).replace(/^[\\/]/, '')
+        : normalizedAbs
     }
-    const relPath = getRelativePath(node.path)
+    const relPath = getRelativePath(node.path).toLowerCase()
     const customIcon = fileIcons ? fileIcons[relPath] : undefined
 
     return (
-      <div key={node.path} className="tree-node">
+      <div key={nodeKey} className="tree-node">
         <div
-          className={`tree-node-item ${isSelected ? 'active' : ''}`}
+          className={`tree-node-item ${isSelected ? 'active' : ''} ${dragOverPath === nodeKey ? 'drag-over-file' : ''}`}
           onClick={(): void => onFileSelect(node.path)}
+          onContextMenu={(e): void => {
+            handleContextMenu(e, node.path, false, parentPath)
+          }}
+          draggable={true}
+          onDragStart={(e): void => handleDragStart(e, node.path)}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+          onDragEnter={(e): void => {
+            e.preventDefault()
+            setDragOverPath(nodeKey)
+          }}
+          onDragLeave={(): void => {
+            setDragOverPath(null)
+          }}
+          onDrop={(e): Promise<void> => {
+            setDragOverPath(null)
+            setIsDragging(false)
+            return handleDrop(e, parentPath)
+          }}
         >
           <span className="tree-node-left">
             <span style={{ width: 14 }} /> {/* Indent matches chevron space */}
             {customIcon ? (
               <span className="tree-node-emoji-icon">{customIcon}</span>
             ) : (
-              <File size={16} style={{ color: '#a0aec0' }} />
+              <File size={16} fill="#a0aec0" style={{ color: '#a0aec0' }} />
             )}
             <span>{node.name}</span>
           </span>
@@ -319,12 +498,12 @@ export default function FileTree({
           <span className="tree-node-actions">
             <button
               className="tree-node-action-btn"
-              title="Delete File"
+              title="Options"
               onClick={(e): void => {
-                handleDelete(e, node.path, parentPath)
+                handleThreeDotsClick(e, node.path, false, parentPath)
               }}
             >
-              <Trash2 size={12} />
+              <MoreHorizontal size={12} />
             </button>
           </span>
         </div>
@@ -334,47 +513,54 @@ export default function FileTree({
 
   // Root layout
   return (
-    <div className="file-tree-container">
+    <div
+      className={`file-tree-container ${isDragging ? 'dragging' : ''}`}
+      onDragOver={handleDragOver}
+      onDrop={handleContainerDrop}
+    >
       {/* Root Node Header Actions */}
       <div
-        className="tree-node-item active-root"
+        className={`tree-node-item active-root ${dragOverPath === rootKey ? 'drag-over' : ''}`}
         style={{ fontWeight: 600, padding: '8px', borderBottom: '1px solid var(--border-color)' }}
+        onContextMenu={(e): void => {
+          handleContextMenu(e, rootPath, true, rootPath)
+        }}
+        onDragOver={handleDragOver}
+        onDragEnter={(e): void => {
+          e.preventDefault()
+          setDragOverPath(rootKey)
+        }}
+        onDragLeave={(): void => {
+          setDragOverPath(null)
+        }}
+        onDrop={(e): Promise<void> => {
+          setDragOverPath(null)
+          setIsDragging(false)
+          return handleDrop(e, rootPath)
+        }}
       >
         <span className="tree-node-left" onClick={(): Promise<void> => toggleExpand(rootPath)}>
-          {expanded[rootPath] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          <FolderOpen size={16} style={{ color: '#48a37e' }} />
+          {expanded[rootKey] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          <FolderOpen size={16} fill="#48a37e" style={{ color: '#48a37e' }} />
           <span>{rootName}</span>
         </span>
-        <span className="tree-node-actions" style={{ display: 'flex' }}>
+        <span className="tree-node-actions">
           <button
             className="tree-node-action-btn"
-            title={`New File in ${rootName}`}
+            title="Options"
             onClick={(e): void => {
-              e.stopPropagation()
-              setCreatingType({ parent: rootPath, type: 'file' })
-              setExpanded((prev) => ({ ...prev, [rootPath]: true }))
+              handleThreeDotsClick(e, rootPath, true, rootPath)
             }}
           >
-            <Plus size={13} />
-          </button>
-          <button
-            className="tree-node-action-btn"
-            title={`New Folder in ${rootName}`}
-            onClick={(e): void => {
-              e.stopPropagation()
-              setCreatingType({ parent: rootPath, type: 'folder' })
-              setExpanded((prev) => ({ ...prev, [rootPath]: true }))
-            }}
-          >
-            <FolderPlus size={13} />
+            <MoreHorizontal size={13} />
           </button>
         </span>
       </div>
 
       <div style={{ marginTop: '8px' }}>
-        {expanded[rootPath] && (
-          <div>
-            {creatingType && creatingType.parent === rootPath && (
+        {expanded[rootKey] && (
+          <div className="tree-node-children">
+            {creatingType && getPathKey(creatingType.parent) === rootKey && (
               <form
                 onSubmit={(e): Promise<void> => handleCreateSubmit(e, rootPath)}
                 style={{ padding: '4px 8px 4px 28px' }}
@@ -387,16 +573,75 @@ export default function FileTree({
                   placeholder={`New ${creatingType.type} name...`}
                   onChange={(e): void => setCreatingName(e.target.value)}
                   onBlur={(): void => {
-                    setCreatingType(null)
-                    setCreatingName('')
+                    setTimeout(() => {
+                      setCreatingType(null)
+                      setCreatingName('')
+                    }, 100)
+                  }}
+                  onKeyDown={(e): void => {
+                    if (e.key === 'Escape') {
+                      setCreatingType(null)
+                      setCreatingName('')
+                    }
                   }}
                 />
               </form>
             )}
-            {(contents[rootPath] || []).map((node) => renderNode(node, rootPath))}
+            {(contents[rootKey] || []).map((node) => renderNode(node, rootPath))}
           </div>
         )}
       </div>
+
+      {contextMenu && (
+        <div
+          className="context-menu-popover"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={(e): void => e.stopPropagation()}
+        >
+          {contextMenu.isDir && (
+            <>
+              <button
+                className="context-menu-item"
+                onClick={(): void => {
+                  setCreatingType({ parent: contextMenu.path, type: 'file' })
+                  setExpanded((prev) => ({ ...prev, [getPathKey(contextMenu.path)]: true }))
+                  setContextMenu(null)
+                }}
+              >
+                <Plus size={12} />
+                <span>New File</span>
+              </button>
+              <button
+                className="context-menu-item"
+                onClick={(): void => {
+                  setCreatingType({ parent: contextMenu.path, type: 'folder' })
+                  setExpanded((prev) => ({ ...prev, [getPathKey(contextMenu.path)]: true }))
+                  setContextMenu(null)
+                }}
+              >
+                <FolderPlus size={12} />
+                <span>New Folder</span>
+              </button>
+            </>
+          )}
+
+          {getPathKey(contextMenu.path) !== rootKey && (
+            <>
+              {contextMenu.isDir && <div className="context-menu-divider" />}
+              <button
+                className="context-menu-item danger"
+                onClick={(): void => {
+                  handleDelete(null, contextMenu.path, contextMenu.parentPath)
+                  setContextMenu(null)
+                }}
+              >
+                <Trash2 size={12} />
+                <span>Delete {contextMenu.isDir ? 'Folder' : 'File'}</span>
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
