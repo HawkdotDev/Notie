@@ -3,6 +3,65 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { FolderOpen, FileCode, Cpu } from 'lucide-react'
 import FileTree from './components/FileTree'
 import BlockEditor from './components/BlockEditor'
+import EmojiPicker from './components/EmojiPicker'
+import BannerPicker from './components/BannerPicker'
+
+interface MarkdownMetadata {
+  icon?: string
+  banner?: string
+}
+
+interface ParsedDocument {
+  metadata: MarkdownMetadata
+  content: string
+}
+
+function parseMarkdownMetadata(fileContent: string): ParsedDocument {
+  const metadata: MarkdownMetadata = {}
+  let content = fileContent
+
+  const match = fileContent.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)
+  if (match) {
+    const frontmatter = match[1]
+    content = fileContent.slice(match[0].length)
+
+    const lines = frontmatter.split(/\r?\n/)
+    for (const line of lines) {
+      const parts = line.split(':')
+      if (parts.length >= 2) {
+        const key = parts[0].trim()
+        const value = parts.slice(1).join(':').trim()
+        if (key === 'icon') {
+          metadata.icon = value.replace(/^['"]|['"]$/g, '')
+        } else if (key === 'banner') {
+          metadata.banner = value.replace(/^['"]|['"]$/g, '')
+        }
+      }
+    }
+  }
+
+  return { metadata, content }
+}
+
+function serializeMarkdownMetadata(content: string, metadata: MarkdownMetadata): string {
+  // Strip any existing frontmatter first to avoid duplication
+  const strippedContent = content.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '')
+
+  if (!metadata.icon && !metadata.banner) {
+    return strippedContent
+  }
+
+  let frontmatter = '---\n'
+  if (metadata.icon) {
+    frontmatter += `icon: "${metadata.icon}"\n`
+  }
+  if (metadata.banner) {
+    frontmatter += `banner: "${metadata.banner}"\n`
+  }
+  frontmatter += '---\n'
+
+  return frontmatter + strippedContent
+}
 // import TabBar from './components/TabBar'
 
 interface OpenFile {
@@ -77,10 +136,58 @@ export default function App(): React.JSX.Element {
   const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(
     localStorage.getItem('autoSaveEnabled') === 'true'
   )
+  const [fileIcons, setFileIcons] = useState<Record<string, string>>({})
+  const [fileBanners, setFileBanners] = useState<Record<string, string>>({})
+  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false)
+  const [showBannerPicker, setShowBannerPicker] = useState<boolean>(false)
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    const saved = localStorage.getItem('sidebarWidth')
+    return saved ? parseInt(saved, 10) : 240
+  })
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem('sidebarCollapsed') === 'true'
+  })
 
   useEffect(() => {
     localStorage.setItem('autoSaveEnabled', String(autoSaveEnabled))
   }, [autoSaveEnabled])
+
+  useEffect(() => {
+    localStorage.setItem('sidebarWidth', String(sidebarWidth))
+  }, [sidebarWidth])
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(sidebarCollapsed))
+  }, [sidebarCollapsed])
+
+  const startResize = useCallback(
+    (mouseDownEvent: React.MouseEvent) => {
+      mouseDownEvent.preventDefault()
+      const startWidth = sidebarWidth
+      const startX = mouseDownEvent.clientX
+
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+
+      const doResize = (mouseMoveEvent: MouseEvent): void => {
+        const newWidth = startWidth + (mouseMoveEvent.clientX - startX)
+        if (newWidth >= 160 && newWidth <= 450) {
+          setSidebarWidth(newWidth)
+        }
+      }
+
+      const stopResize = (): void => {
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+        document.removeEventListener('mousemove', doResize)
+        document.removeEventListener('mouseup', stopResize)
+      }
+
+      document.addEventListener('mousemove', doResize)
+      document.addEventListener('mouseup', stopResize)
+    },
+    [sidebarWidth]
+  )
 
   const activeFilePathRef = useRef<string | null>(null)
   const fileContentsRef = useRef<Record<string, string>>({})
@@ -98,6 +205,87 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     originalFileContentsRef.current = originalFileContents
   }, [originalFileContents])
+
+  const getRelativePath = useCallback(
+    (absPath: string): string => {
+      if (!workspacePath) return absPath
+      return absPath.startsWith(workspacePath)
+        ? absPath.slice(workspacePath.length).replace(/^[\\/]/, '')
+        : absPath
+    },
+    [workspacePath]
+  )
+
+  const handleMetadataLoaded = useCallback(
+    (filePath: string, metadata: { icon?: string; banner?: string }): void => {
+      const relPath = getRelativePath(filePath)
+      if (metadata.icon) {
+        setFileIcons((prev) => ({ ...prev, [relPath]: metadata.icon! }))
+      }
+      if (metadata.banner) {
+        setFileBanners((prev) => ({ ...prev, [relPath]: metadata.banner! }))
+      }
+    },
+    [getRelativePath]
+  )
+
+  const saveFileMetadata = useCallback(
+    async (filePath: string, updatedIcon?: string, updatedBanner?: string): Promise<void> => {
+      const content = fileContents[filePath] || ''
+      const metadata: MarkdownMetadata = {
+        icon: updatedIcon,
+        banner: updatedBanner
+      }
+      const fullContent = serializeMarkdownMetadata(content, metadata)
+      try {
+        await window.api.fs.writeFile(filePath, fullContent)
+        setOriginalFileContents((prev) => ({ ...prev, [filePath]: content }))
+      } catch (err) {
+        console.error('Failed to save file metadata:', err)
+      }
+    },
+    [fileContents]
+  )
+
+  const handleSelectEmoji = useCallback(
+    async (emoji: string): Promise<void> => {
+      if (!activeFilePath) return
+      const relPath = getRelativePath(activeFilePath)
+      const updated = { ...fileIcons, [relPath]: emoji }
+      setFileIcons(updated)
+      await saveFileMetadata(activeFilePath, emoji, fileBanners[relPath])
+    },
+    [activeFilePath, fileIcons, fileBanners, getRelativePath, saveFileMetadata]
+  )
+
+  const handleRemoveEmoji = useCallback(async (): Promise<void> => {
+    if (!activeFilePath) return
+    const relPath = getRelativePath(activeFilePath)
+    const updated = { ...fileIcons }
+    delete updated[relPath]
+    setFileIcons(updated)
+    await saveFileMetadata(activeFilePath, undefined, fileBanners[relPath])
+  }, [activeFilePath, fileIcons, fileBanners, getRelativePath, saveFileMetadata])
+
+  const handleSelectBanner = useCallback(
+    async (banner: string): Promise<void> => {
+      if (!activeFilePath) return
+      const relPath = getRelativePath(activeFilePath)
+      const updated = { ...fileBanners, [relPath]: banner }
+      setFileBanners(updated)
+      await saveFileMetadata(activeFilePath, fileIcons[relPath], banner)
+    },
+    [activeFilePath, fileBanners, fileIcons, getRelativePath, saveFileMetadata]
+  )
+
+  const handleRemoveBanner = useCallback(async (): Promise<void> => {
+    if (!activeFilePath) return
+    const relPath = getRelativePath(activeFilePath)
+    const updated = { ...fileBanners }
+    delete updated[relPath]
+    setFileBanners(updated)
+    await saveFileMetadata(activeFilePath, fileIcons[relPath], undefined)
+  }, [activeFilePath, fileBanners, fileIcons, getRelativePath, saveFileMetadata])
 
   const closeTabDirectly = useCallback((filePath: string): void => {
     setOpenFiles((prev) => {
@@ -159,12 +347,28 @@ export default function App(): React.JSX.Element {
         return copy
       })
 
+      // Sync rename to fileIcons and fileBanners maps in state
+      const oldRel = getRelativePath(activeFilePath)
+      const newRel = getRelativePath(newPath)
+      if (fileIcons[oldRel]) {
+        const updated = { ...fileIcons }
+        updated[newRel] = updated[oldRel]
+        delete updated[oldRel]
+        setFileIcons(updated)
+      }
+      if (fileBanners[oldRel]) {
+        const updated = { ...fileBanners }
+        updated[newRel] = updated[oldRel]
+        delete updated[oldRel]
+        setFileBanners(updated)
+      }
+
       setActiveFilePath(newPath)
     } catch (err) {
       alert(`Error renaming file: ${err}`)
       setActiveFileTitle(nameWithoutExtension)
     }
-  }, [activeFilePath, activeFileTitle])
+  }, [activeFilePath, activeFileTitle, fileIcons, fileBanners, getRelativePath])
 
   // Sync workspace selection to localstorage
   const handleOpenWorkspace = useCallback(async (): Promise<void> => {
@@ -175,9 +379,11 @@ export default function App(): React.JSX.Element {
         setWorkspaceName(result.name)
         localStorage.setItem('workspacePath', result.path)
         localStorage.setItem('workspaceName', result.name)
-        // Clear old workspace tabs
+        // Clear old workspace tabs and cache
         setOpenFiles([])
         setActiveFilePath(null)
+        setFileIcons({})
+        setFileBanners({})
       }
     } catch (err) {
       console.error('Failed to open workspace directory:', err)
@@ -191,11 +397,15 @@ export default function App(): React.JSX.Element {
     localStorage.removeItem('workspaceName')
     setOpenFiles([])
     setActiveFilePath(null)
+    setFileIcons({})
+    setFileBanners({})
   }
 
   // Open a file from the tree
   const handleFileSelect = useCallback(
     async (filePath: string): Promise<void> => {
+      setShowEmojiPicker(false)
+      setShowBannerPicker(false)
       // If already open, just switch active tab
       const alreadyOpen = openFiles.find((f) => f.path === filePath)
       if (alreadyOpen) {
@@ -207,13 +417,35 @@ export default function App(): React.JSX.Element {
       }
 
       try {
-        const content = await window.api.fs.readFile(filePath)
+        const fileContent = await window.api.fs.readFile(filePath)
+        const { metadata, content } = parseMarkdownMetadata(fileContent)
         const name = filePath.split(/[\\/]/).pop() || 'Untitled'
         const titleWithoutExt = name.replace(/\.[^/.]+$/, '')
 
         setOpenFiles((prev) => [...prev, { name, path: filePath }])
         setFileContents((prev) => ({ ...prev, [filePath]: content }))
         setOriginalFileContents((prev) => ({ ...prev, [filePath]: content }))
+
+        const relPath = getRelativePath(filePath)
+        if (metadata.icon) {
+          setFileIcons((prev) => ({ ...prev, [relPath]: metadata.icon! }))
+        } else {
+          setFileIcons((prev) => {
+            const copy = { ...prev }
+            delete copy[relPath]
+            return copy
+          })
+        }
+        if (metadata.banner) {
+          setFileBanners((prev) => ({ ...prev, [relPath]: metadata.banner! }))
+        } else {
+          setFileBanners((prev) => {
+            const copy = { ...prev }
+            delete copy[relPath]
+            return copy
+          })
+        }
+
         setActiveFilePath(filePath)
         setActiveFileTitle(titleWithoutExt)
         setCursorPosition({ line: 1, column: 1 })
@@ -221,7 +453,7 @@ export default function App(): React.JSX.Element {
         alert(`Error reading file: ${err}`)
       }
     },
-    [openFiles]
+    [openFiles, getRelativePath]
   )
 
   // Handle Tab Switch
@@ -275,14 +507,20 @@ export default function App(): React.JSX.Element {
   const handleSaveActiveFile = useCallback(async (): Promise<void> => {
     if (!activeFilePath) return
     const content = fileContents[activeFilePath] || ''
+    const relPath = getRelativePath(activeFilePath)
+    const metadata = {
+      icon: fileIcons[relPath],
+      banner: fileBanners[relPath]
+    }
+    const fullContent = serializeMarkdownMetadata(content, metadata)
     try {
-      await window.api.fs.writeFile(activeFilePath, content)
+      await window.api.fs.writeFile(activeFilePath, fullContent)
       lastSavedContentsRef.current[activeFilePath] = content
       setOriginalFileContents((prev) => ({ ...prev, [activeFilePath]: content }))
     } catch (err) {
       alert(`Error saving file: ${err}`)
     }
-  }, [activeFilePath, fileContents])
+  }, [activeFilePath, fileContents, fileIcons, fileBanners, getRelativePath])
 
   // Create new file at workspace root helper
   const handleCreateFileAtRoot = useCallback(async (): Promise<void> => {
@@ -328,9 +566,11 @@ export default function App(): React.JSX.Element {
 
           if (!isDirty) {
             // If the local file is not dirty, silently update it with external changes
-            if (currentVal !== contentOnDisk) {
-              setFileContents((prev) => ({ ...prev, [activePath]: contentOnDisk }))
-              setOriginalFileContents((prev) => ({ ...prev, [activePath]: contentOnDisk }))
+            // Strip frontmatter before storing so editor never sees it
+            const { content: externalContent } = parseMarkdownMetadata(contentOnDisk)
+            if (currentVal !== externalContent) {
+              setFileContents((prev) => ({ ...prev, [activePath]: externalContent }))
+              setOriginalFileContents((prev) => ({ ...prev, [activePath]: externalContent }))
             }
           } else {
             // If it is dirty, ask the user if they want to overwrite their changes
@@ -339,8 +579,9 @@ export default function App(): React.JSX.Element {
                 `The file "${data.filename}" has been modified externally. Do you want to reload it and discard your local unsaved changes?`
               )
               if (reload) {
-                setFileContents((prev) => ({ ...prev, [activePath]: contentOnDisk }))
-                setOriginalFileContents((prev) => ({ ...prev, [activePath]: contentOnDisk }))
+                const { content: reloadedContent } = parseMarkdownMetadata(contentOnDisk)
+                setFileContents((prev) => ({ ...prev, [activePath]: reloadedContent }))
+                setOriginalFileContents((prev) => ({ ...prev, [activePath]: reloadedContent }))
               }
             }
           }
@@ -377,8 +618,14 @@ export default function App(): React.JSX.Element {
     if (currentVal === undefined || currentVal === originalVal) return
 
     const timer = setTimeout(async () => {
+      const relPath = getRelativePath(activeFilePath)
+      const metadata = {
+        icon: fileIcons[relPath],
+        banner: fileBanners[relPath]
+      }
+      const fullContent = serializeMarkdownMetadata(currentVal, metadata)
       try {
-        await window.api.fs.writeFile(activeFilePath, currentVal)
+        await window.api.fs.writeFile(activeFilePath, fullContent)
         lastSavedContentsRef.current[activeFilePath] = currentVal
         setOriginalFileContents((prev) => ({ ...prev, [activeFilePath]: currentVal }))
       } catch (err) {
@@ -387,7 +634,15 @@ export default function App(): React.JSX.Element {
     }, 1000) // 1 second debounce
 
     return () => clearTimeout(timer)
-  }, [fileContents, activeFilePath, autoSaveEnabled, originalFileContents])
+  }, [
+    fileContents,
+    activeFilePath,
+    autoSaveEnabled,
+    originalFileContents,
+    fileIcons,
+    fileBanners,
+    getRelativePath
+  ])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
@@ -436,6 +691,9 @@ export default function App(): React.JSX.Element {
     ? fileContents[activeFilePath] !== originalFileContents[activeFilePath]
     : false
 
+  const activeFileIcon = activeFilePath ? fileIcons[getRelativePath(activeFilePath)] : undefined
+  const activeFileBanner = activeFilePath ? fileBanners[getRelativePath(activeFilePath)] : undefined
+
   // Unsaved files registry
   const unsavedFiles: Record<string, boolean> = {}
   openFiles.forEach((f) => {
@@ -445,82 +703,240 @@ export default function App(): React.JSX.Element {
   return (
     <div className="app-container">
       {/* Sidebar Panel */}
-      <div className="sidebar">
-        {/* <div className="sidebar-header">
-        </div> */}
-        <div
-          className="sidebar-content"
-          style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '8px 4px' }}
-        >
-          {workspacePath ? (
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
-              <div style={{ flex: 1, overflowY: 'auto' }}>
-                <FileTree
-                  rootPath={workspacePath}
-                  rootName={workspaceName}
-                  activeFilePath={activeFilePath}
-                  onFileSelect={handleFileSelect}
-                />
+      <div
+        className="sidebar"
+        style={{
+          width: sidebarCollapsed ? '48px' : `${sidebarWidth}px`,
+          minWidth: sidebarCollapsed ? '48px' : '160px',
+          maxWidth: sidebarCollapsed ? '48px' : '450px',
+          position: 'relative'
+        }}
+      >
+        {sidebarCollapsed ? (
+          <div
+            className="sidebar-collapsed-strip"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: '8px 0',
+              height: '100%',
+              backgroundColor: 'var(--bg-sidebar)'
+            }}
+          >
+            <button
+              className="primary-btn"
+              style={{
+                width: '32px',
+                height: '32px',
+                minWidth: '32px',
+                padding: '0',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'transparent',
+                borderColor: 'var(--border-color)',
+                color: 'var(--text-muted)'
+              }}
+              onClick={(): void => setSidebarCollapsed(false)}
+              onMouseEnter={(e): void => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-hover)'
+                e.currentTarget.style.color = 'var(--text-main)'
+              }}
+              onMouseLeave={(e): void => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = 'var(--text-muted)'
+              }}
+              title="Expand Sidebar"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M9 3v18" />
+                <path d="m14 9 3 3-3 3" />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <div
+            className="sidebar-content"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+              padding: '8px 4px',
+              overflow: 'hidden'
+            }}
+          >
+            {workspacePath ? (
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%' }}>
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                  <FileTree
+                    rootPath={workspacePath}
+                    rootName={workspaceName}
+                    activeFilePath={activeFilePath}
+                    onFileSelect={handleFileSelect}
+                    fileIcons={fileIcons}
+                    onMetadataLoaded={handleMetadataLoaded}
+                  />
+                </div>
+                <div
+                  style={{
+                    padding: '8px',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '6px',
+                    borderTop: '1px solid var(--border-color)',
+                    alignItems: 'center'
+                  }}
+                >
+                  <button
+                    className="primary-btn"
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      backgroundColor: 'transparent',
+                      borderColor: '#41232b',
+                      color: '#eb174c'
+                    }}
+                    onClick={handleCloseWorkspace}
+                    onMouseEnter={(e): void => {
+                      e.currentTarget.style.backgroundColor = '#eb174c'
+                      e.currentTarget.style.color = 'var(--text-main)'
+                    }}
+                    onMouseLeave={(e): void => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.color = '#eb174c'
+                    }}
+                  >
+                    <span>Close Workspace</span>
+                  </button>
+                  <button
+                    className="primary-btn"
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      minWidth: '28px',
+                      padding: '0',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: 'transparent',
+                      borderColor: 'var(--border-color)',
+                      color: 'var(--text-muted)'
+                    }}
+                    onClick={(): void => setSidebarCollapsed(true)}
+                    onMouseEnter={(e): void => {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-hover)'
+                      e.currentTarget.style.color = 'var(--text-main)'
+                    }}
+                    onMouseLeave={(e): void => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.color = 'var(--text-muted)'
+                    }}
+                    title="Collapse Sidebar"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect width="18" height="18" x="3" y="3" rx="2" />
+                      <path d="M9 3v18" />
+                      <path d="m16 15-3-3 3-3" />
+                    </svg>
+                  </button>
+                </div>
               </div>
+            ) : (
               <div
+                className="empty-state"
                 style={{
-                  padding: '8px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px',
-                  borderTop: '1px solid var(--border-color)'
+                  height: '100%',
+                  boxSizing: 'border-box',
+                  position: 'relative',
+                  paddingBottom: '40px'
                 }}
               >
-                {/* <button
-                  className="primary-btn"
-                  style={{
-                    width: '100%',
-                    justifyContent: 'center',
-                    backgroundColor: 'var(--accent-color)',
-                    color: 'white',
-                    border: 'none'
-                  }}
-                  onClick={handleCreateFileAtRoot}
-                >
-                  <span>+ New Page</span>
-                </button> */}
-                <button
-                  className="primary-btn"
-                  style={{
-                    width: '100%',
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent',
-                    borderColor: 'var(--border-color)',
-                    color: 'var(--text-muted)'
-                  }}
-                  onClick={handleCloseWorkspace}
-                  onMouseEnter={(e): void => {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)'
-                    e.currentTarget.style.color = 'var(--text-main)'
-                  }}
-                  onMouseLeave={(e): void => {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                    e.currentTarget.style.color = 'var(--text-muted)'
-                  }}
-                >
-                  <span>Close Workspace</span>
+                <FolderOpen size={40} className="empty-state-icon" />
+                <div className="empty-state-title">No Folder Open</div>
+                <div className="empty-state-text">
+                  Open a folder to visualize project structure and start editing code files.
+                </div>
+                <button className="primary-btn" onClick={handleOpenWorkspace}>
+                  <FolderOpen size={14} />
+                  <span>Open Folder</span>
                 </button>
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    right: '8px'
+                  }}
+                >
+                  <button
+                    className="primary-btn"
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      minWidth: '28px',
+                      padding: '0',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: 'transparent',
+                      borderColor: 'var(--border-color)',
+                      color: 'var(--text-muted)'
+                    }}
+                    onClick={(): void => setSidebarCollapsed(true)}
+                    onMouseEnter={(e): void => {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-hover)'
+                      e.currentTarget.style.color = 'var(--text-main)'
+                    }}
+                    onMouseLeave={(e): void => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.color = 'var(--text-muted)'
+                    }}
+                    title="Collapse Sidebar"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect width="18" height="18" x="3" y="3" rx="2" />
+                      <path d="M9 3v18" />
+                      <path d="m16 15-3-3 3-3" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="empty-state">
-              <FolderOpen size={40} className="empty-state-icon" />
-              <div className="empty-state-title">No Folder Open</div>
-              <div className="empty-state-text">
-                Open a folder to visualize project structure and start editing code files.
-              </div>
-              <button className="primary-btn" onClick={handleOpenWorkspace}>
-                <FolderOpen size={14} />
-                <span>Open Folder</span>
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
+
+        {/* Resize handle */}
+        {!sidebarCollapsed && (
+          <div className="sidebar-resizer" onMouseDown={startResize} />
+        )}
       </div>
 
       {/* Editor & Content Pane */}
@@ -558,12 +974,7 @@ export default function App(): React.JSX.Element {
                   type="checkbox"
                   checked={autoSaveEnabled}
                   onChange={(e): void => setAutoSaveEnabled(e.target.checked)}
-                  style={{
-                    accentColor: 'var(--text-active)',
-                    cursor: 'pointer',
-                    width: '12px',
-                    height: '12px'
-                  }}
+                  className="autosave-checkbox"
                 />
                 <span>Autosave</span>
               </label>
@@ -594,7 +1005,103 @@ export default function App(): React.JSX.Element {
 
         {activeFilePath ? (
           <div className="editor-container">
+            {/* Full-width banner sits outside the centered wrapper */}
+            {activeFileBanner && (
+              <div className="page-banner-container">
+                {activeFileBanner.startsWith('linear-gradient') ? (
+                  <div className="page-banner-element" style={{ background: activeFileBanner }} />
+                ) : (
+                  <div
+                    className="page-banner-element"
+                    style={{
+                      backgroundImage: `url("${activeFileBanner}")`,
+                      backgroundPosition: 'center',
+                      backgroundSize: 'cover',
+                      backgroundRepeat: 'no-repeat'
+                    }}
+                  />
+                )}
+                <div className="page-banner-actions">
+                  <button
+                    className="page-banner-action-btn"
+                    onClick={(): void => setShowBannerPicker(true)}
+                  >
+                    Change banner
+                  </button>
+                  <button className="page-banner-action-btn" onClick={handleRemoveBanner}>
+                    Remove banner
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="editor-wrapper">
+              <div className="page-header-controls-area">
+                {/* Overlapping or inline Icon Wrapper */}
+                <div className={`page-header-icon-wrapper ${activeFileBanner ? 'has-banner' : ''}`}>
+                  {activeFileIcon ? (
+                    <div className="page-header-emoji-container">
+                      <span
+                        className="page-header-emoji"
+                        onClick={(): void => setShowEmojiPicker(true)}
+                      >
+                        {activeFileIcon}
+                      </span>
+                      <div className="page-header-icon-actions">
+                        <button
+                          className="page-header-action-btn"
+                          onClick={(): void => setShowEmojiPicker(true)}
+                        >
+                          Change icon
+                        </button>
+                        <button className="page-header-action-btn" onClick={handleRemoveEmoji}>
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Hover options block for adding missing items */}
+                <div className="page-header-hover-actions">
+                  {!activeFileIcon && (
+                    <button
+                      className="page-header-add-action-btn"
+                      onClick={(): void => setShowEmojiPicker(true)}
+                    >
+                      😀 Add icon
+                    </button>
+                  )}
+                  {!activeFileBanner && (
+                    <button
+                      className="page-header-add-action-btn"
+                      onClick={(): void => setShowBannerPicker(true)}
+                    >
+                      🖼️ Add banner
+                    </button>
+                  )}
+                </div>
+
+                {/* Pickers */}
+                {showEmojiPicker && (
+                  <div className="emoji-picker-container">
+                    <EmojiPicker
+                      onSelect={handleSelectEmoji}
+                      onClose={(): void => setShowEmojiPicker(false)}
+                    />
+                  </div>
+                )}
+
+                {showBannerPicker && (
+                  <div className="banner-picker-container">
+                    <BannerPicker
+                      onSelect={handleSelectBanner}
+                      onClose={(): void => setShowBannerPicker(false)}
+                    />
+                  </div>
+                )}
+              </div>
+
               <input
                 className="document-title-input"
                 type="text"

@@ -202,11 +202,11 @@ body {
 
 .tree-node-action-btn {
   background: transparent;
-  border: none;
+  border: 1px solid var(--border-color);
   color: var(--text-muted);
   cursor: pointer;
-  padding: 2px;
-  border-radius: 3px;
+  padding: 2px 2.5px 2px 2.5px;
+  border-radius: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -459,11 +459,19 @@ body {
   letter-spacing: -0.003em;
 }
 
+/* block wrapper margins for headings to align handles perfectly */
+.codex-editor .ce-block--heading1,
+.codex-editor .ce-block--heading2,
+.codex-editor .ce-block--heading3 {
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
 /* Headings */
 .codex-editor .ce-header {
   color: var(--text-main);
   font-weight: 700;
-  margin-top: 18px;
+  margin-top: 0 !important; /* Move margin to the block wrapper to keep handles aligned */
   margin-bottom: 8px;
   padding: 0;
 }
@@ -682,4 +690,312 @@ body {
   font-size: 18px;
   letter-spacing: 12px;
   margin-left: 12px; /* balance the letter-spacing */
+}
+
+/* Heading H3 Styles */
+.codex-editor h3.ce-header {
+  font-size: 18px;
+  line-height: 1.35;
+  margin-top: 0 !important;
+  margin-bottom: 6px;
+}
+
+/* Image Block Styles (Centered and styled like Medium) */
+.image-tool {
+  padding: 10px 0;
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.image-tool__image {
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-sidebar);
+}
+
+.image-tool__image-picture {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.image-tool__caption {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  text-align: center;
+  border: none;
+  outline: none;
+  width: 100%;
+  background: transparent;
+}
+
+.image-tool__caption[contenteditable='true']:empty:before {
+  content: 'Image caption...';
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* Loader Spin Animation */
+.image-tool__image-loader {
+  width: 40px;
+  height: 40px;
+  margin: 40px auto;
+  border: 3px solid var(--border-color);
+  border-radius: 50%;
+  border-top-color: var(--text-active);
+  animation: loader-spin 1s infinite linear;
+}
+
+@keyframes loader-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Rounded Autosave Checkbox Style */
+.autosave-checkbox {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 50%; /* Make it round */
+  outline: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+  margin-right: 4px;
+  padding: 0;
+}
+
+.autosave-checkbox:checked {
+  background-color: var(--text-active);
+  border-color: var(--text-active);
+}
+
+.autosave-checkbox:checked::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--bg-primary);
+  display: block;
+}
+
+.autosave-checkbox:hover {
+  border-color: var(--text-active);
+}
+
+/* --- Notion-style Emoji Picker & Page Header Icon Styles --- */
+.tree-node-emoji-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.page-header-icon-section {
+  position: relative;
+  max-width: 650px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 24px;
+}
+
+.page-header-add-icon-trigger {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  padding-top: 8px;
+}
+
+.page-header-icon-section:hover .page-header-add-icon-trigger {
+  opacity: 1;
+}
+
+.add-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.add-icon-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
+}
+
+.page-header-icon-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  position: relative;
+  margin-bottom: 12px;
+  padding-top: 20px;
+}
+
+.page-header-emoji {
+  font-size: 74px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease;
+}
+
+.page-header-emoji:hover {
+  transform: scale(1.05);
+}
+
+.page-header-icon-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.page-header-icon-wrapper:hover .page-header-icon-actions {
+  opacity: 1;
+}
+
+.page-header-action-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.page-header-action-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
+  border-color: var(--text-muted);
+}
+
+.emoji-picker-container {
+  position: absolute;
+  z-index: 999;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+}
+
+.emoji-picker-popover {
+  width: 260px;
+  background-color: var(--bg-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: emojiPopoverFadeIn 0.12s ease-out;
+  z-index: 1000;
+  position: relative;
+}
+
+@keyframes emojiPopoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.emoji-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+}
+
+.emoji-picker-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.15s ease;
+}
+
+.emoji-picker-close-btn:hover {
+  color: var(--text-main);
+}
+
+.emoji-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.emoji-picker-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+.emoji-picker-btn:hover {
+  background-color: var(--bg-hover);
+  transform: scale(1.15);
+}
+
+/* Sidebar Resizer */
+.sidebar-resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 100;
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-resizer:hover,
+.sidebar-resizer:active {
+  background-color: var(--text-active);
+  opacity: 0.5;
 }

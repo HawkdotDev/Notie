@@ -14,6 +14,8 @@ import Marker from '@editorjs/marker'
 import Quote from '@editorjs/quote'
 // @ts-ignore: Delimiter does not provide official TypeScript typings
 import Delimiter from '@editorjs/delimiter'
+// @ts-ignore: ImageTool does not provide official TypeScript typings
+import ImageTool from '@editorjs/image'
 // @ts-ignore: DragDrop does not provide official TypeScript typings
 import DragDrop from 'editorjs-drag-drop'
 
@@ -31,6 +33,13 @@ interface EditorJSBlock {
     style?: string
     items?: string[]
     alignment?: string
+    file?: {
+      url?: string
+    }
+    caption?: string
+    withBorder?: boolean
+    withBackground?: boolean
+    stretched?: boolean
   }
 }
 
@@ -58,20 +67,43 @@ function parseMarkdownToEditorJS(text: string): EditorJSData {
     const trimmed = p.trim()
     if (!trimmed) return
 
-    if (trimmed.startsWith('# ')) {
+    // Parse image first to avoid conflict with paragraphs/headings
+    const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/)
+    if (imgMatch) {
       blocks.push({
-        type: 'header',
+        type: 'image',
         data: {
-          text: trimmed.replace(/^# /, '').trim(),
-          level: 1
+          file: {
+            url: imgMatch[2]
+          },
+          caption: imgMatch[1]
+        }
+      })
+      return
+    }
+
+    if (trimmed.startsWith('### ')) {
+      blocks.push({
+        type: 'heading3',
+        data: {
+          text: trimmed.replace(/^### /, '').trim(),
+          level: 3
         }
       })
     } else if (trimmed.startsWith('## ')) {
       blocks.push({
-        type: 'header',
+        type: 'heading2',
         data: {
           text: trimmed.replace(/^## /, '').trim(),
           level: 2
+        }
+      })
+    } else if (trimmed.startsWith('# ')) {
+      blocks.push({
+        type: 'heading1',
+        data: {
+          text: trimmed.replace(/^# /, '').trim(),
+          level: 1
         }
       })
     } else if (trimmed === '---' || trimmed === '***') {
@@ -156,6 +188,15 @@ function serializeEditorJSToMarkdown(data: EditorJSData): string {
   return data.blocks
     .map((b: EditorJSBlock) => {
       switch (b.type) {
+        case 'heading1': {
+          return `# ${b.data.text || ''}`
+        }
+        case 'heading2': {
+          return `## ${b.data.text || ''}`
+        }
+        case 'heading3': {
+          return `### ${b.data.text || ''}`
+        }
         case 'header': {
           const level = b.data.level || 2
           const hashes = '#'.repeat(level)
@@ -170,6 +211,11 @@ function serializeEditorJSToMarkdown(data: EditorJSData): string {
           const text = b.data.text || ''
           const lines = text.replace(/<br\s*\/?>/gi, '\n').split('\n')
           return lines.map((line) => `> ${line}`).join('\n')
+        }
+        case 'image': {
+          const url = b.data.file?.url || ''
+          const caption = b.data.caption || ''
+          return `![${caption}](${url})`
         }
         case 'delimiter': {
           return '---'
@@ -193,6 +239,7 @@ export default function BlockEditor({
   const editorInstanceRef = useRef<EditorJS | null>(null)
   const lastSerializedRef = useRef<string>('')
   const isLocalChangeRef = useRef<boolean>(false)
+  const destroyingPromiseRef = useRef<Promise<void> | null>(null)
 
   // Track the value in a ref to satisfy React hook dependencies rules
   const valueRef = useRef(value)
@@ -207,6 +254,19 @@ export default function BlockEditor({
   }, [onChange])
 
   // Initialize/reinitialize editor when file changes
+  // Safe helper to destroy an EditorJS instance
+  const destroyInstance = async (instance: EditorJS): Promise<void> => {
+    try {
+      await instance.isReady
+      if (typeof instance.destroy === 'function') {
+        await instance.destroy()
+      }
+    } catch (err) {
+      console.error('Error destroying EditorJS instance:', err)
+    }
+  }
+
+  // Initialize/reinitialize editor when file changes
   useEffect(() => {
     if (!containerRef.current) return
 
@@ -214,15 +274,27 @@ export default function BlockEditor({
     let editor: EditorJS | null = null
 
     const init = async (): Promise<void> => {
-      // If there is an existing editor instance, destroy it
-      if (editorInstanceRef.current) {
+      // 1. Wait for any active cleanup/destruction to finish first
+      if (destroyingPromiseRef.current) {
         try {
-          await editorInstanceRef.current.isReady
-          editorInstanceRef.current.destroy()
-          editorInstanceRef.current = null
+          await destroyingPromiseRef.current
         } catch (err) {
-          console.error('Failed to destroy previous editor instance:', err)
+          console.error('Previous destruction error:', err)
         }
+        destroyingPromiseRef.current = null
+      }
+
+      // 2. If there's still a previous instance in the ref, destroy it and wait
+      if (editorInstanceRef.current) {
+        const previousInstance = editorInstanceRef.current
+        editorInstanceRef.current = null
+        destroyingPromiseRef.current = destroyInstance(previousInstance)
+        try {
+          await destroyingPromiseRef.current
+        } catch (err) {
+          console.error('Instance destruction error:', err)
+        }
+        destroyingPromiseRef.current = null
       }
 
       if (isDestroyed) return
@@ -233,13 +305,40 @@ export default function BlockEditor({
         holder: containerRef.current || 'editorjs-container',
         data: parsedData,
         tools: {
-          header: {
+          heading1: {
             class: Header as unknown as BlockToolConstructable,
             inlineToolbar: true,
             config: {
-              placeholder: 'Heading',
-              levels: [1, 2],
+              placeholder: 'Heading 1',
+              levels: [1],
+              defaultLevel: 1
+            },
+            toolbox: {
+              title: 'Heading 1'
+            }
+          },
+          heading2: {
+            class: Header as unknown as BlockToolConstructable,
+            inlineToolbar: true,
+            config: {
+              placeholder: 'Heading 2',
+              levels: [2],
               defaultLevel: 2
+            },
+            toolbox: {
+              title: 'Heading 2'
+            }
+          },
+          heading3: {
+            class: Header as unknown as BlockToolConstructable,
+            inlineToolbar: true,
+            config: {
+              placeholder: 'Heading 3',
+              levels: [3],
+              defaultLevel: 3
+            },
+            toolbox: {
+              title: 'Heading 3'
             }
           },
           list: {
@@ -259,7 +358,29 @@ export default function BlockEditor({
               placeholder: 'Enter a quote'
             }
           },
-          delimiter: Delimiter as unknown as BlockToolConstructable
+          delimiter: Delimiter as unknown as BlockToolConstructable,
+          image: {
+            class: ImageTool as unknown as BlockToolConstructable,
+            config: {
+              uploader: {
+                uploadByFile(file: File) {
+                  return new Promise((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onload = (e) => {
+                      resolve({
+                        success: 1,
+                        file: {
+                          url: e.target?.result
+                        }
+                      })
+                    }
+                    reader.onerror = reject
+                    reader.readAsDataURL(file)
+                  })
+                }
+              }
+            }
+          }
         },
         placeholder: "Press 'Tab' or click '+' to write...",
         onReady: () => {
@@ -291,16 +412,9 @@ export default function BlockEditor({
     return () => {
       isDestroyed = true
       if (editor) {
-        editor.isReady
-          .then(() => {
-            editor?.destroy()
-            if (editorInstanceRef.current === editor) {
-              editorInstanceRef.current = null
-            }
-          })
-          .catch((err) => {
-            console.error('Error destroying EditorJS during clean up:', err)
-          })
+        const instanceToDestroy = editor
+        editorInstanceRef.current = null
+        destroyingPromiseRef.current = destroyInstance(instanceToDestroy)
       }
     }
   }, [activeFilePath])
@@ -342,16 +456,19 @@ export default function BlockEditor({
           e.preventDefault()
           e.stopPropagation()
 
-          if (editorInstanceRef.current) {
+          const editorInstance = editorInstanceRef.current
+          if (editorInstance) {
             try {
-              const currentIndex = editorInstanceRef.current.blocks.getCurrentBlockIndex()
-              editorInstanceRef.current.blocks.insert(
-                'paragraph',
-                { text: '' },
-                {},
-                currentIndex + 1,
-                true
-              )
+              const index = editorInstance.blocks.getCurrentBlockIndex()
+              editorInstance.blocks.insert('paragraph', { text: '' }, {}, index + 1, true)
+              // Transfer focus asynchronously
+              setTimeout(() => {
+                try {
+                  editorInstance.caret.setToBlock(index + 1, 'start')
+                } catch (err) {
+                  console.error('Failed to set caret to new block:', err)
+                }
+              }, 20)
             } catch (err) {
               console.error('Failed to programmatically insert block:', err)
             }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Folder,
   FolderOpen,
@@ -16,18 +16,44 @@ interface FileNode {
   isDir: boolean
 }
 
+function parseLocalMetadata(fileContent: string): { icon?: string; banner?: string } | null {
+  const match = fileContent.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)
+  if (!match) return null
+
+  const frontmatter = match[1]
+  const metadata: { icon?: string; banner?: string } = {}
+  const lines = frontmatter.split(/\r?\n/)
+  for (const line of lines) {
+    const parts = line.split(':')
+    if (parts.length >= 2) {
+      const key = parts[0].trim()
+      const value = parts.slice(1).join(':').trim()
+      if (key === 'icon') {
+        metadata.icon = value.replace(/^['"]|['"]$/g, '')
+      } else if (key === 'banner') {
+        metadata.banner = value.replace(/^['"]|['"]$/g, '')
+      }
+    }
+  }
+  return metadata
+}
+
 interface FileTreeProps {
   rootPath: string
   rootName: string
   activeFilePath: string | null
   onFileSelect: (filePath: string) => void
+  fileIcons?: Record<string, string>
+  onMetadataLoaded?: (filePath: string, metadata: { icon?: string; banner?: string }) => void
 }
 
 export default function FileTree({
   rootPath,
   rootName,
   activeFilePath,
-  onFileSelect
+  onFileSelect,
+  fileIcons,
+  onMetadataLoaded
 }: FileTreeProps): React.JSX.Element {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({ [rootPath]: true })
   const expandedRef = useRef(expanded)
@@ -43,14 +69,33 @@ export default function FileTree({
   const [creatingName, setCreatingName] = useState('')
 
   // Load directory children
-  const loadDirectory = async (dirPath: string): Promise<void> => {
-    try {
-      const children = await window.api.fs.readDirectory(dirPath)
-      setContents((prev) => ({ ...prev, [dirPath]: children }))
-    } catch (err) {
-      console.error('Failed to load directory:', dirPath, err)
-    }
-  }
+  const loadDirectory = useCallback(
+    async (dirPath: string): Promise<void> => {
+      try {
+        const children = await window.api.fs.readDirectory(dirPath)
+        setContents((prev) => ({ ...prev, [dirPath]: children }))
+
+        if (onMetadataLoaded) {
+          for (const child of children) {
+            if (!child.isDir && child.name.endsWith('.md')) {
+              try {
+                const fileContent = await window.api.fs.readFile(child.path)
+                const metadata = parseLocalMetadata(fileContent)
+                if (metadata && (metadata.icon || metadata.banner)) {
+                  onMetadataLoaded(child.path, metadata)
+                }
+              } catch (err) {
+                console.error('Failed to read metadata for file', child.path, err)
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load directory:', dirPath, err)
+      }
+    },
+    [onMetadataLoaded]
+  )
 
   // Reload the tree whenever rootPath changes
   useEffect(() => {
@@ -58,10 +103,26 @@ export default function FileTree({
     if (rootPath) {
       window.api.fs
         .readDirectory(rootPath)
-        .then((children) => {
+        .then(async (children) => {
           if (active) {
             setContents((prev) => ({ ...prev, [rootPath]: children }))
             setExpanded({ [rootPath]: true })
+
+            if (onMetadataLoaded) {
+              for (const child of children) {
+                if (!child.isDir && child.name.endsWith('.md')) {
+                  try {
+                    const fileContent = await window.api.fs.readFile(child.path)
+                    const metadata = parseLocalMetadata(fileContent)
+                    if (metadata && (metadata.icon || metadata.banner)) {
+                      onMetadataLoaded(child.path, metadata)
+                    }
+                  } catch (err) {
+                    console.error('Failed to read metadata for file', child.path, err)
+                  }
+                }
+              }
+            }
           }
         })
         .catch((err) => {
@@ -71,7 +132,7 @@ export default function FileTree({
     return (): void => {
       active = false
     }
-  }, [rootPath])
+  }, [rootPath, onMetadataLoaded])
 
   // Listen to workspace changes to refresh directories dynamically
   useEffect(() => {
@@ -87,7 +148,7 @@ export default function FileTree({
     return (): void => {
       unsubscribe()
     }
-  }, [rootPath])
+  }, [rootPath, loadDirectory])
 
   // Helper to toggle expand status
   const toggleExpand = async (dirPath: string): Promise<void> => {
@@ -231,6 +292,14 @@ export default function FileTree({
     }
 
     // File Node
+    const getRelativePath = (absPath: string): string => {
+      return absPath.startsWith(rootPath)
+        ? absPath.slice(rootPath.length).replace(/^[\\/]/, '')
+        : absPath
+    }
+    const relPath = getRelativePath(node.path)
+    const customIcon = fileIcons ? fileIcons[relPath] : undefined
+
     return (
       <div key={node.path} className="tree-node">
         <div
@@ -239,7 +308,11 @@ export default function FileTree({
         >
           <span className="tree-node-left">
             <span style={{ width: 14 }} /> {/* Indent matches chevron space */}
-            <File size={16} style={{ color: '#a0aec0' }} />
+            {customIcon ? (
+              <span className="tree-node-emoji-icon">{customIcon}</span>
+            ) : (
+              <File size={16} style={{ color: '#a0aec0' }} />
+            )}
             <span>{node.name}</span>
           </span>
 
@@ -275,7 +348,7 @@ export default function FileTree({
         <span className="tree-node-actions" style={{ display: 'flex' }}>
           <button
             className="tree-node-action-btn"
-            title="New File at Root"
+            title={`New File in ${rootName}`}
             onClick={(e): void => {
               e.stopPropagation()
               setCreatingType({ parent: rootPath, type: 'file' })
@@ -286,7 +359,7 @@ export default function FileTree({
           </button>
           <button
             className="tree-node-action-btn"
-            title="New Folder at Root"
+            title={`New Folder in ${rootName}`}
             onClick={(e): void => {
               e.stopPropagation()
               setCreatingType({ parent: rootPath, type: 'folder' })
