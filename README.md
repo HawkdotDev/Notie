@@ -1,4 +1,5 @@
 # <a href="https://notie.app">Notie</a>
+
 <div align="center">
   <h1 style="border-bottom: none">
     The Ultimate Note-Taking Experience<br>
@@ -12,8 +13,6 @@
 
 [Notie](https://notie.app) is a cutting-edge note-taking application designed for a seamless experience across all your devices. Whether you're brainstorming ideas, managing tasks, or organizing your knowledge base, Notie combines the power of **ElectronJS**, **BunJS**, **React**, **ExpressJS**, and **SQLite** for an unparalleled experience.
 
-
-
 <img src="https://via.placeholder.com/1000x500.png?text=Notie+Showcase" style="width: 100%" />
 <p align="center">
     A modern, feature-rich, privacy-focused, and open-source note-taking app built for creators, professionals, and productivity enthusiasts.
@@ -23,7 +22,7 @@
 
 ### 📝 Advanced Note-Taking Tools
 
-- Create rich text, markdown notes, and interactive to-do lists effortlessly.  
+- Create rich text, markdown notes, and interactive to-do lists effortlessly.
 - Drag and drop images, links, and media directly into your notes.
 
 ### 📂 Local-First Data Storage
@@ -53,8 +52,8 @@ Notie combines these inspirations into a single, cohesive platform with addition
 
 We welcome contributions of all kinds! Here's how you can get involved:
 
-| **Report Bugs** | **Request Features** | **Ask Questions** | **Join the Community** |
-|-----------------|----------------------|-------------------|------------------------|
+| **Report Bugs**                                                                       | **Request Features**                                                                     | **Ask Questions**                                                | **Join the Community**                   |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------- |
 | [Submit Bug Report](https://github.com/notie/Notie/issues/new?template=bug_report.md) | [Feature Request](https://github.com/notie/Notie/issues/new?template=feature_request.md) | [GitHub Discussions](https://github.com/notie/Notie/discussions) | [Join Discord](https://discord.gg/notie) |
 
 For more details, check out our [Contributing Guide](https://github.com/notie/Notie/blob/main/CONTRIBUTING.md).
