@@ -195,7 +195,7 @@ export default function GraphView({
         if (n1 && n2) {
           const isHighlighted =
             hovered && (link.source === hovered.id || link.target === hovered.id)
-          ctx.strokeStyle = isHighlighted ? 'rgba(72, 163, 126, 0.8)' : 'rgba(255, 255, 255, 0.08)'
+          ctx.strokeStyle = isHighlighted ? 'rgba(168, 85, 247, 0.8)' : 'rgba(255, 255, 255, 0.08)'
           ctx.beginPath()
           ctx.moveTo(n1.x, n1.y)
           ctx.lineTo(n2.x, n2.y)
@@ -212,11 +212,11 @@ export default function GraphView({
         ctx.beginPath()
         ctx.arc(node.x, node.y, node.radius + (isHovered ? 2 : 0), 0, Math.PI * 2)
         if (isHovered) {
-          ctx.fillStyle = '#48a37e'
-          ctx.shadowColor = 'rgba(72, 163, 126, 0.5)'
-          ctx.shadowBlur = 8
+          ctx.fillStyle = '#c084fc'
+          ctx.shadowColor = 'rgba(168, 85, 247, 0.6)'
+          ctx.shadowBlur = 10
         } else if (isConnected) {
-          ctx.fillStyle = '#5edb9c'
+          ctx.fillStyle = '#a855f7'
           ctx.shadowBlur = 0
         } else {
           ctx.fillStyle = 'rgba(255, 255, 255, 0.65)'
@@ -372,34 +372,56 @@ export default function GraphView({
   }
 
   return (
-    <div className="graph-container">
-      <div className="graph-title-overlay">
-        <div className="graph-title-text">Graph View</div>
-        <div className="graph-subtitle-text">
+    <div className="graph-container flex flex-1 flex-col bg-bg-primary relative overflow-hidden h-full">
+      <div className="graph-title-overlay absolute top-4 left-6 pointer-events-none z-10">
+        <div className="graph-title-text text-xl font-bold text-text-main tracking-tight">
+          Graph View
+        </div>
+        <div className="graph-subtitle-text text-[11px] text-text-muted mt-0.5">
           {loading ? 'Analyzing link structure...' : `${nodes.length} notes, ${links.length} links`}
         </div>
       </div>
 
-      <div className="graph-toolbar">
-        <button className="graph-btn" title="Refresh Graph" onClick={loadGraphData}>
+      <div className="graph-toolbar absolute top-4 right-4 bg-bg-sidebar/85 border border-border-color rounded p-1 flex gap-1 z-50 backdrop-blur-md shadow-lg">
+        <button
+          className="graph-btn bg-transparent border-none text-text-muted cursor-pointer p-1.5 rounded flex items-center justify-center hover:bg-bg-hover hover:text-text-main transition-all duration-150 ease"
+          title="Refresh Graph"
+          onClick={loadGraphData}
+        >
           <RefreshCw size={14} />
         </button>
-        <button className="graph-btn" title="Reset View" onClick={handleReset}>
+        <button
+          className="graph-btn bg-transparent border-none text-text-muted cursor-pointer p-1.5 rounded flex items-center justify-center hover:bg-bg-hover hover:text-text-main transition-all duration-150 ease"
+          title="Reset View"
+          onClick={handleReset}
+        >
           <Home size={14} />
         </button>
-        <button className="graph-btn" title="Zoom In" onClick={handleZoomIn}>
+        <button
+          className="graph-btn bg-transparent border-none text-text-muted cursor-pointer p-1.5 rounded flex items-center justify-center hover:bg-bg-hover hover:text-text-main transition-all duration-150 ease"
+          title="Zoom In"
+          onClick={handleZoomIn}
+        >
           <ZoomIn size={14} />
         </button>
-        <button className="graph-btn" title="Zoom Out" onClick={handleZoomOut}>
+        <button
+          className="graph-btn bg-transparent border-none text-text-muted cursor-pointer p-1.5 rounded flex items-center justify-center hover:bg-bg-hover hover:text-text-main transition-all duration-150 ease"
+          title="Zoom Out"
+          onClick={handleZoomOut}
+        >
           <ZoomOut size={14} />
         </button>
-        <button className="graph-btn" title="Close Graph" onClick={onClose}>
+        <button
+          className="graph-btn bg-transparent border-none text-text-muted cursor-pointer p-1.5 rounded flex items-center justify-center hover:bg-bg-hover hover:text-text-main transition-all duration-150 ease"
+          title="Close Graph"
+          onClick={onClose}
+        >
           <X size={14} />
         </button>
       </div>
 
       <canvas
-        className="graph-canvas-element"
+        className="graph-canvas-element block w-full h-full cursor-grab active:cursor-grabbing"
         ref={canvasRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}

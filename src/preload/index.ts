@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
-// Custom APIs for renderer
 const api = {
   fs: {
     openDirectory: (): Promise<{ path: string; name: string } | null> =>
@@ -53,6 +52,11 @@ const api = {
         ipcRenderer.removeListener('workspace:changed', listener)
       }
     }
+  },
+  window: {
+    minimize: (): void => ipcRenderer.send('window:minimize'),
+    maximize: (): void => ipcRenderer.send('window:maximize'),
+    close: (): void => ipcRenderer.send('window:close')
   }
 }
 

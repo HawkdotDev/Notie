@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, dialog, nativeTheme } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, nativeTheme, Menu } from 'electron'
 import { join, basename, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -13,7 +13,8 @@ function createWindow(): void {
     width: 1200,
     height: 800,
     show: false,
-    autoHideMenuBar: false, // Keep menu bar visible as requested
+    frame: false, // Frameless window — custom title bar in renderer
+    titleBarStyle: 'hidden',
     backgroundColor: '#0f0f0f', // Matches our theme background color to avoid flashing
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -22,6 +23,9 @@ function createWindow(): void {
     }
   })
 
+  // Remove default menu bar entirely
+  Menu.setApplicationMenu(null)
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
@@ -29,6 +33,26 @@ function createWindow(): void {
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
+  })
+
+  // Window control IPC handlers
+  ipcMain.on('window:minimize', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    win?.minimize()
+  })
+
+  ipcMain.on('window:maximize', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win?.isMaximized()) {
+      win.unmaximize()
+    } else {
+      win?.maximize()
+    }
+  })
+
+  ipcMain.on('window:close', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    win?.close()
   })
 
   // HMR for renderer base on electron-vite cli.
