@@ -106,6 +106,7 @@ app.whenReady().then(() => {
     try {
       const entries = await fs.readdir(dirPath, { withFileTypes: true })
       return entries
+        .filter((entry) => !entry.name.startsWith('.'))
         .map((entry) => ({
           name: entry.name,
           path: join(dirPath, entry.name),

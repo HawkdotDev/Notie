@@ -14,7 +14,9 @@ const GraphView = lazy(() => import('./components/GraphView'))
 
 import { MarkdownMetadata, OpenFileInfo, ViewMode } from './types'
 import { normalizePath, getRelativePath } from './utils/pathUtils'
-import { parseMarkdownMetadata, serializeMarkdownMetadata } from './utils/metadataUtils'
+import { stripFrontmatter } from './utils/metadataUtils'
+import { metadataEngine } from './utils/metadataEngine'
+import { manipulateSvgTheme } from './utils/themeSvgUtils'
 
 import { usePersistentState } from './hooks/usePersistentState'
 import { useSidebarResize } from './hooks/useSidebarResize'
@@ -52,7 +54,6 @@ export default function App(): React.JSX.Element {
     column: 6
   })
 
-  // Sidebar collapse & resize custom hook
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
     () => savedState.sidebarCollapsed ?? false
   )
@@ -202,24 +203,32 @@ export default function App(): React.JSX.Element {
       if (!normPath) return ''
 
       if (fileContents[normPath] !== undefined) {
-        return fileContents[normPath]
+        const clean = stripFrontmatter(fileContents[normPath])
+        if (clean !== fileContents[normPath]) {
+          setFileContents((prev) => ({ ...prev, [normPath]: clean }))
+        }
+        return clean
       }
       try {
-        const content = await window.api.fs.readFile(normPath)
-        setFileContents((prev) => ({ ...prev, [normPath]: content }))
-        setOriginalFileContents((prev) => ({ ...prev, [normPath]: content }))
+        const rawContent = await window.api.fs.readFile(normPath)
+        let bodyContent = rawContent
 
         if (normPath.endsWith('.md')) {
-          const parsed = parseMarkdownMetadata(content)
           const rel = getRelativePath(normPath, workspacePath)
+          const parsed = await metadataEngine.parseDocumentAsync(rawContent, rel)
+          bodyContent = parsed.cleanContent
+          const relKey = rel.toLowerCase()
           if (parsed.metadata.icon) {
-            setFileIcons((prev) => ({ ...prev, [rel.toLowerCase()]: parsed.metadata.icon! }))
+            setFileIcons((prev) => ({ ...prev, [relKey]: parsed.metadata.icon! }))
           }
           if (parsed.metadata.banner) {
-            setFileBanners((prev) => ({ ...prev, [rel.toLowerCase()]: parsed.metadata.banner! }))
+            setFileBanners((prev) => ({ ...prev, [relKey]: parsed.metadata.banner! }))
           }
         }
-        return content
+
+        setFileContents((prev) => ({ ...prev, [normPath]: bodyContent }))
+        setOriginalFileContents((prev) => ({ ...prev, [normPath]: bodyContent }))
+        return bodyContent
       } catch (err) {
         console.error(`Failed to read file ${normPath}:`, err)
         return ''
@@ -325,11 +334,10 @@ export default function App(): React.JSX.Element {
     let contentToSave = fileContents[normPath] ?? ''
     if (normPath.endsWith('.md')) {
       const rel = getRelativePath(normPath, workspacePath)
-      const metadata: MarkdownMetadata = {
-        icon: fileIcons[rel.toLowerCase()],
-        banner: fileBanners[rel.toLowerCase()]
-      }
-      contentToSave = serializeMarkdownMetadata(contentToSave, metadata)
+      const relKey = rel.toLowerCase()
+      if (fileIcons[relKey]) metadataEngine.setIcon(rel, fileIcons[relKey])
+      if (fileBanners[relKey]) metadataEngine.setBanner(rel, fileBanners[relKey])
+      contentToSave = await metadataEngine.prepareForSaveAsync(contentToSave, rel)
     }
 
     try {
@@ -460,12 +468,12 @@ export default function App(): React.JSX.Element {
     ? fileContents[activeFilePath] !== originalFileContents[activeFilePath]
     : false
 
-  const activeFileIcon = activeFilePath
-    ? fileIcons[getRelativePath(activeFilePath, workspacePath)]
-    : undefined
-  const activeFileBanner = activeFilePath
-    ? fileBanners[getRelativePath(activeFilePath, workspacePath)]
-    : undefined
+  const activeRelKey = activeFilePath
+    ? getRelativePath(activeFilePath, workspacePath).toLowerCase()
+    : ''
+
+  const activeFileIcon = activeFilePath ? fileIcons[activeRelKey] : undefined
+  const activeFileBanner = activeFilePath ? fileBanners[activeRelKey] : undefined
 
   return (
     <div className="app-container">
@@ -474,6 +482,7 @@ export default function App(): React.JSX.Element {
         workspacePath={workspacePath}
         workspaceName={workspaceName}
         activeFilePath={activeFilePath}
+        fileIcons={fileIcons}
       />
 
       {/* ====== 2. SUB-HEADER QUICK ACTIONS BAR ====== */}
@@ -483,6 +492,7 @@ export default function App(): React.JSX.Element {
         onSaveActiveFile={handleSaveActiveFile}
         viewMode={viewMode}
         onToggleViewMode={(): void => setViewMode((m) => (m === 'graph' ? 'editor' : 'graph'))}
+        setViewMode={setViewMode}
         onOpenWorkspace={handleOpenWorkspace}
         onCreateFileAtRoot={handleCreateFileAtRoot}
         showDiffToggle={showDiffToggle}
@@ -494,6 +504,8 @@ export default function App(): React.JSX.Element {
         onToggleWidget={handleToggleWidget}
         showRightSidebar={showRightSidebar}
         onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
+        showSearchInput={showSearchInput}
+        onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
       />
 
       {/* ====== 3. MAIN APP CONTENT CONTAINER ====== */}
@@ -531,6 +543,8 @@ export default function App(): React.JSX.Element {
               <TabBar
                 openFiles={openFiles}
                 activeFilePath={activeFilePath}
+                fileIcons={fileIcons}
+                workspacePath={workspacePath}
                 onTabSelect={handleTabSelect}
                 onTabClose={handleTabClose}
                 onCreateFileAtRoot={handleCreateFileAtRoot}
@@ -555,56 +569,161 @@ export default function App(): React.JSX.Element {
               </Suspense>
             ) : activeFilePath ? (
               <div className="editor-container">
+                {/* 1. NOTION-STYLE FULL-WIDTH COVER BANNER */}
+                {activeFileBanner && (
+                  <div
+                    className="notion-cover-banner group"
+                    style={
+                      activeFileBanner.startsWith('linear-gradient')
+                        ? { background: activeFileBanner }
+                        : {
+                            backgroundImage: `url("${activeFileBanner}")`,
+                            backgroundPosition: 'center',
+                            backgroundSize: 'cover',
+                            backgroundRepeat: 'no-repeat'
+                          }
+                    }
+                  >
+                    <div className="notion-cover-actions opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        className="notion-cover-btn"
+                        onClick={(): void => setShowBannerPicker((prev) => !prev)}
+                      >
+                        🖼️ Change cover
+                      </button>
+                      <button
+                        className="notion-cover-btn"
+                        onClick={(): void => {
+                          if (!activeFilePath) return
+                          const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
+                          setFileBanners((prev) => {
+                            const updated = { ...prev }
+                            delete updated[rel]
+                            return updated
+                          })
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="editor-wrapper">
-                  <div className="editor-decorations mb-4 flex flex-col gap-2">
-                    {activeFileBanner && (
-                      <div className="banner-preview relative group w-full h-36 rounded-lg overflow-hidden border border-zinc-800">
-                        <img
-                          src={activeFileBanner}
-                          alt="Banner"
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(): void => {
-                            const rel = getRelativePath(activeFilePath, workspacePath)
-                            setFileBanners((prev) => {
-                              const updated = { ...prev }
-                              delete updated[rel.toLowerCase()]
-                              return updated
-                            })
-                          }}
-                        >
-                          Remove Banner
-                        </button>
+                  {/* NOTION-STYLE PAGE HEADER */}
+                  <div className={`notion-page-header ${activeFileBanner ? 'has-cover' : ''}`}>
+                    {/* Top ghost buttons when no icon or cover exists */}
+                    {(!activeFileIcon || !activeFileBanner) && (
+                      <div className="notion-header-ghost-actions">
+                        {!activeFileIcon && (
+                          <button
+                            className="notion-ghost-btn"
+                            onClick={(): void => setShowEmojiPicker(true)}
+                          >
+                            😀 Add icon
+                          </button>
+                        )}
+                        {!activeFileBanner && (
+                          <button
+                            className="notion-ghost-btn"
+                            onClick={(): void => setShowBannerPicker(true)}
+                          >
+                            🖼️ Add cover
+                          </button>
+                        )}
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="text-2xl p-1 rounded hover:bg-zinc-800/50 transition-colors"
-                        onClick={(): void => setShowEmojiPicker((prev) => !prev)}
-                        title="Change Icon"
+                    {/* Page Icon Display */}
+                    {activeFileIcon && (
+                      <div
+                        className={`notion-icon-container group ${activeFileBanner ? 'has-cover' : ''}`}
                       >
-                        {activeFileIcon || '📝'}
-                      </button>
-
-                      {!activeFileBanner && (
                         <button
-                          className="text-xs text-zinc-400 hover:text-zinc-200 px-2 py-1 rounded border border-zinc-800 hover:bg-zinc-800/50 transition-colors"
-                          onClick={(): void => setShowBannerPicker((prev) => !prev)}
+                          className="notion-icon-btn"
+                          onClick={(): void => setShowEmojiPicker((prev) => !prev)}
+                          title="Change icon"
                         >
-                          🖼️ Add Banner
+                          {typeof activeFileIcon === 'string' && activeFileIcon.includes('<svg') ? (
+                            <span
+                              className="theme-svg-container"
+                              dangerouslySetInnerHTML={{
+                                __html: manipulateSvgTheme(activeFileIcon)
+                              }}
+                            />
+                          ) : (
+                            activeFileIcon
+                          )}
                         </button>
-                      )}
-                    </div>
 
+                        <div className="notion-icon-hover-toolbar opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            className="notion-icon-quick-btn"
+                            onClick={(): void => {
+                              if (!activeFilePath) return
+                              const emojis = [
+                                '📝',
+                                '🚀',
+                                '💡',
+                                '🔥',
+                                '⭐',
+                                '🎨',
+                                '💻',
+                                '⚡',
+                                '🎯',
+                                '🌱'
+                              ]
+                              const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)]
+                              const rel = getRelativePath(
+                                activeFilePath,
+                                workspacePath
+                              ).toLowerCase()
+                              setFileIcons((prev) => ({
+                                ...prev,
+                                [rel]: randomEmoji
+                              }))
+                            }}
+                          >
+                            Random
+                          </button>
+                          <button
+                            className="notion-icon-quick-btn"
+                            onClick={(): void => {
+                              if (!activeFilePath) return
+                              const rel = getRelativePath(
+                                activeFilePath,
+                                workspacePath
+                              ).toLowerCase()
+                              setFileIcons((prev) => {
+                                const updated = { ...prev }
+                                delete updated[rel]
+                                return updated
+                              })
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Popovers */}
                     {showEmojiPicker && (
                       <EmojiPicker
                         onSelect={(emoji): void => {
-                          const rel = getRelativePath(activeFilePath, workspacePath)
-                          setFileIcons((prev) => ({ ...prev, [rel.toLowerCase()]: emoji }))
+                          if (!activeFilePath) return
+                          const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
+                          setFileIcons((prev) => ({ ...prev, [rel]: emoji }))
                           setShowEmojiPicker(false)
+                        }}
+                        onRemove={(): void => {
+                          if (!activeFilePath) return
+                          const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
+                          setFileIcons((prev) => {
+                            const updated = { ...prev }
+                            delete updated[rel]
+                            return updated
+                          })
                         }}
                         onClose={(): void => setShowEmojiPicker(false)}
                       />
@@ -613,8 +732,9 @@ export default function App(): React.JSX.Element {
                     {showBannerPicker && (
                       <BannerPicker
                         onSelect={(bannerUrl): void => {
-                          const rel = getRelativePath(activeFilePath, workspacePath)
-                          setFileBanners((prev) => ({ ...prev, [rel.toLowerCase()]: bannerUrl }))
+                          if (!activeFilePath) return
+                          const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
+                          setFileBanners((prev) => ({ ...prev, [rel]: bannerUrl }))
                           setShowBannerPicker(false)
                         }}
                         onClose={(): void => setShowBannerPicker(false)}
@@ -678,6 +798,9 @@ export default function App(): React.JSX.Element {
               widgetPositions={widgetPositions}
               activeFilePath={activeFilePath}
               fileContents={fileContents}
+              onUpdateFileContent={(filePath, content): void => {
+                setFileContents((prev) => ({ ...prev, [filePath]: content }))
+              }}
               bringWidgetToFront={bringWidgetToFront}
               handleToggleWidget={handleToggleWidget}
               handleWidgetLayoutChange={handleWidgetLayoutChange}

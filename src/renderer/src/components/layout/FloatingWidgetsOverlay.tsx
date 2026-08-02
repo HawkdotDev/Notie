@@ -14,6 +14,7 @@ interface FloatingWidgetsOverlayProps {
   widgetPositions: Record<string, WidgetLayout>
   activeFilePath: string | null
   fileContents: Record<string, string>
+  onUpdateFileContent?: (filePath: string, content: string) => void
   bringWidgetToFront: (id: string) => void
   handleToggleWidget: (id: keyof WidgetState) => void
   handleWidgetLayoutChange: (
@@ -31,12 +32,15 @@ function FloatingWidgetsOverlayComponent({
   widgetPositions,
   activeFilePath,
   fileContents,
+  onUpdateFileContent,
   bringWidgetToFront,
   handleToggleWidget,
   handleWidgetLayoutChange,
   onInsertSnippet
 }: FloatingWidgetsOverlayProps): React.JSX.Element | null {
   if (viewMode === 'graph') return null
+
+  const activeText = activeFilePath ? fileContents[activeFilePath] || '' : ''
 
   return (
     <>
@@ -47,7 +51,7 @@ function FloatingWidgetsOverlayComponent({
           icon={<Sparkles size={13} fill="currentColor" className="text-purple-400" />}
           badge={
             <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-mono">
-              16 issues
+              AI Powered
             </span>
           }
           initialPos={{
@@ -55,15 +59,23 @@ function FloatingWidgetsOverlayComponent({
             y: widgetPositions.assistant?.y ?? 85
           }}
           initialSize={{
-            width: widgetPositions.assistant?.width ?? 330,
-            height: widgetPositions.assistant?.height ?? 420
+            width: widgetPositions.assistant?.width ?? 340,
+            height: widgetPositions.assistant?.height ?? 440
           }}
           zIndex={widgetZIndexes.assistant}
           onFocus={(): void => bringWidgetToFront('assistant')}
           onClose={(): void => handleToggleWidget('assistant')}
           onLayoutChange={(pos, size): void => handleWidgetLayoutChange('assistant', pos, size)}
         >
-          <AssistantPanel />
+          <AssistantPanel
+            activeFilePath={activeFilePath}
+            content={activeText}
+            onUpdateContent={(newContent: string): void => {
+              if (activeFilePath && onUpdateFileContent) {
+                onUpdateFileContent(activeFilePath, newContent)
+              }
+            }}
+          />
         </FloatingWindow>
       )}
 

@@ -2,6 +2,11 @@ import { MarkdownMetadata, ParsedDocument } from '../types'
 
 const metadataCache = new Map<string, ParsedDocument>()
 
+export function stripFrontmatter(content: string): string {
+  if (!content) return ''
+  return content.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '').trimStart()
+}
+
 export function parseLocalMetadata(fileContent: string): MarkdownMetadata | null {
   const match = fileContent.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)
   if (!match) return null
@@ -35,7 +40,7 @@ export function parseMarkdownMetadata(fileContent: string): ParsedDocument {
   const match = fileContent.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)
   if (match) {
     const frontmatter = match[1]
-    content = fileContent.slice(match[0].length)
+    content = fileContent.slice(match[0].length).trimStart()
 
     const lines = frontmatter.split(/\r?\n/)
     for (const line of lines) {
@@ -65,7 +70,7 @@ export function parseMarkdownMetadata(fileContent: string): ParsedDocument {
 
 export function serializeMarkdownMetadata(content: string, metadata: MarkdownMetadata): string {
   // Strip any existing frontmatter first to avoid duplication
-  const strippedContent = content.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '')
+  const strippedContent = stripFrontmatter(content)
 
   if (!metadata.icon && !metadata.banner) {
     return strippedContent

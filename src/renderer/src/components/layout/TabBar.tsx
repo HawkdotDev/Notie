@@ -5,6 +5,8 @@ import { ProfessionalFileIcon } from '../../utils/fileIconUtils'
 interface TabBarProps {
   openFiles: OpenFileInfo[]
   activeFilePath: string | null
+  fileIcons?: Record<string, string>
+  workspacePath?: string | null
   onTabSelect: (filePath: string) => void
   onTabClose: (filePath: string) => void
   onCreateFileAtRoot: () => void
@@ -13,6 +15,8 @@ interface TabBarProps {
 function TabBarComponent({
   openFiles,
   activeFilePath,
+  fileIcons,
+  workspacePath,
   onTabSelect,
   onTabClose,
   onCreateFileAtRoot
@@ -23,6 +27,12 @@ function TabBarComponent({
     <div className="header-tabs-container flex-1 min-w-0">
       {openFiles.map((file) => {
         const isActive = activeFilePath === file.path
+        const rel = file.path
+          .toLowerCase()
+          .replace((workspacePath || '').toLowerCase(), '')
+          .replace(/^[\\/]/, '')
+        const customIcon = fileIcons ? fileIcons[rel] : undefined
+
         return (
           <div
             key={file.path}
@@ -30,9 +40,13 @@ function TabBarComponent({
             onClick={(): void => onTabSelect(file.path)}
           >
             <span className="header-tab-icon">
-              <ProfessionalFileIcon fileName={file.name} className="scale-90" />
+              {customIcon ? (
+                <span className="text-xs">{customIcon}</span>
+              ) : (
+                <ProfessionalFileIcon fileName={file.name} className="scale-90" />
+              )}
             </span>
-            <span>{file.name}</span>
+            <span className="truncate">{file.name}</span>
             <span
               className="header-tab-close"
               onClick={(e): void => {

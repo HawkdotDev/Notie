@@ -1,15 +1,33 @@
+export interface MarkdownMetadata {
+  icon?: string
+  banner?: string
+}
+
 export interface WorkerTaskPayload {
   id: string
-  type: 'CALCULATE_STATS' | 'EXTRACT_GRAPH_LINKS' | 'PARSE_HEADINGS' | 'FUZZY_SEARCH'
+  type:
+    | 'CALCULATE_STATS'
+    | 'EXTRACT_GRAPH_LINKS'
+    | 'PARSE_HEADINGS'
+    | 'FUZZY_SEARCH'
+    | 'PARSE_METADATA'
+    | 'SERIALIZE_METADATA'
   content?: string
   files?: Record<string, string>
   query?: string
   filePaths?: string[]
+  metadata?: MarkdownMetadata
 }
 
 export interface WorkerResultPayload {
   id: string
-  type: 'CALCULATE_STATS' | 'EXTRACT_GRAPH_LINKS' | 'PARSE_HEADINGS' | 'FUZZY_SEARCH'
+  type:
+    | 'CALCULATE_STATS'
+    | 'EXTRACT_GRAPH_LINKS'
+    | 'PARSE_HEADINGS'
+    | 'FUZZY_SEARCH'
+    | 'PARSE_METADATA'
+    | 'SERIALIZE_METADATA'
   result: unknown
 }
 
@@ -26,8 +44,60 @@ export interface HeadingItem {
   line: number
 }
 
+function stripFrontmatterWorker(text: string): string {
+  if (!text) return ''
+  return text.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '').trimStart()
+}
+
+function parseMetadataWorker(fileContent: string): {
+  cleanContent: string
+  metadata: MarkdownMetadata
+} {
+  const metadata: MarkdownMetadata = {}
+  let cleanContent = fileContent
+
+  const match = fileContent.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)
+  if (match) {
+    cleanContent = fileContent.slice(match[0].length).trimStart()
+    const frontmatter = match[1]
+    const lines = frontmatter.split(/\r?\n/)
+    for (const line of lines) {
+      const parts = line.split(':')
+      if (parts.length >= 2) {
+        const key = parts[0].trim()
+        const value = parts.slice(1).join(':').trim()
+        if (key === 'icon') {
+          metadata.icon = value.replace(/^['"]|['"]$/g, '')
+        } else if (key === 'banner') {
+          metadata.banner = value.replace(/^['"]|['"]$/g, '')
+        }
+      }
+    }
+  }
+
+  return { cleanContent, metadata }
+}
+
+function serializeMetadataWorker(content: string, metadata: MarkdownMetadata): string {
+  const body = stripFrontmatterWorker(content)
+  if (!metadata.icon && !metadata.banner) {
+    return body
+  }
+
+  let frontmatter = '---\n'
+  if (metadata.icon) {
+    frontmatter += `icon: "${metadata.icon}"\n`
+  }
+  if (metadata.banner) {
+    frontmatter += `banner: "${metadata.banner}"\n`
+  }
+  frontmatter += '---\n'
+
+  return frontmatter + body
+}
+
 self.onmessage = (event: MessageEvent<WorkerTaskPayload>): void => {
-  const { id, type, content, files, query, filePaths } = event.data
+  const { id, type, content, files, query, filePaths, metadata } = event.data
 
   if (type === 'CALCULATE_STATS') {
     const text = content || ''
@@ -111,6 +181,22 @@ self.onmessage = (event: MessageEvent<WorkerTaskPayload>): void => {
       id,
       type: 'FUZZY_SEARCH',
       result: matches
+    }
+    self.postMessage(response)
+  } else if (type === 'PARSE_METADATA') {
+    const result = parseMetadataWorker(content || '')
+    const response: WorkerResultPayload = {
+      id,
+      type: 'PARSE_METADATA',
+      result
+    }
+    self.postMessage(response)
+  } else if (type === 'SERIALIZE_METADATA') {
+    const result = serializeMetadataWorker(content || '', metadata || {})
+    const response: WorkerResultPayload = {
+      id,
+      type: 'SERIALIZE_METADATA',
+      result
     }
     self.postMessage(response)
   }

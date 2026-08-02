@@ -18,6 +18,7 @@ import Delimiter from '@editorjs/delimiter'
 import ImageTool from '@editorjs/image'
 // @ts-ignore: DragDrop does not provide official TypeScript typings
 import DragDrop from 'editorjs-drag-drop'
+import { parseMarkdownToBlocks, htmlToMarkdown } from '../utils/markdownConverter'
 
 interface BlockEditorProps {
   value: string
@@ -48,169 +49,9 @@ interface EditorJSData {
   blocks: EditorJSBlock[]
 }
 
-// Helper to parse Wikilinks [[Target]] or [[Target|Label]] to HTML anchors
-function parseWikilinksToHTML(text: string): string {
-  if (!text) return ''
-  return text.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, path, label) => {
-    const targetPath = path.trim()
-    const targetLabel = label ? label.trim() : targetPath
-    return `<a class="wikilink" data-path="${targetPath}">${targetLabel}</a>`
-  })
-}
-
-// Helper to convert HTML anchors back to Wikilinks
-function convertHTMLToWikilinks(html: string): string {
-  if (!html) return ''
-  let processed = html.replace(
-    /<a\s+[^>]*class=["']wikilink["'][^>]*data-path=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi,
-    (_, path, label) => {
-      const cleanPath = path.trim()
-      const cleanLabel = label.trim()
-      return cleanPath === cleanLabel ? `[[${cleanPath}]]` : `[[${cleanPath}|${cleanLabel}]]`
-    }
-  )
-  processed = processed.replace(
-    /<a\s+[^>]*data-path=["']([^"']+)["'][^>]*class=["']wikilink["'][^>]*>(.*?)<\/a>/gi,
-    (_, path, label) => {
-      const cleanPath = path.trim()
-      const cleanLabel = label.trim()
-      return cleanPath === cleanLabel ? `[[${cleanPath}]]` : `[[${cleanPath}|${cleanLabel}]]`
-    }
-  )
-  return processed
-}
-
 // Simple Markdown parser to Editor.js JSON data
 function parseMarkdownToEditorJS(text: string): EditorJSData {
-  if (!text || !text.trim()) {
-    return {
-      blocks: [
-        {
-          type: 'paragraph',
-          data: { text: '' }
-        }
-      ]
-    }
-  }
-
-  const paragraphs = text.split(/\r?\n\r?\n/)
-  const blocks: EditorJSBlock[] = []
-
-  paragraphs.forEach((p) => {
-    const trimmed = p.trim()
-    if (!trimmed) return
-
-    // Parse image first to avoid conflict with paragraphs/headings
-    const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/)
-    if (imgMatch) {
-      blocks.push({
-        type: 'image',
-        data: {
-          file: {
-            url: imgMatch[2]
-          },
-          caption: imgMatch[1]
-        }
-      })
-      return
-    }
-
-    if (trimmed.startsWith('### ')) {
-      blocks.push({
-        type: 'heading3',
-        data: {
-          text: parseWikilinksToHTML(trimmed.replace(/^### /, '').trim()),
-          level: 3
-        }
-      })
-    } else if (trimmed.startsWith('## ')) {
-      blocks.push({
-        type: 'heading2',
-        data: {
-          text: parseWikilinksToHTML(trimmed.replace(/^## /, '').trim()),
-          level: 2
-        }
-      })
-    } else if (trimmed.startsWith('# ')) {
-      blocks.push({
-        type: 'heading1',
-        data: {
-          text: parseWikilinksToHTML(trimmed.replace(/^# /, '').trim()),
-          level: 1
-        }
-      })
-    } else if (trimmed === '---' || trimmed === '***') {
-      blocks.push({
-        type: 'delimiter',
-        data: {}
-      })
-    } else if (trimmed.startsWith('>')) {
-      const lines = trimmed.split(/\r?\n/)
-      const quoteLines = lines.map((line) => line.trim().replace(/^>\s*/, ''))
-      blocks.push({
-        type: 'quote',
-        data: {
-          text: parseWikilinksToHTML(quoteLines.join('<br>')),
-          alignment: 'left'
-        }
-      })
-    } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      const lines = trimmed.split(/\r?\n/)
-      const items: string[] = []
-      lines.forEach((line) => {
-        const lineTrimmed = line.trim()
-        if (lineTrimmed.startsWith('- ')) {
-          items.push(lineTrimmed.replace(/^- /, '').trim())
-        } else if (lineTrimmed.startsWith('* ')) {
-          items.push(lineTrimmed.replace(/^\* /, '').trim())
-        } else if (lineTrimmed) {
-          items.push(lineTrimmed)
-        }
-      })
-      blocks.push({
-        type: 'list',
-        data: {
-          style: 'unordered',
-          items: items.map((item) => parseWikilinksToHTML(item))
-        }
-      })
-    } else if (/^\d+\.\s/.test(trimmed)) {
-      const lines = trimmed.split(/\r?\n/)
-      const items: string[] = []
-      lines.forEach((line) => {
-        const lineTrimmed = line.trim()
-        if (/^\d+\.\s/.test(lineTrimmed)) {
-          items.push(lineTrimmed.replace(/^\d+\.\s/, '').trim())
-        } else if (lineTrimmed) {
-          items.push(lineTrimmed)
-        }
-      })
-      blocks.push({
-        type: 'list',
-        data: {
-          style: 'ordered',
-          items: items.map((item) => parseWikilinksToHTML(item))
-        }
-      })
-    } else {
-      // Convert newlines in paragraph blocks to <br> so they stay in one block
-      const htmlText = trimmed.replace(/\r?\n/g, '<br>')
-      blocks.push({
-        type: 'paragraph',
-        data: {
-          text: parseWikilinksToHTML(htmlText)
-        }
-      })
-    }
-  })
-
-  if (blocks.length === 0) {
-    blocks.push({
-      type: 'paragraph',
-      data: { text: '' }
-    })
-  }
-
+  const blocks = parseMarkdownToBlocks(text) as EditorJSBlock[]
   return { blocks }
 }
 
@@ -222,28 +63,33 @@ function serializeEditorJSToMarkdown(data: EditorJSData): string {
     .map((b: EditorJSBlock) => {
       switch (b.type) {
         case 'heading1': {
-          return `# ${convertHTMLToWikilinks(b.data.text || '')}`
+          return `# ${htmlToMarkdown(b.data.text || '')}`
         }
         case 'heading2': {
-          return `## ${convertHTMLToWikilinks(b.data.text || '')}`
+          return `## ${htmlToMarkdown(b.data.text || '')}`
         }
         case 'heading3': {
-          return `### ${convertHTMLToWikilinks(b.data.text || '')}`
+          return `### ${htmlToMarkdown(b.data.text || '')}`
         }
         case 'header': {
           const level = b.data.level || 2
           const hashes = '#'.repeat(level)
-          return `${hashes} ${convertHTMLToWikilinks(b.data.text || '')}`
+          return `${hashes} ${htmlToMarkdown(b.data.text || '')}`
         }
         case 'list': {
           const items = b.data.items || []
-          const prefix = b.data.style === 'ordered' ? '1. ' : '- '
-          return items.map((item: string) => `${prefix}${convertHTMLToWikilinks(item)}`).join('\n')
+          const isOrdered = b.data.style === 'ordered'
+          return items
+            .map((item: string, idx: number) => {
+              const prefix = isOrdered ? `${idx + 1}. ` : '- '
+              return `${prefix}${htmlToMarkdown(item)}`
+            })
+            .join('\n')
         }
         case 'quote': {
           const text = b.data.text || ''
           const lines = text.replace(/<br\s*\/?>/gi, '\n').split('\n')
-          return lines.map((line) => `> ${convertHTMLToWikilinks(line)}`).join('\n')
+          return lines.map((line) => `> ${htmlToMarkdown(line)}`).join('\n')
         }
         case 'image': {
           const url = b.data.file?.url || ''
@@ -256,7 +102,7 @@ function serializeEditorJSToMarkdown(data: EditorJSData): string {
         case 'paragraph':
         default: {
           const cleanText = b.data.text ? b.data.text.replace(/<br\s*\/?>/gi, '\n') : ''
-          return convertHTMLToWikilinks(cleanText)
+          return htmlToMarkdown(cleanText)
         }
       }
     })

@@ -114,10 +114,12 @@ function FileTree({
     if (!dirPath) return
     try {
       const items = await window.api.fs.readDirectory(dirPath)
-      const normalizedItems = items.map((item) => ({
-        ...item,
-        path: normalizePath(item.path)
-      }))
+      const normalizedItems = items
+        .filter((item) => !item.name.startsWith('.'))
+        .map((item) => ({
+          ...item,
+          path: normalizePath(item.path)
+        }))
       const key = getPathKey(dirPath)
 
       setContents((prev) => ({

@@ -80,7 +80,9 @@ body {
   background: rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -298,6 +300,58 @@ body {
 .window-control-btn.close-btn:hover {
   background: #ef4444;
   color: #ffffff;
+}
+
+.top-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  -webkit-app-region: no-drag;
+}
+
+.header-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: transparent;
+  color: #a1a1aa;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.header-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ececec;
+}
+
+.header-user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  border: 1.5px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.25);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.header-user-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.45);
 }
 
 /* Toggle Switch */
@@ -518,9 +572,10 @@ body {
   flex-shrink: 0;
   user-select: none;
   position: relative;
-  transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.22s ease,
-              border-color 0.28s ease;
+  transition:
+    width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.22s ease,
+    border-color 0.28s ease;
   will-change: width, opacity;
 }
 
@@ -784,7 +839,9 @@ body {
 
 .recent-workspace-card-arrow {
   color: #52525b;
-  transition: color 0.15s ease, transform 0.15s ease;
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .recent-workspace-card:hover .recent-workspace-card-arrow {
@@ -937,7 +994,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 5px 8px;
-  border-radius: 6px;
+  border-radius: 0 8px 8px 0;
   cursor: pointer;
   color: #a1a1aa;
   font-size: 12.5px;
@@ -995,7 +1052,9 @@ body {
   color: #71717a;
   display: flex;
   align-items: center;
-  transition: transform 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
 }
 
 .tree-node-item.expanded-folder .tree-node-chevron {
@@ -1030,7 +1089,9 @@ body {
   user-select: none;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
   position: relative;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 /* Dog-ear top-right fold illusion */
@@ -1053,7 +1114,8 @@ body {
   z-index: 1;
 }
 
-.file-badge.ts, .file-badge.ts-config {
+.file-badge.ts,
+.file-badge.ts-config {
   background: #3b82f6;
   color: #ffffff;
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
@@ -1066,13 +1128,15 @@ body {
   box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
 }
 
-.file-badge.js, .file-badge.jsx {
+.file-badge.js,
+.file-badge.jsx {
   background: #facc15;
   color: #000000;
   box-shadow: 0 0 8px rgba(250, 204, 21, 0.3);
 }
 
-.file-badge.json, .file-badge.json-pkg {
+.file-badge.json,
+.file-badge.json-pkg {
   background: #eab308;
   color: #000000;
   font-size: 8.5px;
@@ -1117,7 +1181,8 @@ body {
   color: #ffffff;
 }
 
-.file-badge.c-lang, .file-badge.cpp {
+.file-badge.c-lang,
+.file-badge.cpp {
   background: #2563eb;
   color: #ffffff;
   font-size: 8px;
@@ -1357,6 +1422,531 @@ body {
   background-color: var(--bg-primary);
 }
 
+/* ====== NOTION STYLE COVER BANNER & PAGE ICON ====== */
+.notion-cover-banner {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.notion-cover-actions {
+  position: absolute;
+  bottom: 12px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.notion-cover-btn {
+  background: rgba(15, 15, 18, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ececec;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notion-cover-btn:hover {
+  background: rgba(30, 30, 36, 0.9);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.editor-wrapper {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 96px 40px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.notion-page-header {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.notion-header-ghost-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.editor-wrapper:hover .notion-header-ghost-actions {
+  opacity: 1;
+}
+
+.notion-ghost-btn {
+  background: transparent;
+  border: none;
+  color: #71717a;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notion-ghost-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ececec;
+}
+
+.notion-icon-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 20;
+}
+
+.notion-icon-container.has-cover {
+  margin-top: -52px;
+  margin-bottom: 4px;
+}
+
+.notion-icon-btn {
+  font-size: 56px;
+  line-height: 1;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+/* Theme-Aware SVG Icon Manipulation */
+svg.theme-svg,
+.theme-svg-container svg,
+.notion-icon-btn svg {
+  color: var(--accent-purple, #a855f7);
+  fill: currentColor;
+  stroke: currentColor;
+  width: 52px;
+  height: 52px;
+  transition:
+    color 0.15s ease,
+    fill 0.15s ease,
+    filter 0.15s ease;
+}
+
+.notion-icon-btn:hover svg {
+  color: #c084fc;
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
+}
+
+.notion-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: scale(1.04);
+}
+
+.document-title-input {
+  width: 100%;
+  font-size: 36px;
+  font-weight: 700;
+  color: #ffffff;
+  background: transparent;
+  border: none;
+  outline: none;
+  margin-top: 8px;
+  margin-bottom: 20px;
+  font-family: inherit;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.document-title-input::placeholder {
+  color: #52525b;
+}
+
+/* ====== EDITOR.JS RICH TEXT & BULLET STYLING ====== */
+.ce-paragraph b,
+.ce-paragraph strong,
+.cdx-list__item b,
+.cdx-list__item strong {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.ce-paragraph i,
+.ce-paragraph em,
+.cdx-list__item i,
+.cdx-list__item em {
+  font-style: italic;
+  color: #e4e4e7;
+}
+
+.cdx-list {
+  padding-left: 24px;
+  margin: 6px 0;
+}
+
+.cdx-list__item {
+  padding: 3px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #ececec;
+  list-style-type: disc;
+}
+
+.cdx-list--ordered .cdx-list__item {
+  list-style-type: decimal;
+}
+
+code.inline-code {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.notion-icon-hover-toolbar {
+  position: absolute;
+  top: 0;
+  left: 80px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #18181c;
+  border: 1px solid #282830;
+  border-radius: 6px;
+  padding: 2px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  z-index: 20;
+}
+
+.notion-icon-quick-btn {
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.notion-icon-quick-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* ====== NOTION STYLE BANNER & EMOJI PICKER POPOVERS ====== */
+.banner-picker-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  width: 440px;
+  background: #1c1c21;
+  border: 1px solid #2e2e38;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  z-index: 1000;
+  backdrop-filter: blur(16px);
+  user-select: none;
+}
+
+.banner-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #292932;
+  margin-bottom: 10px;
+}
+
+.banner-picker-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #141417;
+  padding: 2px;
+  border-radius: 6px;
+  border: 1px solid #262630;
+}
+
+.banner-tab-btn {
+  background: transparent;
+  border: none;
+  color: #71717a;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.banner-tab-btn:hover {
+  color: #ececec;
+}
+
+.banner-tab-btn.active {
+  background: rgba(168, 85, 247, 0.2);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.banner-picker-close-btn {
+  background: transparent;
+  border: none;
+  color: #71717a;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.12s ease;
+}
+
+.banner-picker-close-btn:hover {
+  color: #ffffff;
+}
+
+.banner-picker-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #71717a;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.banner-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.banner-picker-preset-btn {
+  height: 52px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.banner-picker-preset-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.banner-picker-upload-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border: 1px dashed #3a3a46;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #a1a1aa;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.banner-picker-upload-label:hover {
+  border-color: #a855f7;
+  color: #ffffff;
+  background: rgba(168, 85, 247, 0.05);
+}
+
+.banner-picker-file-input {
+  display: none;
+}
+
+.banner-picker-url-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.banner-picker-url-input {
+  flex: 1;
+  background: #141417;
+  border: 1px solid #292932;
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #ececec;
+  font-size: 12px;
+  outline: none;
+}
+
+.banner-picker-url-input:focus {
+  border-color: #a855f7;
+}
+
+.banner-picker-url-submit-btn {
+  background: #a855f7;
+  border: none;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.banner-picker-url-submit-btn:hover {
+  background: #9333ea;
+}
+
+/* EMOJI PICKER POPOVER STYLING */
+.emoji-picker-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  width: 340px;
+  background: #1c1c21;
+  border: 1px solid #2e2e38;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  z-index: 1000;
+  backdrop-filter: blur(16px);
+  user-select: none;
+}
+
+.emoji-picker-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #292932;
+  margin-bottom: 8px;
+}
+
+.emoji-picker-search {
+  flex: 1;
+  background: #141417;
+  border: 1px solid #292932;
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: #ececec;
+  font-size: 11px;
+  outline: none;
+}
+
+.emoji-picker-search:focus {
+  border-color: #a855f7;
+}
+
+.emoji-picker-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.emoji-picker-action-btn {
+  background: #25252d;
+  border: 1px solid #32323c;
+  color: #a1a1aa;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.emoji-picker-action-btn:hover {
+  background: #2e2e38;
+  color: #ffffff;
+}
+
+.emoji-picker-action-btn.remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.emoji-picker-close-btn {
+  background: transparent;
+  border: none;
+  color: #71717a;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+.emoji-picker-close-btn:hover {
+  color: #ffffff;
+}
+
+.emoji-picker-scroll-area {
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.emoji-category-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #71717a;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.emoji-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+
+.emoji-picker-btn {
+  height: 36px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease;
+}
+
+.emoji-picker-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.15);
+}
+
 .editor-wrapper {
   width: 100%;
   max-width: 850px;
@@ -1397,9 +1987,10 @@ body {
   user-select: none;
   overflow: hidden;
   position: relative;
-  transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.22s ease,
-              border-color 0.28s ease;
+  transition:
+    width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.22s ease,
+    border-color 0.28s ease;
   will-change: width, opacity;
 }
 
@@ -1473,12 +2064,16 @@ body {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
-  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 20px 45px -10px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   user-select: none;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
   animation: floatWidgetIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: left, top, width, height;
   transform: translateZ(0);
@@ -1487,7 +2082,9 @@ body {
 .floating-widget-window:focus-within,
 .floating-widget-window:hover {
   border-color: rgba(168, 85, 247, 0.35);
-  box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(168, 85, 247, 0.2);
+  box-shadow:
+    0 24px 50px -10px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(168, 85, 247, 0.2);
 }
 
 .floating-widget-window.minimized {

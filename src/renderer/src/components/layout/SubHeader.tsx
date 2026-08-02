@@ -1,21 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
-  Bug,
-  Zap,
-  Languages,
   FileText,
-  Code,
+  Network,
+  ListTree,
+  Search,
+  Terminal,
+  Sparkles,
   ChevronDown,
   LayoutGrid,
-  Sparkles,
   BarChart2,
-  Terminal,
   Code2,
   Check,
   PanelLeftClose,
-  PanelLeftOpen,
-  PanelRightClose,
-  PanelRightOpen
+  PanelLeftOpen
 } from 'lucide-react'
 import { ViewMode } from '../../types'
 
@@ -32,6 +29,7 @@ interface SubHeaderProps {
   onSaveActiveFile: () => void
   viewMode: ViewMode
   onToggleViewMode: () => void
+  setViewMode?: (mode: ViewMode) => void
   onOpenWorkspace: () => void
   onCreateFileAtRoot: () => void
   showDiffToggle: boolean
@@ -43,15 +41,16 @@ interface SubHeaderProps {
   onToggleWidget: (widgetId: keyof WidgetState) => void
   showRightSidebar: boolean
   onToggleRightSidebar: () => void
+  showSearchInput?: boolean
+  onToggleSearchInput?: () => void
 }
 
 function SubHeader({
   sidebarCollapsed,
   onToggleSidebar,
-  onSaveActiveFile,
+  viewMode,
   onToggleViewMode,
-  onOpenWorkspace,
-  onCreateFileAtRoot,
+  setViewMode,
   showDiffToggle,
   onToggleDiff,
   autoSaveEnabled,
@@ -60,7 +59,9 @@ function SubHeader({
   widgetState,
   onToggleWidget,
   showRightSidebar,
-  onToggleRightSidebar
+  onToggleRightSidebar,
+  showSearchInput,
+  onToggleSearchInput
 }: SubHeaderProps): React.JSX.Element {
   const [showWidgetsMenu, setShowWidgetsMenu] = useState<boolean>(() => {
     try {
@@ -79,7 +80,6 @@ function SubHeader({
     }
   }, [showWidgetsMenu])
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -106,29 +106,89 @@ function SubHeader({
         >
           {sidebarCollapsed ? <PanelLeftOpen size={13} /> : <PanelLeftClose size={13} />}
         </button>
+
+        {/* 1. File Editor Tab */}
         <button
-          className="action-pill-btn"
-          onClick={(): void => alert('Debug feature coming soon!')}
+          className={`action-pill-btn ${viewMode === 'editor' ? 'active' : ''}`}
+          onClick={(): void => {
+            if (setViewMode) setViewMode('editor')
+            else if (viewMode === 'graph') onToggleViewMode()
+          }}
+          title="Document Editor View"
         >
-          <Bug size={13} />
-          <span>Debug</span>
-        </button>
-        <button className="action-pill-btn" onClick={onSaveActiveFile}>
-          <Zap size={13} />
-          <span>Optimize</span>
-        </button>
-        <button className="action-pill-btn" onClick={onToggleViewMode}>
-          <Languages size={13} />
-          <span>Translate</span>
+          <FileText
+            size={13}
+            fill="currentColor"
+            className={viewMode === 'editor' ? 'text-purple-400' : ''}
+          />
+          <span>File</span>
         </button>
 
-        <button className="action-pill-btn" onClick={onOpenWorkspace}>
-          <FileText size={13} />
-          <span>Documentation</span>
+        {/* 2. Knowledge Graph Tab */}
+        <button
+          className={`action-pill-btn ${viewMode === 'graph' ? 'active' : ''}`}
+          onClick={(): void => {
+            if (setViewMode) setViewMode('graph')
+            else if (viewMode === 'editor') onToggleViewMode()
+          }}
+          title="Knowledge Graph View"
+        >
+          <Network
+            size={13}
+            fill="currentColor"
+            className={viewMode === 'graph' ? 'text-purple-400' : ''}
+          />
+          <span>Graph</span>
         </button>
-        <button className="action-pill-btn" onClick={onCreateFileAtRoot}>
-          <Code size={13} />
-          <span>Generate code</span>
+
+        {/* 3. Document Outline Tab */}
+        <button
+          className={`action-pill-btn ${showRightSidebar ? 'active' : ''}`}
+          onClick={onToggleRightSidebar}
+          title="Toggle Document Outline"
+        >
+          <ListTree size={13} className={showRightSidebar ? 'text-purple-400' : ''} />
+          <span>Outline</span>
+        </button>
+
+        {/* 4. Global Search Tab */}
+        {onToggleSearchInput && (
+          <button
+            className={`action-pill-btn ${showSearchInput ? 'active' : ''}`}
+            onClick={onToggleSearchInput}
+            title="Toggle File Search"
+          >
+            <Search size={13} className={showSearchInput ? 'text-purple-400' : ''} />
+            <span>Search</span>
+          </button>
+        )}
+
+        {/* 5. Terminal Tab */}
+        <button
+          className={`action-pill-btn ${widgetState.terminal ? 'active' : ''}`}
+          onClick={(): void => onToggleWidget('terminal')}
+          title="Toggle Quick Terminal"
+        >
+          <Terminal
+            size={13}
+            fill="currentColor"
+            className={widgetState.terminal ? 'text-purple-400' : ''}
+          />
+          <span>Terminal</span>
+        </button>
+
+        {/* 6. AI Assistant Tab */}
+        <button
+          className={`action-pill-btn ${widgetState.assistant ? 'active' : ''}`}
+          onClick={(): void => onToggleWidget('assistant')}
+          title="Toggle Writing Assistant"
+        >
+          <Sparkles
+            size={13}
+            fill="currentColor"
+            className={widgetState.assistant ? 'text-purple-400' : ''}
+          />
+          <span>Assistant</span>
         </button>
       </div>
 
@@ -242,18 +302,6 @@ function SubHeader({
             </div>
           </div>
         )}
-
-        <button
-          className={`action-pill-btn ${showRightSidebar ? 'active' : ''}`}
-          onClick={onToggleRightSidebar}
-          title={showRightSidebar ? 'Close Right Sidebar' : 'Open Right Sidebar'}
-        >
-          {showRightSidebar ? (
-            <PanelRightClose size={13} className="text-purple-400" />
-          ) : (
-            <PanelRightOpen size={13} />
-          )}
-        </button>
       </div>
     </div>
   )
