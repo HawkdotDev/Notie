@@ -44,7 +44,7 @@ function FloatingWidgetsOverlayComponent({
         <FloatingWindow
           id="assistant"
           title="Writing Assistant"
-          icon={<Sparkles size={13} className="text-purple-400" />}
+          icon={<Sparkles size={13} fill="currentColor" className="text-purple-400" />}
           badge={
             <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-mono">
               16 issues
@@ -71,7 +71,7 @@ function FloatingWidgetsOverlayComponent({
         <FloatingWindow
           id="stats"
           title="Document Stats & Outline"
-          icon={<BarChart2 size={13} className="text-emerald-400" />}
+          icon={<BarChart2 size={13} fill="currentColor" className="text-emerald-400" />}
           initialPos={{
             x: widgetPositions.stats?.x ?? 260,
             y: widgetPositions.stats?.y ?? 85
@@ -96,7 +96,7 @@ function FloatingWidgetsOverlayComponent({
         <FloatingWindow
           id="terminal"
           title="Quick Terminal"
-          icon={<Terminal size={13} className="text-blue-400" />}
+          icon={<Terminal size={13} fill="currentColor" className="text-blue-400" />}
           initialPos={{
             x: widgetPositions.terminal?.x ?? Math.max(260, window.innerWidth - 480),
             y: widgetPositions.terminal?.y ?? Math.max(100, window.innerHeight - 270)
@@ -118,7 +118,7 @@ function FloatingWidgetsOverlayComponent({
         <FloatingWindow
           id="snippets"
           title="Code Snippets"
-          icon={<Code2 size={13} className="text-amber-400" />}
+          icon={<Code2 size={13} fill="currentColor" className="text-amber-400" />}
           initialPos={{
             x: widgetPositions.snippets?.x ?? 320,
             y: widgetPositions.snippets?.y ?? 140

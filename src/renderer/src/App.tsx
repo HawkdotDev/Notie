@@ -19,6 +19,7 @@ import { parseMarkdownMetadata, serializeMarkdownMetadata } from './utils/metada
 import { usePersistentState } from './hooks/usePersistentState'
 import { useSidebarResize } from './hooks/useSidebarResize'
 import { useWidgetManager } from './hooks/useWidgetManager'
+import { useIndexerWorker } from './hooks/useIndexerWorker'
 
 export default function App(): React.JSX.Element {
   const { savedState, saveState } = usePersistentState()
@@ -87,6 +88,11 @@ export default function App(): React.JSX.Element {
     savedState.widgetState,
     savedState.widgetZIndexes,
     savedState.widgetPositions
+  )
+
+  // Multithreaded background Web Worker for document processing
+  const { stats: workerStats } = useIndexerWorker(
+    activeFilePath ? fileContents[activeFilePath] : ''
   )
 
   // Workspace initialization
@@ -752,6 +758,7 @@ export default function App(): React.JSX.Element {
         workspacePath={workspacePath}
         activeFilePath={activeFilePath}
         activeFileContent={activeFilePath ? fileContents[activeFilePath] : undefined}
+        stats={workerStats}
         cursorPosition={cursorPosition}
         autoSaveEnabled={autoSaveEnabled}
         activeUnsaved={activeUnsaved}

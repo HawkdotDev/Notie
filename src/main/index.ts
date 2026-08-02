@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, dialog, nativeTheme, Menu } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, nativeTheme, Menu, nativeImage } from 'electron'
 import { join, basename, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.svg?asset'
@@ -8,6 +8,8 @@ import { watch, type FSWatcher, readFileSync, readdirSync, statSync } from 'fs'
 let workspaceWatcher: FSWatcher | null = null
 
 function createWindow(): void {
+  const appIcon = nativeImage.createFromPath(icon)
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -16,7 +18,7 @@ function createWindow(): void {
     frame: false, // Frameless window — custom title bar in renderer
     titleBarStyle: 'hidden',
     backgroundColor: '#0f0f0f', // Matches our theme background color to avoid flashing
-    icon,
+    icon: appIcon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -71,7 +73,7 @@ app.whenReady().then(() => {
   // Force dark mode for native titlebar, menus, and system dialogs to blend the separator line
   nativeTheme.themeSource = 'dark'
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('com.notie.app')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

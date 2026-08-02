@@ -152,7 +152,7 @@ function SubHeader({
           onClick={(): void => setShowWidgetsMenu((prev) => !prev)}
           title={`Toggle Floating Widgets (Autosave: ${autoSaveEnabled ? 'ON' : 'OFF'})`}
         >
-          <LayoutGrid size={13} className="text-purple-400" />
+          <LayoutGrid size={13} fill="currentColor" className="text-purple-400" />
           <span>Widgets ({activeWidgetCount})</span>
           {activeUnsaved && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
           <ChevronDown
@@ -181,7 +181,7 @@ function SubHeader({
                 onClick={(): void => onToggleWidget('assistant')}
               >
                 <div className="flex items-center gap-2">
-                  <Sparkles size={13} className="text-purple-400 shrink-0" />
+                  <Sparkles size={13} fill="currentColor" className="text-purple-400 shrink-0" />
                   <div className="flex flex-col">
                     <span className="widget-title">Writing Assistant</span>
                     <span className="widget-desc">Grammarly style error fixes</span>
@@ -197,7 +197,7 @@ function SubHeader({
                 onClick={(): void => onToggleWidget('stats')}
               >
                 <div className="flex items-center gap-2">
-                  <BarChart2 size={13} className="text-emerald-400 shrink-0" />
+                  <BarChart2 size={13} fill="currentColor" className="text-emerald-400 shrink-0" />
                   <div className="flex flex-col">
                     <span className="widget-title">Document Stats</span>
                     <span className="widget-desc">Word count, TOC outline</span>
@@ -213,7 +213,7 @@ function SubHeader({
                 onClick={(): void => onToggleWidget('terminal')}
               >
                 <div className="flex items-center gap-2">
-                  <Terminal size={13} className="text-blue-400 shrink-0" />
+                  <Terminal size={13} fill="currentColor" className="text-blue-400 shrink-0" />
                   <div className="flex flex-col">
                     <span className="widget-title">Quick Terminal</span>
                     <span className="widget-desc">Python & console output</span>
@@ -229,7 +229,7 @@ function SubHeader({
                 onClick={(): void => onToggleWidget('snippets')}
               >
                 <div className="flex items-center gap-2">
-                  <Code2 size={13} className="text-amber-400 shrink-0" />
+                  <Code2 size={13} fill="currentColor" className="text-amber-400 shrink-0" />
                   <div className="flex flex-col">
                     <span className="widget-title">Code Snippets</span>
                     <span className="widget-desc">Quick insert templates</span>

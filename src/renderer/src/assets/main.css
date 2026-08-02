@@ -267,6 +267,39 @@ body {
   -webkit-app-region: no-drag;
 }
 
+/* ====== WINDOW CONTROLS STYLING (Minimize, Maximize, Close) ====== */
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+  margin-left: 8px;
+}
+
+.window-control-btn {
+  width: 28px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.window-control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+
+.window-control-btn.close-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
 /* Toggle Switch */
 .header-toggle-group {
   display: flex;
@@ -477,9 +510,6 @@ body {
 /* ====== SIDEBAR ====== */
 /* ====== SIDEBAR ====== */
 .sidebar {
-  width: 240px;
-  min-width: 180px;
-  max-width: 360px;
   height: 100%;
   background: #111113;
   border-right: 1px solid #1c1c20;
@@ -489,11 +519,9 @@ body {
   user-select: none;
   position: relative;
   transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              min-width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              max-width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
               opacity 0.22s ease,
               border-color 0.28s ease;
-  will-change: width, min-width, opacity;
+  will-change: width, opacity;
 }
 
 .sidebar.is-resizing {
@@ -892,10 +920,12 @@ body {
   position: relative;
 }
 
-/* Clean indentation for sub-children (no guide lines matching screenshot) */
+/* Tree hierarchy guide lines for nested subfolders */
 .tree-node-children {
   position: relative;
   margin-left: 14px;
+  border-left: 1px dashed rgba(255, 255, 255, 0.09);
+  padding-left: 4px;
 }
 
 .tree-create-form {
@@ -907,32 +937,34 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 5px 8px;
-  border-radius: 7px;
+  border-radius: 6px;
   cursor: pointer;
   color: #a1a1aa;
-  font-size: 13px;
-  margin: 2px 0;
-  transition:
-    background-color 0.12s ease,
-    color 0.12s ease;
+  font-size: 12.5px;
+  margin: 1.5px 0;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
 .tree-node-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.06);
   color: #ffffff;
+  transform: translateX(2px);
 }
 
-/* Open folder pill card highlight (matching tools folder in image) */
+/* Open folder pill card highlight */
 .tree-node-item.expanded-folder {
-  background-color: #27272c;
+  background-color: rgba(255, 255, 255, 0.05);
   color: #ffffff;
   font-weight: 500;
 }
 
 .tree-node-item.active {
-  background-color: #222227;
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.18) 0%, rgba(168, 85, 247, 0.04) 100%);
   color: #ffffff;
   font-weight: 500;
+  border-left: 2.5px solid #a855f7;
+  padding-left: 6.5px;
 }
 
 /* Left side: icon + label */
@@ -963,19 +995,20 @@ body {
   color: #71717a;
   display: flex;
   align-items: center;
+  transition: transform 0.15s ease, color 0.15s ease;
 }
 
 .tree-node-item.expanded-folder .tree-node-chevron {
-  color: #ffffff;
+  color: #a855f7;
 }
 
 .tree-node-active-dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: #a855f7;
   flex-shrink: 0;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.8);
 }
 
 .tree-node-emoji-icon {
@@ -984,75 +1017,144 @@ body {
   flex-shrink: 0;
 }
 
-/* Extension Square Badge Icons matching screenshot */
-.file-badge {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
+/* Minimal Solid Document File Icons */
+.minimal-doc-icon {
+  width: 17px;
+  height: 19px;
+  border-radius: 3px 7px 3px 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 800;
-  font-family: var(--font-sans);
   flex-shrink: 0;
   line-height: 1;
   user-select: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.badge-php {
-  background: #a855f7;
-  color: #ffffff;
+/* Dog-ear top-right fold illusion */
+.minimal-doc-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.35);
+  border-bottom-left-radius: 2px;
 }
 
-.badge-js {
-  background: #eab308;
-  color: #000000;
+.doc-icon-label {
+  font-size: 8.5px;
   font-weight: 900;
+  font-family: var(--font-sans);
+  letter-spacing: -0.2px;
+  z-index: 1;
 }
 
-.badge-ts {
+.file-badge.ts, .file-badge.ts-config {
   background: #3b82f6;
   color: #ffffff;
-  font-weight: 900;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
 }
 
-.badge-py {
-  background: #84cc16;
+.file-badge.tsx {
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 8px;
+  box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
+}
+
+.file-badge.js, .file-badge.jsx {
+  background: #facc15;
   color: #000000;
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.3);
 }
 
-.badge-css {
-  background: #06b6d4;
-  color: #ffffff;
-  font-weight: 800;
-}
-
-.badge-html {
-  background: #ea580c;
-  color: #ffffff;
-  font-size: 9px;
-  font-weight: 800;
-}
-
-.badge-json {
+.file-badge.json, .file-badge.json-pkg {
   background: #eab308;
   color: #000000;
-  font-weight: 800;
-  font-size: 10px;
+  font-size: 8.5px;
 }
 
-.badge-exe {
+.file-badge.py {
   background: #10b981;
   color: #ffffff;
-  font-size: 9px;
-  font-weight: 800;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
 }
 
-.badge-md {
-  background: #6366f1;
+.file-badge.css {
+  background: #06b6d4;
   color: #ffffff;
-  font-weight: 800;
+}
+
+.file-badge.html {
+  background: #ea580c;
+  color: #ffffff;
+  font-size: 8px;
+}
+
+.file-badge.yaml {
+  background: #cb3837;
+  color: #ffffff;
+  font-size: 8px;
+}
+
+.file-badge.md {
+  background: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+}
+
+.file-badge.rust {
+  background: #f97316;
+  color: #ffffff;
+}
+
+.file-badge.go {
+  background: #00add8;
+  color: #ffffff;
+}
+
+.file-badge.c-lang, .file-badge.cpp {
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 8px;
+}
+
+.file-badge.csharp {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.file-badge.java {
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 7.5px;
+}
+
+.file-badge.docker {
+  background: #0284c7;
+  font-size: 11px;
+}
+
+.file-badge.git {
+  background: #f05032;
+  color: #ffffff;
+  font-size: 8px;
+}
+
+.file-badge.env {
+  background: #ec4899;
+  color: #ffffff;
+  font-size: 8px;
+}
+
+.file-badge.terminal-file {
+  background: #3f3f46;
+  color: #10b981;
+  font-size: 8.5px;
 }
 
 /* The three-dots options button hidden until hover */
@@ -1286,9 +1388,6 @@ body {
 
 /* ====== RIGHT SIDEBAR PANEL ====== */
 .right-sidebar-panel {
-  width: 220px;
-  min-width: 160px;
-  max-width: 400px;
   height: 100%;
   background: #111113;
   border-left: 1px solid var(--border-color);
@@ -1299,11 +1398,9 @@ body {
   overflow: hidden;
   position: relative;
   transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              min-width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              max-width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
               opacity 0.22s ease,
               border-color 0.28s ease;
-  will-change: width, min-width, opacity;
+  will-change: width, opacity;
 }
 
 .right-sidebar-panel.is-resizing {
@@ -1383,6 +1480,8 @@ body {
   user-select: none;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
   animation: floatWidgetIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: left, top, width, height;
+  transform: translateZ(0);
 }
 
 .floating-widget-window:focus-within,

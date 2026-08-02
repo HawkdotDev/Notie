@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 
 export interface SidebarResizeState {
   sidebarWidth: number
@@ -24,6 +24,23 @@ export function useSidebarResize(
   const [isResizingLeft, setIsResizingLeft] = useState<boolean>(false)
   const [isResizingRight, setIsResizingRight] = useState<boolean>(false)
 
+  // Auto-clamp sidebar widths when window resizes small
+  useEffect(() => {
+    const handleWindowResize = (): void => {
+      setSidebarWidth((prev) => {
+        const maxAllowed = Math.max(160, Math.min(450, window.innerWidth - 300))
+        return Math.min(prev, maxAllowed)
+      })
+      setRightSidebarWidth((prev) => {
+        const maxAllowed = Math.max(160, Math.min(400, window.innerWidth - 350))
+        return Math.min(prev, maxAllowed)
+      })
+    }
+
+    window.addEventListener('resize', handleWindowResize)
+    return (): void => window.removeEventListener('resize', handleWindowResize)
+  }, [])
+
   const startLeftResize = useCallback((e: React.MouseEvent): void => {
     e.preventDefault()
     isResizingLeftRef.current = true
@@ -31,7 +48,8 @@ export function useSidebarResize(
 
     const handleMouseMove = (moveEvent: MouseEvent): void => {
       if (!isResizingLeftRef.current) return
-      const newWidth = Math.max(160, Math.min(450, moveEvent.clientX))
+      const maxAllowed = Math.max(160, Math.min(450, window.innerWidth - 300))
+      const newWidth = Math.max(160, Math.min(maxAllowed, moveEvent.clientX))
       setSidebarWidth(newWidth)
     }
 
@@ -53,7 +71,8 @@ export function useSidebarResize(
 
     const handleMouseMove = (moveEvent: MouseEvent): void => {
       if (!isResizingRightRef.current) return
-      const newWidth = Math.max(160, Math.min(400, window.innerWidth - moveEvent.clientX))
+      const maxAllowed = Math.max(160, Math.min(400, window.innerWidth - 350))
+      const newWidth = Math.max(160, Math.min(maxAllowed, window.innerWidth - moveEvent.clientX))
       setRightSidebarWidth(newWidth)
     }
 

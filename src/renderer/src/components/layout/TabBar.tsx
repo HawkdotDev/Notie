@@ -1,6 +1,6 @@
 import React from 'react'
-import { Terminal, Globe, FileText } from 'lucide-react'
 import { OpenFileInfo } from '../../types'
+import { ProfessionalFileIcon } from '../../utils/fileIconUtils'
 
 interface TabBarProps {
   openFiles: OpenFileInfo[]
@@ -19,13 +19,6 @@ function TabBarComponent({
 }: TabBarProps): React.JSX.Element | null {
   if (openFiles.length === 0) return null
 
-  const getTabIcon = (fileName: string): React.JSX.Element => {
-    const ext = fileName.split('.').pop()?.toLowerCase() || ''
-    if (ext === 'py') return <Terminal size={12} className="text-purple-400" />
-    if (ext === 'html') return <Globe size={12} className="text-orange-400" />
-    return <FileText size={12} className="text-zinc-400" />
-  }
-
   return (
     <div className="header-tabs-container flex-1 min-w-0">
       {openFiles.map((file) => {
@@ -36,7 +29,9 @@ function TabBarComponent({
             className={`header-tab ${isActive ? 'active' : ''}`}
             onClick={(): void => onTabSelect(file.path)}
           >
-            <span className="header-tab-icon">{getTabIcon(file.name)}</span>
+            <span className="header-tab-icon">
+              <ProfessionalFileIcon fileName={file.name} className="scale-90" />
+            </span>
             <span>{file.name}</span>
             <span
               className="header-tab-close"

@@ -5,6 +5,7 @@ interface StatusBarProps {
   workspacePath: string | null
   activeFilePath: string | null
   activeFileContent?: string
+  stats?: { lines: number; words: number; chars: number; readingTimeMinutes: number }
   cursorPosition: { line: number; column: number }
   autoSaveEnabled: boolean
   activeUnsaved: boolean
@@ -15,6 +16,7 @@ function StatusBar({
   workspacePath,
   activeFilePath,
   activeFileContent,
+  stats,
   cursorPosition,
   autoSaveEnabled,
   activeUnsaved,
@@ -49,11 +51,11 @@ function StatusBar({
   const lang = getLanguage(activeFilePath)
   const workspaceName = workspacePath ? workspacePath.split(/[\\/]/).pop() : null
 
-  // Calculate live content statistics
-  const wordCount = activeFileContent
-    ? activeFileContent.trim().split(/\s+/).filter(Boolean).length
-    : 0
-  const charCount = activeFileContent ? activeFileContent.length : 0
+  // Multithreaded background content statistics
+  const wordCount =
+    stats?.words ??
+    (activeFileContent ? activeFileContent.trim().split(/\s+/).filter(Boolean).length : 0)
+  const charCount = stats?.chars ?? (activeFileContent ? activeFileContent.length : 0)
 
   return (
     <footer className="status-bar">

@@ -1,17 +1,6 @@
 import React from 'react'
-import {
-  Bell,
-  Settings,
-  User,
-  Minus,
-  Square,
-  X,
-  Folder,
-  ChevronRight,
-  FileText,
-  Terminal,
-  Globe
-} from 'lucide-react'
+import { Bell, Settings, User, Minus, Square, X, Folder, ChevronRight } from 'lucide-react'
+import { ProfessionalFileIcon } from '../../utils/fileIconUtils'
 import iconSvg from '../../assets/icon.svg'
 
 interface TopHeaderProps {
@@ -31,17 +20,8 @@ function TopHeader({
     return rel ? rel.split(/[\\/]/) : []
   }, [activeFilePath, workspacePath])
 
-  const getFileIcon = (fileName: string): React.JSX.Element => {
-    const ext = fileName.split('.').pop()?.toLowerCase() || ''
-    if (ext === 'py') return <Terminal size={12} className="text-purple-400 shrink-0" />
-    if (ext === 'html') return <Globe size={12} className="text-orange-400 shrink-0" />
-    if (ext === 'css') return <span className="file-badge css scale-75">#</span>
-    if (ext === 'js' || ext === 'ts') return <span className="file-badge js scale-75">{ext}</span>
-    return <FileText size={12} className="text-zinc-400 shrink-0" />
-  }
-
   return (
-    <div className="app-top-header">
+    <div className="app-top-header" onDoubleClick={(): void => window.api.window.maximize()}>
       <div className="top-header-left">
         <div className="flex items-center gap-2 select-none shrink-0">
           <img src={iconSvg} className="w-4 h-4 object-contain" alt="Notie Logo" />
@@ -55,7 +35,7 @@ function TopHeader({
         {activeFilePath && (
           <div className="nav-breadcrumbs">
             <div className="breadcrumb-item workspace-root" title={`Workspace: ${workspaceName}`}>
-              <Folder size={12} className="text-purple-400 shrink-0" />
+              <Folder size={12} fill="currentColor" className="text-purple-400 shrink-0" />
               <span>{workspaceName}</span>
             </div>
 
@@ -69,9 +49,9 @@ function TopHeader({
                     title={part}
                   >
                     {isLast ? (
-                      getFileIcon(part)
+                      <ProfessionalFileIcon fileName={part} className="scale-75" />
                     ) : (
-                      <Folder size={12} className="text-zinc-500 shrink-0" />
+                      <Folder size={12} fill="currentColor" className="text-zinc-500 shrink-0" />
                     )}
                     <span>{part}</span>
                   </div>
@@ -84,13 +64,13 @@ function TopHeader({
 
       <div className="top-header-right">
         <button className="header-icon-btn" title="Notifications">
-          <Bell size={13} />
+          <Bell size={13} fill="currentColor" />
         </button>
         <button className="header-icon-btn" title="Settings">
-          <Settings size={13} />
+          <Settings size={13} fill="currentColor" />
         </button>
         <div className="avatar-badge" title="User Profile">
-          <User size={12} />
+          <User size={12} fill="currentColor" />
         </div>
 
         {/* Standard window controls fallback */}

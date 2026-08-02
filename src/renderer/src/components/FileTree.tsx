@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
   Folder,
   FolderOpen,
-  File,
   Trash2,
   Plus,
   FolderPlus,
@@ -14,6 +13,7 @@ import {
 import { FileNode, ContextMenuState, MarkdownMetadata } from '../types'
 import { normalizePath, getPathKey } from '../utils/pathUtils'
 import { parseLocalMetadata } from '../utils/metadataUtils'
+import { ProfessionalFileIcon } from '../utils/fileIconUtils'
 
 interface FileTreeProps {
   rootPath: string
@@ -26,7 +26,7 @@ interface FileTreeProps {
   searchQuery?: string
 }
 
-export default function FileTree({
+function FileTree({
   rootPath,
   activeFilePath,
   openFiles,
@@ -313,33 +313,6 @@ export default function FileTree({
     [handleDrop, rootPath]
   )
 
-  const getProfessionalFileIcon = (fileName: string): React.JSX.Element => {
-    const ext = fileName.split('.').pop()?.toLowerCase() || ''
-    switch (ext) {
-      case 'php':
-        return <span className="file-badge php">p</span>
-      case 'js':
-        return <span className="file-badge js">js</span>
-      case 'ts':
-      case 'tsx':
-        return <span className="file-badge ts">ts</span>
-      case 'py':
-        return <span className="file-badge py">●</span>
-      case 'css':
-      case 'scss':
-        return <span className="file-badge css">#</span>
-      case 'html':
-        return <span className="file-badge html">&lt;&gt;</span>
-      case 'exe':
-      case 'sh':
-        return <span className="file-badge exe">&gt;_</span>
-      case 'json':
-        return <span className="file-badge json">&#123;&#125;</span>
-      default:
-        return <File size={13} className="text-zinc-400 shrink-0" />
-    }
-  }
-
   const renderNode = (node: FileNode, parentPath: string): React.JSX.Element | null => {
     const nodeKey = getPathKey(node.path)
     const isSelected = activeFilePath && getPathKey(activeFilePath) === nodeKey
@@ -372,9 +345,9 @@ export default function FileTree({
           >
             <span className="tree-node-left">
               {isNodeExpanded ? (
-                <FolderOpen size={14} className="text-zinc-200 shrink-0" />
+                <FolderOpen size={14} fill="currentColor" className="text-zinc-200 shrink-0" />
               ) : (
-                <Folder size={14} className="text-zinc-400 shrink-0" />
+                <Folder size={14} fill="currentColor" className="text-zinc-400 shrink-0" />
               )}
               {renamingPath === node.path ? (
                 <form
@@ -475,7 +448,7 @@ export default function FileTree({
             {customIcon ? (
               <span className="tree-node-emoji-icon">{customIcon}</span>
             ) : (
-              getProfessionalFileIcon(node.name)
+              <ProfessionalFileIcon fileName={node.name} />
             )}
             {renamingPath === node.path ? (
               <form
@@ -632,3 +605,5 @@ export default function FileTree({
     </div>
   )
 }
+
+export default React.memo(FileTree)

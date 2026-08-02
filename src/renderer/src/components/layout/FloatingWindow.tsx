@@ -40,13 +40,23 @@ export default function FloatingWindow({
   const isDraggingRef = useRef(false)
   const isResizingRef = useRef(false)
 
-  // Auto-clamp window position when viewport resizes
+  // Auto-clamp window position & dimensions when viewport resizes
   React.useEffect(() => {
     const handleWindowResize = (): void => {
+      setSize((prevSize) => {
+        const maxW = Math.max(minWidth, window.innerWidth - 20)
+        const maxH = Math.max(minHeight, window.innerHeight - 107)
+        return {
+          width: Math.min(prevSize.width, maxW),
+          height: Math.min(prevSize.height, maxH)
+        }
+      })
+
       setPos((prevPos) => {
-        const currentHeight = isMinimized ? 40 : size.height
+        const currentWidth = Math.min(size.width, window.innerWidth - 20)
+        const currentHeight = isMinimized ? 40 : Math.min(size.height, window.innerHeight - 107)
         const minX = 10
-        const maxX = Math.max(minX, window.innerWidth - size.width - 10)
+        const maxX = Math.max(minX, window.innerWidth - currentWidth - 10)
         const minY = 75
         const maxY = Math.max(minY, window.innerHeight - currentHeight - 32)
 
@@ -59,7 +69,7 @@ export default function FloatingWindow({
 
     window.addEventListener('resize', handleWindowResize)
     return (): void => window.removeEventListener('resize', handleWindowResize)
-  }, [size.width, size.height, isMinimized])
+  }, [size.width, size.height, isMinimized, minWidth, minHeight])
 
   // Dragging logic with strict viewport bounds clamping
   const handleHeaderMouseDown = (e: React.MouseEvent): void => {

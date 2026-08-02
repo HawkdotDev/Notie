@@ -124,7 +124,7 @@ function Sidebar({
         maxWidth: sidebarCollapsed ? '0px' : '450px'
       }}
     >
-      <div className="sidebar-content flex flex-col h-full overflow-hidden shrink-0 w-60">
+      <div className="sidebar-content flex flex-col h-full overflow-hidden w-full min-w-0">
         {/* Top Action Row: Always visible */}
         <div className="sidebar-top-actions relative" ref={dropdownRef}>
           <button
@@ -132,7 +132,7 @@ function Sidebar({
             onClick={(): void => setShowWorkspaceDropdown((prev) => !prev)}
             title="Switch Workspace"
           >
-            <Folder size={13} className="text-zinc-300 shrink-0" />
+            <Folder size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
             <span className="workspace-name-label">{currentDisplayName}</span>
             <ChevronDown size={13} className="text-zinc-400 shrink-0" />
           </button>
@@ -167,6 +167,7 @@ function Sidebar({
                     >
                       <Folder
                         size={13}
+                        fill="currentColor"
                         className={isActive ? 'text-purple-400 shrink-0' : 'text-zinc-400 shrink-0'}
                       />
                       <div className="flex-1 min-w-0">
@@ -200,7 +201,7 @@ function Sidebar({
                   setShowWorkspaceDropdown(false)
                 }}
               >
-                <FolderPlus size={13} className="text-zinc-300 shrink-0" />
+                <FolderPlus size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
                 <span>Open Workspace Folder...</span>
               </button>
 
@@ -212,7 +213,7 @@ function Sidebar({
                     setShowWorkspaceDropdown(false)
                   }}
                 >
-                  <XCircle size={13} className="text-rose-400 shrink-0" />
+                  <XCircle size={13} fill="currentColor" className="text-rose-400 shrink-0" />
                   <span>Close Workspace</span>
                 </button>
               )}
@@ -269,7 +270,7 @@ function Sidebar({
                         setShowExplorerMenu(false)
                       }}
                     >
-                      <FolderPlus size={12} />
+                      <FolderPlus size={12} fill="currentColor" />
                       <span>New Folder</span>
                     </button>
                     <div className="context-menu-divider" />
@@ -290,7 +291,7 @@ function Sidebar({
                         setShowExplorerMenu(false)
                       }}
                     >
-                      <XCircle size={12} />
+                      <XCircle size={12} fill="currentColor" />
                       <span>Close Workspace</span>
                     </button>
                   </div>
@@ -327,7 +328,7 @@ function Sidebar({
                   }}
                 >
                   <div className="recent-workspace-card-icon">
-                    <Folder size={14} />
+                    <Folder size={14} fill="currentColor" />
                   </div>
                   <div className="recent-workspace-card-info">
                     <div className="recent-workspace-card-name">{ws.name}</div>
@@ -352,7 +353,7 @@ function Sidebar({
               ))}
             </div>
             <button className="sidebar-open-folder-btn" onClick={onOpenWorkspace}>
-              <FolderOpen size={14} />
+              <FolderOpen size={14} fill="currentColor" />
               <span>Open Folder...</span>
             </button>
           </div>
@@ -360,7 +361,7 @@ function Sidebar({
           /* Opening for First Time (No Recent Workspaces) */
           <div className="flex flex-col items-center justify-center p-6 text-center h-full">
             <div className="first-time-icon-wrapper mb-4">
-              <FolderOpen size={32} className="text-purple-400" />
+              <FolderOpen size={32} fill="currentColor" className="text-purple-400" />
             </div>
             <h3 className="text-sm font-semibold text-zinc-100 mb-1">No Workspace Open</h3>
             <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
