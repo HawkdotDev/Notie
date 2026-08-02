@@ -1,5 +1,7 @@
 import { MarkdownMetadata, ParsedDocument } from '../types'
 
+const metadataCache = new Map<string, ParsedDocument>()
+
 export function parseLocalMetadata(fileContent: string): MarkdownMetadata | null {
   const match = fileContent.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)
   if (!match) return null
@@ -23,6 +25,10 @@ export function parseLocalMetadata(fileContent: string): MarkdownMetadata | null
 }
 
 export function parseMarkdownMetadata(fileContent: string): ParsedDocument {
+  if (metadataCache.has(fileContent)) {
+    return metadataCache.get(fileContent)!
+  }
+
   const metadata: MarkdownMetadata = {}
   let content = fileContent
 
@@ -46,7 +52,15 @@ export function parseMarkdownMetadata(fileContent: string): ParsedDocument {
     }
   }
 
-  return { metadata, content, title: '' }
+  const result: ParsedDocument = { metadata, content, title: '' }
+  // Limit cache size to 100 entries to prevent memory leaks
+  if (metadataCache.size > 100) {
+    const firstKey = metadataCache.keys().next().value
+    if (firstKey) metadataCache.delete(firstKey)
+  }
+  metadataCache.set(fileContent, result)
+
+  return result
 }
 
 export function serializeMarkdownMetadata(content: string, metadata: MarkdownMetadata): string {

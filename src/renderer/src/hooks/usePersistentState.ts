@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { PersistentAppState } from '../types'
 
 const PERSISTENT_APP_STATE_KEY = 'notie_app_state_v1'
@@ -17,13 +17,29 @@ export function usePersistentState(): {
     return {}
   })
 
-  const saveState = (state: PersistentAppState): void => {
-    try {
-      localStorage.setItem(PERSISTENT_APP_STATE_KEY, JSON.stringify(state))
-    } catch (e) {
-      console.warn('Failed to persist app state:', e)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const saveState = useCallback((state: PersistentAppState): void => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current)
     }
-  }
+
+    saveTimerRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(PERSISTENT_APP_STATE_KEY, JSON.stringify(state))
+      } catch (e) {
+        console.warn('Failed to persist app state:', e)
+      }
+    }, 300)
+  }, [])
+
+  useEffect(() => {
+    return (): void => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current)
+      }
+    }
+  }, [])
 
   return { savedState, saveState }
 }

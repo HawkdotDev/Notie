@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react'
 import BlockEditor from './components/BlockEditor'
 import EmojiPicker from './components/EmojiPicker'
 import BannerPicker from './components/BannerPicker'
-import GraphView from './components/GraphView'
 import WelcomeScreen from './components/WelcomeScreen'
 import TopHeader from './components/layout/TopHeader'
 import SubHeader from './components/layout/SubHeader'
 import Sidebar from './components/layout/Sidebar'
+import TabBar from './components/layout/TabBar'
 import FloatingWidgetsOverlay from './components/layout/FloatingWidgetsOverlay'
 import StatusBar from './components/layout/StatusBar'
 
-import { Terminal, Globe, FileText } from 'lucide-react'
+const GraphView = lazy(() => import('./components/GraphView'))
+
 import { MarkdownMetadata, OpenFileInfo, ViewMode } from './types'
 import { normalizePath, getRelativePath } from './utils/pathUtils'
 import { parseMarkdownMetadata, serializeMarkdownMetadata } from './utils/metadataUtils'
@@ -521,59 +522,31 @@ export default function App(): React.JSX.Element {
         <div className="editor-workspace">
           {viewMode !== 'graph' && (
             <div className="editor-top-nav">
-              {/* Integrated Open File Tabs */}
-              <div className="header-tabs-container flex-1 min-w-0">
-                {openFiles.map((file) => {
-                  const isActive = activeFilePath === file.path
-                  const ext = file.name.split('.').pop()?.toLowerCase() || ''
-                  return (
-                    <div
-                      key={file.path}
-                      className={`header-tab ${isActive ? 'active' : ''}`}
-                      onClick={(): void => handleTabSelect(file.path)}
-                    >
-                      <span className="header-tab-icon">
-                        {ext === 'py' ? (
-                          <Terminal size={12} className="text-purple-400" />
-                        ) : ext === 'html' ? (
-                          <Globe size={12} className="text-orange-400" />
-                        ) : (
-                          <FileText size={12} className="text-zinc-400" />
-                        )}
-                      </span>
-                      <span>{file.name}</span>
-                      <span
-                        className="header-tab-close"
-                        onClick={(e): void => {
-                          e.stopPropagation()
-                          handleTabClose(file.path)
-                        }}
-                      >
-                        ×
-                      </span>
-                    </div>
-                  )
-                })}
-                {openFiles.length > 0 && (
-                  <button
-                    className="titlebar-add-btn"
-                    onClick={handleCreateFileAtRoot}
-                    title="New Tab"
-                  >
-                    +
-                  </button>
-                )}
-              </div>
+              <TabBar
+                openFiles={openFiles}
+                activeFilePath={activeFilePath}
+                onTabSelect={handleTabSelect}
+                onTabClose={handleTabClose}
+                onCreateFileAtRoot={handleCreateFileAtRoot}
+              />
             </div>
           )}
 
           <div className="editor-center-split">
             {viewMode === 'graph' && workspacePath ? (
-              <GraphView
-                workspacePath={workspacePath}
-                onNodeClick={(nodeId): void => void handleFileSelect(nodeId)}
-                onClose={(): void => setViewMode('editor')}
-              />
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center flex-1 text-zinc-500 text-xs italic">
+                    Loading Knowledge Graph...
+                  </div>
+                }
+              >
+                <GraphView
+                  workspacePath={workspacePath}
+                  onNodeClick={(nodeId): void => void handleFileSelect(nodeId)}
+                  onClose={(): void => setViewMode('editor')}
+                />
+              </Suspense>
             ) : activeFilePath ? (
               <div className="editor-container">
                 <div className="editor-wrapper">
