@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain, dialog, nativeTheme, Menu } from 'electron'
 import { join, basename, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/icon.svg?asset'
 import * as fs from 'fs/promises'
 import { watch, type FSWatcher, readFileSync, readdirSync, statSync } from 'fs'
 
@@ -16,7 +16,7 @@ function createWindow(): void {
     frame: false, // Frameless window — custom title bar in renderer
     titleBarStyle: 'hidden',
     backgroundColor: '#0f0f0f', // Matches our theme background color to avoid flashing
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false

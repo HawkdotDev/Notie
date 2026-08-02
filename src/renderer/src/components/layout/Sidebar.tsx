@@ -41,7 +41,7 @@ interface SidebarProps {
   onStartResize: (e: React.MouseEvent) => void
 }
 
-export default function Sidebar({
+function Sidebar({
   sidebarCollapsed,
   sidebarWidth,
   isResizing = false,
@@ -64,10 +64,38 @@ export default function Sidebar({
   onMetadataLoaded,
   onStartResize
 }: SidebarProps): React.JSX.Element {
-  const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState<boolean>(false)
-  const [showExplorerMenu, setShowExplorerMenu] = useState<boolean>(false)
+  const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('notie_workspace_dropdown') === 'true'
+    } catch {
+      return false
+    }
+  })
+  const [showExplorerMenu, setShowExplorerMenu] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('notie_explorer_menu') === 'true'
+    } catch {
+      return false
+    }
+  })
   const dropdownRef = useRef<HTMLDivElement>(null)
   const explorerMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('notie_workspace_dropdown', String(showWorkspaceDropdown))
+    } catch {
+      // ignore
+    }
+  }, [showWorkspaceDropdown])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('notie_explorer_menu', String(showExplorerMenu))
+    } catch {
+      // ignore
+    }
+  }, [showExplorerMenu])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
@@ -354,3 +382,5 @@ export default function Sidebar({
     </div>
   )
 }
+
+export default React.memo(Sidebar)

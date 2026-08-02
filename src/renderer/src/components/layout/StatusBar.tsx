@@ -11,7 +11,7 @@ interface StatusBarProps {
   onToggleRightPanel?: () => void
 }
 
-export default function StatusBar({
+function StatusBar({
   workspacePath,
   activeFilePath,
   activeFileContent,
@@ -162,3 +162,5 @@ export default function StatusBar({
     </footer>
   )
 }
+
+export default React.memo(StatusBar)

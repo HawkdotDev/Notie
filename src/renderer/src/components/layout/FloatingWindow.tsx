@@ -13,6 +13,7 @@ export interface FloatingWindowProps {
   zIndex: number
   onFocus: () => void
   onClose: () => void
+  onLayoutChange?: (pos: { x: number; y: number }, size: { width: number; height: number }) => void
   children: React.ReactNode
   className?: string
 }
@@ -28,6 +29,7 @@ export default function FloatingWindow({
   zIndex,
   onFocus,
   onClose,
+  onLayoutChange,
   children,
   className = ''
 }: FloatingWindowProps): React.JSX.Element {
@@ -87,6 +89,9 @@ export default function FloatingWindow({
       isDraggingRef.current = false
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
+      if (onLayoutChange) {
+        onLayoutChange(pos, size)
+      }
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -122,6 +127,9 @@ export default function FloatingWindow({
       isResizingRef.current = false
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
+      if (onLayoutChange) {
+        onLayoutChange(pos, size)
+      }
     }
 
     window.addEventListener('mousemove', handleMouseMove)

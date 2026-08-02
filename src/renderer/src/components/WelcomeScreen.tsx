@@ -1,5 +1,5 @@
 import React from 'react'
-import electronLogo from '../assets/electron.svg'
+import iconSvg from '../assets/icon.svg'
 
 interface WelcomeScreenProps {
   workspacePath: string | null
@@ -10,8 +10,8 @@ export default function WelcomeScreen({ workspacePath }: WelcomeScreenProps): Re
     <div className="welcome-workspace">
       <div className="flex flex-col items-center mb-3">
         <img
-          src={electronLogo}
-          className="w-14 h-14 mb-2 opacity-95 hover:scale-105 transition-transform"
+          src={iconSvg}
+          className="w-14 h-14 mb-2 opacity-95 hover:scale-105 transition-transform object-contain"
           alt="Notie Logo"
         />
         <div className="welcome-logo">Notie</div>

@@ -1,30 +1,38 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import BlockEditor from './components/BlockEditor'
 import EmojiPicker from './components/EmojiPicker'
 import BannerPicker from './components/BannerPicker'
 import GraphView from './components/GraphView'
 import WelcomeScreen from './components/WelcomeScreen'
 import TopHeader from './components/layout/TopHeader'
-import SubHeader, { WidgetState } from './components/layout/SubHeader'
+import SubHeader from './components/layout/SubHeader'
 import Sidebar from './components/layout/Sidebar'
-import AssistantPanel from './components/layout/AssistantPanel'
-import DocumentStatsWidget from './components/layout/DocumentStatsWidget'
-import QuickTerminalWidget from './components/layout/QuickTerminalWidget'
-import CodeSnippetsWidget from './components/layout/CodeSnippetsWidget'
-import FloatingWindow from './components/layout/FloatingWindow'
+import FloatingWidgetsOverlay from './components/layout/FloatingWidgetsOverlay'
 import StatusBar from './components/layout/StatusBar'
-import { Terminal, Globe, FileText, Sparkles, BarChart2, Code2 } from 'lucide-react'
 
+import { Terminal, Globe, FileText } from 'lucide-react'
 import { MarkdownMetadata, OpenFileInfo, ViewMode } from './types'
 import { normalizePath, getRelativePath } from './utils/pathUtils'
 import { parseMarkdownMetadata, serializeMarkdownMetadata } from './utils/metadataUtils'
 
-export default function App(): React.JSX.Element {
-  const [workspacePath, setWorkspacePath] = useState<string | null>(null)
-  const [workspaceName, setWorkspaceName] = useState<string>('')
-  const [activeFilePath, setActiveFilePath] = useState<string | null>(null)
+import { usePersistentState } from './hooks/usePersistentState'
+import { useSidebarResize } from './hooks/useSidebarResize'
+import { useWidgetManager } from './hooks/useWidgetManager'
 
-  const [openFiles, setOpenFiles] = useState<OpenFileInfo[]>([])
+export default function App(): React.JSX.Element {
+  const { savedState, saveState } = usePersistentState()
+
+  const [workspacePath, setWorkspacePath] = useState<string | null>(
+    () => savedState.workspacePath ?? 'c:\\Users\\dwaip\\OneDrive\\Documents\\Application'
+  )
+  const [workspaceName, setWorkspaceName] = useState<string>(
+    () => savedState.workspaceName ?? 'Application'
+  )
+  const [activeFilePath, setActiveFilePath] = useState<string | null>(
+    () => savedState.activeFilePath ?? null
+  )
+
+  const [openFiles, setOpenFiles] = useState<OpenFileInfo[]>(() => savedState.openFiles ?? [])
   const [fileContents, setFileContents] = useState<Record<string, string>>({})
   const [originalFileContents, setOriginalFileContents] = useState<Record<string, string>>({})
 
@@ -33,111 +41,56 @@ export default function App(): React.JSX.Element {
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false)
   const [showBannerPicker, setShowBannerPicker] = useState<boolean>(false)
 
-  const [viewMode, setViewMode] = useState<ViewMode>('editor')
-
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(true)
+  const [viewMode, setViewMode] = useState<ViewMode>(() => savedState.viewMode ?? 'editor')
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(
+    () => savedState.autoSaveEnabled ?? true
+  )
   const [cursorPosition] = useState<{ line: number; column: number }>({
     line: 12,
     column: 6
   })
 
-  // Sidebar collapse & resize state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false)
-  const [sidebarWidth, setSidebarWidth] = useState<number>(240)
-  const isResizingRef = useRef<boolean>(false)
-  const [searchQuery, setSearchQuery] = useState<string>('')
+  // Sidebar collapse & resize custom hook
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
+    () => savedState.sidebarCollapsed ?? false
+  )
+  const [showRightSidebar, setShowRightSidebar] = useState<boolean>(
+    () => savedState.showRightSidebar ?? false
+  )
+  const [showSearchInput, setShowSearchInput] = useState<boolean>(
+    () => savedState.showSearchInput ?? false
+  )
+  const [showDiffToggle, setShowDiffToggle] = useState<boolean>(
+    () => savedState.showDiffToggle ?? false
+  )
+  const [searchQuery, setSearchQuery] = useState<string>(() => savedState.searchQuery ?? '')
 
-  // State toggles for screenshot-matching UI
-  const [showSearchInput, setShowSearchInput] = useState<boolean>(false)
-  const [showDiffToggle, setShowDiffToggle] = useState<boolean>(false)
-  const [showRightSidebar, setShowRightSidebar] = useState<boolean>(false)
-  const [rightSidebarWidth, setRightSidebarWidth] = useState<number>(220)
-  const isResizingRightRef = useRef<boolean>(false)
-  const [isResizingLeft, setIsResizingLeft] = useState<boolean>(false)
-  const [isResizingRight, setIsResizingRight] = useState<boolean>(false)
+  const {
+    sidebarWidth,
+    rightSidebarWidth,
+    isResizingLeft,
+    isResizingRight,
+    startLeftResize,
+    startRightResize
+  } = useSidebarResize(savedState.sidebarWidth ?? 240, savedState.rightSidebarWidth ?? 220)
 
-  // Floating Widgets State
-  const [widgetState, setWidgetState] = useState<WidgetState>({
-    assistant: true,
-    stats: false,
-    terminal: false,
-    snippets: false
-  })
-
-  const [widgetZIndexes, setWidgetZIndexes] = useState<Record<string, number>>({
-    assistant: 100,
-    stats: 101,
-    terminal: 102,
-    snippets: 103
-  })
-
-  const bringWidgetToFront = useCallback((id: string) => {
-    setWidgetZIndexes((prev) => {
-      const currentMax = Math.max(...Object.values(prev), 100)
-      return { ...prev, [id]: currentMax + 1 }
-    })
-  }, [])
-
-  const handleToggleWidget = useCallback(
-    (id: keyof WidgetState) => {
-      setWidgetState((prev) => {
-        const nextVal = !prev[id]
-        if (nextVal) {
-          bringWidgetToFront(id)
-        }
-        return { ...prev, [id]: nextVal }
-      })
-    },
-    [bringWidgetToFront]
+  // Floating Widgets Manager custom hook
+  const {
+    widgetState,
+    widgetZIndexes,
+    widgetPositions,
+    bringWidgetToFront,
+    handleToggleWidget,
+    handleWidgetLayoutChange
+  } = useWidgetManager(
+    savedState.widgetState,
+    savedState.widgetZIndexes,
+    savedState.widgetPositions
   )
 
   // Workspace initialization
   useEffect(() => {
     // Workspace init
-  }, [])
-
-  const startResize = useCallback((e: React.MouseEvent): void => {
-    e.preventDefault()
-    isResizingRef.current = true
-    setIsResizingLeft(true)
-
-    const handleMouseMove = (moveEvent: MouseEvent): void => {
-      if (!isResizingRef.current) return
-      const newWidth = Math.max(160, Math.min(450, moveEvent.clientX))
-      setSidebarWidth(newWidth)
-    }
-
-    const handleMouseUp = (): void => {
-      isResizingRef.current = false
-      setIsResizingLeft(false)
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
-  }, [])
-
-  const startRightResize = useCallback((e: React.MouseEvent): void => {
-    e.preventDefault()
-    isResizingRightRef.current = true
-    setIsResizingRight(true)
-
-    const handleMouseMove = (moveEvent: MouseEvent): void => {
-      if (!isResizingRightRef.current) return
-      const newWidth = Math.max(160, Math.min(400, window.innerWidth - moveEvent.clientX))
-      setRightSidebarWidth(newWidth)
-    }
-
-    const handleMouseUp = (): void => {
-      isResizingRightRef.current = false
-      setIsResizingRight(false)
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
   }, [])
 
   // Recent workspaces state
@@ -267,6 +220,53 @@ export default function App(): React.JSX.Element {
     },
     [fileContents, workspacePath]
   )
+
+  // Save application state to persistent localStorage on any UI state change
+  useEffect(() => {
+    saveState({
+      workspacePath,
+      workspaceName,
+      activeFilePath,
+      openFiles,
+      viewMode,
+      autoSaveEnabled,
+      sidebarCollapsed,
+      sidebarWidth,
+      showRightSidebar,
+      rightSidebarWidth,
+      showSearchInput,
+      showDiffToggle,
+      searchQuery,
+      widgetState,
+      widgetZIndexes,
+      widgetPositions
+    })
+  }, [
+    workspacePath,
+    workspaceName,
+    activeFilePath,
+    openFiles,
+    viewMode,
+    autoSaveEnabled,
+    sidebarCollapsed,
+    sidebarWidth,
+    showRightSidebar,
+    rightSidebarWidth,
+    showSearchInput,
+    showDiffToggle,
+    searchQuery,
+    widgetState,
+    widgetZIndexes,
+    widgetPositions,
+    saveState
+  ])
+
+  // Re-hydrate contents for all restored open files on initial render
+  useEffect(() => {
+    openFiles.forEach((file) => {
+      void loadFileContent(file.path)
+    })
+  }, [openFiles, loadFileContent])
 
   const handleFileSelect = useCallback(
     async (filePath: string): Promise<void> => {
@@ -514,7 +514,7 @@ export default function App(): React.JSX.Element {
           onSearchChange={setSearchQuery}
           fileIcons={fileIcons}
           onMetadataLoaded={handleMetadataLoaded}
-          onStartResize={startResize}
+          onStartResize={startLeftResize}
         />
 
         {/* Editor Workspace & Split Area */}
@@ -691,92 +691,26 @@ export default function App(): React.JSX.Element {
               <WelcomeScreen workspacePath={workspacePath} />
             )}
 
-            {/* ====== FLOATING WIDGET WINDOWS ====== */}
-            {viewMode !== 'graph' && (
-              <>
-                {widgetState.assistant && (
-                  <FloatingWindow
-                    id="assistant"
-                    title="Writing Assistant"
-                    icon={<Sparkles size={13} className="text-purple-400" />}
-                    badge={
-                      <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-mono">
-                        16 issues
-                      </span>
-                    }
-                    initialPos={{ x: Math.max(260, window.innerWidth - 380), y: 85 }}
-                    initialSize={{ width: 330, height: 420 }}
-                    zIndex={widgetZIndexes.assistant}
-                    onFocus={(): void => bringWidgetToFront('assistant')}
-                    onClose={(): void => handleToggleWidget('assistant')}
-                  >
-                    <AssistantPanel />
-                  </FloatingWindow>
-                )}
-
-                {widgetState.stats && (
-                  <FloatingWindow
-                    id="stats"
-                    title="Document Stats & Outline"
-                    icon={<BarChart2 size={13} className="text-emerald-400" />}
-                    initialPos={{ x: 260, y: 85 }}
-                    initialSize={{ width: 290, height: 340 }}
-                    zIndex={widgetZIndexes.stats}
-                    onFocus={(): void => bringWidgetToFront('stats')}
-                    onClose={(): void => handleToggleWidget('stats')}
-                  >
-                    <DocumentStatsWidget
-                      content={activeFilePath ? fileContents[activeFilePath] || '' : ''}
-                      activeFileName={
-                        activeFilePath ? activeFilePath.split(/[\\/]/).pop() : undefined
-                      }
-                    />
-                  </FloatingWindow>
-                )}
-
-                {widgetState.terminal && (
-                  <FloatingWindow
-                    id="terminal"
-                    title="Quick Terminal"
-                    icon={<Terminal size={13} className="text-blue-400" />}
-                    initialPos={{
-                      x: Math.max(260, window.innerWidth - 480),
-                      y: Math.max(100, window.innerHeight - 270)
-                    }}
-                    initialSize={{ width: 440, height: 220 }}
-                    zIndex={widgetZIndexes.terminal}
-                    onFocus={(): void => bringWidgetToFront('terminal')}
-                    onClose={(): void => handleToggleWidget('terminal')}
-                  >
-                    <QuickTerminalWidget />
-                  </FloatingWindow>
-                )}
-
-                {widgetState.snippets && (
-                  <FloatingWindow
-                    id="snippets"
-                    title="Code Snippets"
-                    icon={<Code2 size={13} className="text-amber-400" />}
-                    initialPos={{ x: 320, y: 140 }}
-                    initialSize={{ width: 300, height: 340 }}
-                    zIndex={widgetZIndexes.snippets}
-                    onFocus={(): void => bringWidgetToFront('snippets')}
-                    onClose={(): void => handleToggleWidget('snippets')}
-                  >
-                    <CodeSnippetsWidget
-                      onInsertSnippet={(snippetText): void => {
-                        if (activeFilePath) {
-                          setFileContents((prev) => ({
-                            ...prev,
-                            [activeFilePath]: (prev[activeFilePath] || '') + '\n\n' + snippetText
-                          }))
-                        }
-                      }}
-                    />
-                  </FloatingWindow>
-                )}
-              </>
-            )}
+            {/* ====== FLOATING WIDGET WINDOWS OVERLAY ====== */}
+            <FloatingWidgetsOverlay
+              viewMode={viewMode}
+              widgetState={widgetState}
+              widgetZIndexes={widgetZIndexes}
+              widgetPositions={widgetPositions}
+              activeFilePath={activeFilePath}
+              fileContents={fileContents}
+              bringWidgetToFront={bringWidgetToFront}
+              handleToggleWidget={handleToggleWidget}
+              handleWidgetLayoutChange={handleWidgetLayoutChange}
+              onInsertSnippet={(snippetText): void => {
+                if (activeFilePath) {
+                  setFileContents((prev) => ({
+                    ...prev,
+                    [activeFilePath]: (prev[activeFilePath] || '') + '\n\n' + snippetText
+                  }))
+                }
+              }}
+            />
           </div>
         </div>
 

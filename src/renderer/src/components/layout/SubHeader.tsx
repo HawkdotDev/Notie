@@ -45,7 +45,7 @@ interface SubHeaderProps {
   onToggleRightSidebar: () => void
 }
 
-export default function SubHeader({
+function SubHeader({
   sidebarCollapsed,
   onToggleSidebar,
   onSaveActiveFile,
@@ -62,8 +62,22 @@ export default function SubHeader({
   showRightSidebar,
   onToggleRightSidebar
 }: SubHeaderProps): React.JSX.Element {
-  const [showWidgetsMenu, setShowWidgetsMenu] = useState<boolean>(false)
+  const [showWidgetsMenu, setShowWidgetsMenu] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('notie_widgets_menu') === 'true'
+    } catch {
+      return false
+    }
+  })
   const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('notie_widgets_menu', String(showWidgetsMenu))
+    } catch {
+      // ignore
+    }
+  }, [showWidgetsMenu])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -244,3 +258,5 @@ export default function SubHeader({
     </div>
   )
 }
+
+export default React.memo(SubHeader)

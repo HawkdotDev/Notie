@@ -12,7 +12,7 @@ import {
   Terminal,
   Globe
 } from 'lucide-react'
-import electronLogo from '../../assets/electron.svg'
+import iconSvg from '../../assets/icon.svg'
 
 interface TopHeaderProps {
   workspacePath: string | null
@@ -20,7 +20,7 @@ interface TopHeaderProps {
   activeFilePath: string | null
 }
 
-export default function TopHeader({
+function TopHeader({
   workspacePath,
   workspaceName,
   activeFilePath
@@ -44,7 +44,7 @@ export default function TopHeader({
     <div className="app-top-header">
       <div className="top-header-left">
         <div className="flex items-center gap-2 select-none shrink-0">
-          <img src={electronLogo} className="w-4 h-4 object-contain" alt="Notie Logo" />
+          <img src={iconSvg} className="w-4 h-4 object-contain" alt="Notie Logo" />
           <span className="app-title-logo">Notie</span>
         </div>
 
@@ -121,3 +121,5 @@ export default function TopHeader({
     </div>
   )
 }
+
+export default React.memo(TopHeader)

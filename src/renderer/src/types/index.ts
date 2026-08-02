@@ -31,3 +31,36 @@ export interface ContextMenuState {
 export type ViewMode = 'editor' | 'graph'
 
 export type TerminalTabType = 'PROBLEMS' | 'OUTPUT' | 'TERMINAL' | 'DEBUG CONSOLE'
+
+export interface WidgetState {
+  assistant: boolean
+  stats: boolean
+  terminal: boolean
+  snippets: boolean
+}
+
+export interface WidgetLayout {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export interface PersistentAppState {
+  workspacePath: string | null
+  workspaceName: string
+  activeFilePath: string | null
+  openFiles: OpenFileInfo[]
+  viewMode: ViewMode
+  autoSaveEnabled: boolean
+  sidebarCollapsed: boolean
+  sidebarWidth: number
+  showRightSidebar: boolean
+  rightSidebarWidth: number
+  showSearchInput: boolean
+  showDiffToggle: boolean
+  searchQuery: string
+  widgetState: WidgetState
+  widgetZIndexes: Record<string, number>
+  widgetPositions: Record<string, WidgetLayout>
+}
