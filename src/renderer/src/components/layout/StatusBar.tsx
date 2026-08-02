@@ -4,6 +4,7 @@ import { AlertTriangle, Info, Radio, CheckCircle2, Code2, Bell } from 'lucide-re
 interface StatusBarProps {
   workspacePath: string | null
   activeFilePath: string | null
+  activeFileContent?: string
   cursorPosition: { line: number; column: number }
   autoSaveEnabled: boolean
   activeUnsaved: boolean
@@ -13,6 +14,7 @@ interface StatusBarProps {
 export default function StatusBar({
   workspacePath,
   activeFilePath,
+  activeFileContent,
   cursorPosition,
   autoSaveEnabled,
   activeUnsaved,
@@ -45,6 +47,13 @@ export default function StatusBar({
   }
 
   const lang = getLanguage(activeFilePath)
+  const workspaceName = workspacePath ? workspacePath.split(/[\\/]/).pop() : null
+
+  // Calculate live content statistics
+  const wordCount = activeFileContent
+    ? activeFileContent.trim().split(/\s+/).filter(Boolean).length
+    : 0
+  const charCount = activeFileContent ? activeFileContent.length : 0
 
   return (
     <footer className="status-bar">
@@ -55,7 +64,7 @@ export default function StatusBar({
           title={workspacePath ? `Connected to: ${workspacePath}` : 'No workspace connected'}
         >
           <span className={`status-dot ${workspacePath ? 'connected' : 'disconnected'}`} />
-          <span className="status-text">{workspacePath ? 'Connected' : 'No Workspace'}</span>
+          <span className="status-text">{workspaceName ? workspaceName : 'No Workspace'}</span>
         </div>
 
         <div className="status-divider" />
@@ -111,10 +120,13 @@ export default function StatusBar({
       </div>
 
       <div className="status-right">
-        {/* Cursor Position */}
-        <div className="status-pill-item mono hoverable" title="Line and Column Position">
+        {/* Cursor & Word Stats */}
+        <div
+          className="status-pill-item mono hoverable"
+          title={`Line ${cursorPosition.line}, Column ${cursorPosition.column} | ${wordCount} words, ${charCount} characters`}
+        >
           <span>
-            Ln {cursorPosition.line}, Col {cursorPosition.column}
+            Ln {cursorPosition.line}, Col {cursorPosition.column} ({wordCount} words)
           </span>
         </div>
 

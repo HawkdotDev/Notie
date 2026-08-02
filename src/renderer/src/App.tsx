@@ -5,11 +5,15 @@ import BannerPicker from './components/BannerPicker'
 import GraphView from './components/GraphView'
 import WelcomeScreen from './components/WelcomeScreen'
 import TopHeader from './components/layout/TopHeader'
-import SubHeader from './components/layout/SubHeader'
+import SubHeader, { WidgetState } from './components/layout/SubHeader'
 import Sidebar from './components/layout/Sidebar'
 import AssistantPanel from './components/layout/AssistantPanel'
+import DocumentStatsWidget from './components/layout/DocumentStatsWidget'
+import QuickTerminalWidget from './components/layout/QuickTerminalWidget'
+import CodeSnippetsWidget from './components/layout/CodeSnippetsWidget'
+import FloatingWindow from './components/layout/FloatingWindow'
 import StatusBar from './components/layout/StatusBar'
-import { Terminal, Globe, FileText } from 'lucide-react'
+import { Terminal, Globe, FileText, Sparkles, BarChart2, Code2 } from 'lucide-react'
 
 import { MarkdownMetadata, OpenFileInfo, ViewMode } from './types'
 import { normalizePath, getRelativePath } from './utils/pathUtils'
@@ -46,7 +50,46 @@ export default function App(): React.JSX.Element {
   // State toggles for screenshot-matching UI
   const [showSearchInput, setShowSearchInput] = useState<boolean>(false)
   const [showDiffToggle, setShowDiffToggle] = useState<boolean>(false)
-  const [showRightPanel, setShowRightPanel] = useState<boolean>(true)
+  const [showRightSidebar, setShowRightSidebar] = useState<boolean>(false)
+  const [rightSidebarWidth, setRightSidebarWidth] = useState<number>(220)
+  const isResizingRightRef = useRef<boolean>(false)
+  const [isResizingLeft, setIsResizingLeft] = useState<boolean>(false)
+  const [isResizingRight, setIsResizingRight] = useState<boolean>(false)
+
+  // Floating Widgets State
+  const [widgetState, setWidgetState] = useState<WidgetState>({
+    assistant: true,
+    stats: false,
+    terminal: false,
+    snippets: false
+  })
+
+  const [widgetZIndexes, setWidgetZIndexes] = useState<Record<string, number>>({
+    assistant: 100,
+    stats: 101,
+    terminal: 102,
+    snippets: 103
+  })
+
+  const bringWidgetToFront = useCallback((id: string) => {
+    setWidgetZIndexes((prev) => {
+      const currentMax = Math.max(...Object.values(prev), 100)
+      return { ...prev, [id]: currentMax + 1 }
+    })
+  }, [])
+
+  const handleToggleWidget = useCallback(
+    (id: keyof WidgetState) => {
+      setWidgetState((prev) => {
+        const nextVal = !prev[id]
+        if (nextVal) {
+          bringWidgetToFront(id)
+        }
+        return { ...prev, [id]: nextVal }
+      })
+    },
+    [bringWidgetToFront]
+  )
 
   // Workspace initialization
   useEffect(() => {
@@ -56,6 +99,7 @@ export default function App(): React.JSX.Element {
   const startResize = useCallback((e: React.MouseEvent): void => {
     e.preventDefault()
     isResizingRef.current = true
+    setIsResizingLeft(true)
 
     const handleMouseMove = (moveEvent: MouseEvent): void => {
       if (!isResizingRef.current) return
@@ -65,6 +109,29 @@ export default function App(): React.JSX.Element {
 
     const handleMouseUp = (): void => {
       isResizingRef.current = false
+      setIsResizingLeft(false)
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+  }, [])
+
+  const startRightResize = useCallback((e: React.MouseEvent): void => {
+    e.preventDefault()
+    isResizingRightRef.current = true
+    setIsResizingRight(true)
+
+    const handleMouseMove = (moveEvent: MouseEvent): void => {
+      if (!isResizingRightRef.current) return
+      const newWidth = Math.max(160, Math.min(400, window.innerWidth - moveEvent.clientX))
+      setRightSidebarWidth(newWidth)
+    }
+
+    const handleMouseUp = (): void => {
+      isResizingRightRef.current = false
+      setIsResizingRight(false)
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
@@ -416,6 +483,10 @@ export default function App(): React.JSX.Element {
         autoSaveEnabled={autoSaveEnabled}
         onToggleAutoSave={(): void => setAutoSaveEnabled((p) => !p)}
         activeUnsaved={activeUnsaved}
+        widgetState={widgetState}
+        onToggleWidget={handleToggleWidget}
+        showRightSidebar={showRightSidebar}
+        onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
       />
 
       {/* ====== 3. MAIN APP CONTENT CONTAINER ====== */}
@@ -424,6 +495,7 @@ export default function App(): React.JSX.Element {
         <Sidebar
           sidebarCollapsed={sidebarCollapsed}
           sidebarWidth={sidebarWidth}
+          isResizing={isResizingLeft}
           workspacePath={workspacePath}
           workspaceName={workspaceName}
           recentWorkspaces={recentWorkspaces}
@@ -492,18 +564,6 @@ export default function App(): React.JSX.Element {
                   </button>
                 )}
               </div>
-
-              {activeFilePath && (
-                <div className="shrink-0 ml-2">
-                  <button
-                    className="header-icon-btn"
-                    onClick={(): void => setShowRightPanel((p) => !p)}
-                    title="Toggle Assistant Panel"
-                  >
-                    {showRightPanel ? '➡️' : '⬅️'}
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
@@ -631,25 +691,164 @@ export default function App(): React.JSX.Element {
               <WelcomeScreen workspacePath={workspacePath} />
             )}
 
-            {/* ====== RIGHT ASSISTANT / ERRORS PANEL ====== */}
-            {viewMode !== 'graph' && activeFilePath && (
-              <AssistantPanel
-                showRightPanel={showRightPanel}
-                onClosePanel={(): void => setShowRightPanel(false)}
-              />
+            {/* ====== FLOATING WIDGET WINDOWS ====== */}
+            {viewMode !== 'graph' && (
+              <>
+                {widgetState.assistant && (
+                  <FloatingWindow
+                    id="assistant"
+                    title="Writing Assistant"
+                    icon={<Sparkles size={13} className="text-purple-400" />}
+                    badge={
+                      <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-mono">
+                        16 issues
+                      </span>
+                    }
+                    initialPos={{ x: Math.max(260, window.innerWidth - 380), y: 85 }}
+                    initialSize={{ width: 330, height: 420 }}
+                    zIndex={widgetZIndexes.assistant}
+                    onFocus={(): void => bringWidgetToFront('assistant')}
+                    onClose={(): void => handleToggleWidget('assistant')}
+                  >
+                    <AssistantPanel />
+                  </FloatingWindow>
+                )}
+
+                {widgetState.stats && (
+                  <FloatingWindow
+                    id="stats"
+                    title="Document Stats & Outline"
+                    icon={<BarChart2 size={13} className="text-emerald-400" />}
+                    initialPos={{ x: 260, y: 85 }}
+                    initialSize={{ width: 290, height: 340 }}
+                    zIndex={widgetZIndexes.stats}
+                    onFocus={(): void => bringWidgetToFront('stats')}
+                    onClose={(): void => handleToggleWidget('stats')}
+                  >
+                    <DocumentStatsWidget
+                      content={activeFilePath ? fileContents[activeFilePath] || '' : ''}
+                      activeFileName={
+                        activeFilePath ? activeFilePath.split(/[\\/]/).pop() : undefined
+                      }
+                    />
+                  </FloatingWindow>
+                )}
+
+                {widgetState.terminal && (
+                  <FloatingWindow
+                    id="terminal"
+                    title="Quick Terminal"
+                    icon={<Terminal size={13} className="text-blue-400" />}
+                    initialPos={{
+                      x: Math.max(260, window.innerWidth - 480),
+                      y: Math.max(100, window.innerHeight - 270)
+                    }}
+                    initialSize={{ width: 440, height: 220 }}
+                    zIndex={widgetZIndexes.terminal}
+                    onFocus={(): void => bringWidgetToFront('terminal')}
+                    onClose={(): void => handleToggleWidget('terminal')}
+                  >
+                    <QuickTerminalWidget />
+                  </FloatingWindow>
+                )}
+
+                {widgetState.snippets && (
+                  <FloatingWindow
+                    id="snippets"
+                    title="Code Snippets"
+                    icon={<Code2 size={13} className="text-amber-400" />}
+                    initialPos={{ x: 320, y: 140 }}
+                    initialSize={{ width: 300, height: 340 }}
+                    zIndex={widgetZIndexes.snippets}
+                    onFocus={(): void => bringWidgetToFront('snippets')}
+                    onClose={(): void => handleToggleWidget('snippets')}
+                  >
+                    <CodeSnippetsWidget
+                      onInsertSnippet={(snippetText): void => {
+                        if (activeFilePath) {
+                          setFileContents((prev) => ({
+                            ...prev,
+                            [activeFilePath]: (prev[activeFilePath] || '') + '\n\n' + snippetText
+                          }))
+                        }
+                      }}
+                    />
+                  </FloatingWindow>
+                )}
+              </>
             )}
           </div>
         </div>
+
+        {/* ====== RIGHT SIDEBAR PANEL ====== */}
+        {viewMode !== 'graph' && (
+          <div
+            className={`right-sidebar-panel ${!showRightSidebar ? 'is-collapsed' : ''} ${
+              isResizingRight ? 'is-resizing' : ''
+            }`}
+            style={{ width: showRightSidebar ? rightSidebarWidth : 0 }}
+          >
+            <div
+              className="sidebar-resize-handle sidebar-resize-handle-left"
+              onMouseDown={startRightResize}
+            />
+            <div className="right-sidebar-header">
+              <span className="text-xs font-semibold text-zinc-300">Outline</span>
+              <button
+                className="text-zinc-500 hover:text-zinc-200 p-0.5 rounded transition-colors"
+                onClick={(): void => setShowRightSidebar(false)}
+                title="Close Right Sidebar"
+              >
+                ×
+              </button>
+            </div>
+            <div className="right-sidebar-content">
+              {activeFilePath ? (
+                <div className="flex flex-col gap-1 text-[11px] text-zinc-400 p-2">
+                  {(fileContents[activeFilePath] || '')
+                    .split('\n')
+                    .map((line, idx) => {
+                      const headingMatch = line.match(/^(#{1,6})\s+(.+)/)
+                      if (!headingMatch) return null
+                      const level = headingMatch[1].length
+                      const text = headingMatch[2]
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-zinc-800/50 cursor-pointer transition-colors"
+                          style={{ paddingLeft: `${(level - 1) * 10 + 8}px` }}
+                        >
+                          <span className="text-purple-400 font-mono text-[9px] shrink-0">
+                            H{level}
+                          </span>
+                          <span className="truncate text-zinc-300">{text}</span>
+                        </div>
+                      )
+                    })
+                    .filter(Boolean)}
+                  {!(fileContents[activeFilePath] || '').match(/^#{1,6}\s+/m) && (
+                    <div className="text-zinc-600 text-center py-4 italic text-[11px]">
+                      No headings found
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-zinc-600 text-center py-8 text-[11px]">No file open</div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ====== 5. BOTTOM STATUS BAR ====== */}
       <StatusBar
         workspacePath={workspacePath}
         activeFilePath={activeFilePath}
+        activeFileContent={activeFilePath ? fileContents[activeFilePath] : undefined}
         cursorPosition={cursorPosition}
         autoSaveEnabled={autoSaveEnabled}
         activeUnsaved={activeUnsaved}
-        onToggleRightPanel={(): void => setShowRightPanel((p) => !p)}
+        onToggleRightPanel={(): void => setShowRightSidebar((p) => !p)}
       />
     </div>
   )

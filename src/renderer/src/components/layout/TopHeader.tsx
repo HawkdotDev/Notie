@@ -27,9 +27,7 @@ export default function TopHeader({
 }: TopHeaderProps): React.JSX.Element {
   const relativeParts = React.useMemo(() => {
     if (!activeFilePath) return []
-    const rel = activeFilePath
-      .replace(workspacePath || '', '')
-      .replace(/^[\\/]/, '')
+    const rel = activeFilePath.replace(workspacePath || '', '').replace(/^[\\/]/, '')
     return rel ? rel.split(/[\\/]/) : []
   }, [activeFilePath, workspacePath])
 
