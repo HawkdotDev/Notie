@@ -53,12 +53,12 @@ export default function CodeSnippetsWidget({
         {SNIPPETS.map((s, idx) => (
           <div
             key={idx}
-            className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-2.5 flex flex-col gap-1.5 hover:border-purple-500/50 transition-colors group cursor-pointer"
+            className="bg-zinc-900/80 border border-zinc-800 p-2.5 flex flex-col gap-1.5 hover:border-zinc-600 transition-colors group cursor-pointer"
             onClick={(): void => handleCopy(s.code, idx)}
           >
             <div className="flex items-center justify-between">
               <span className="font-semibold text-zinc-200 text-[11px] flex items-center gap-1.5">
-                <Code size={11} className="text-purple-400" />
+                <Code size={11} className="text-zinc-300" />
                 {s.title}
               </span>
               <button className="text-zinc-500 hover:text-zinc-200 transition-colors p-1">
@@ -70,7 +70,7 @@ export default function CodeSnippetsWidget({
               </button>
             </div>
 
-            <pre className="bg-zinc-950 p-2 rounded text-[10px] font-mono text-zinc-300 overflow-x-auto whitespace-pre-wrap">
+            <pre className="bg-zinc-950 p-2 text-[10px] font-mono text-zinc-300 overflow-x-auto whitespace-pre-wrap">
               {s.code}
             </pre>
           </div>

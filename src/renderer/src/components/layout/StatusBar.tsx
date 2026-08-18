@@ -1,8 +1,11 @@
 import React from 'react'
-import { AlertTriangle, Info, Radio, CheckCircle2, Code2, Bell } from 'lucide-react'
+import { CheckCircle2, Code2 } from 'lucide-react'
 
 interface StatusBarProps {
-  workspacePath: string | null
+  workspacePath?: string | null
+  sidebarWidth?: number
+  sidebarCollapsed?: boolean
+  isResizing?: boolean
   activeFilePath: string | null
   activeFileContent?: string
   stats?: { lines: number; words: number; chars: number; readingTimeMinutes: number }
@@ -13,21 +16,22 @@ interface StatusBarProps {
 }
 
 function StatusBar({
-  workspacePath,
+  sidebarWidth = 240,
+  sidebarCollapsed = false,
+  isResizing = false,
   activeFilePath,
   activeFileContent,
   stats,
   cursorPosition,
   autoSaveEnabled,
-  activeUnsaved,
-  onToggleRightPanel
+  activeUnsaved
 }: StatusBarProps): React.JSX.Element {
   const getLanguage = (filePath: string | null): { name: string; color: string } => {
-    if (!filePath) return { name: 'Markdown', color: 'text-purple-400' }
+    if (!filePath) return { name: 'Markdown', color: 'text-zinc-400' }
     const ext = filePath.split('.').pop()?.toLowerCase() || ''
     switch (ext) {
       case 'py':
-        return { name: 'Python', color: 'text-purple-400' }
+        return { name: 'Python', color: 'text-zinc-300' }
       case 'js':
       case 'jsx':
         return { name: 'JavaScript', color: 'text-yellow-400' }
@@ -49,7 +53,17 @@ function StatusBar({
   }
 
   const lang = getLanguage(activeFilePath)
-  const workspaceName = workspacePath ? workspacePath.split(/[\\/]/).pop() : null
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
+  }
+
+  const byteSize = activeFileContent ? new TextEncoder().encode(activeFileContent).length : 0
+  const formattedFileSize = formatFileSize(byteSize)
 
   // Multithreaded background content statistics
   const wordCount =
@@ -57,109 +71,92 @@ function StatusBar({
     (activeFileContent ? activeFileContent.trim().split(/\s+/).filter(Boolean).length : 0)
   const charCount = stats?.chars ?? (activeFileContent ? activeFileContent.length : 0)
 
-  return (
-    <footer className="status-bar">
-      <div className="status-left">
-        {/* Workspace Connection Indicator */}
-        <div
-          className="status-pill-item hoverable"
-          title={workspacePath ? `Connected to: ${workspacePath}` : 'No workspace connected'}
-        >
-          <span className={`status-dot ${workspacePath ? 'connected' : 'disconnected'}`} />
-          <span className="status-text">{workspaceName ? workspaceName : 'No Workspace'}</span>
-        </div>
-
-        <div className="status-divider" />
-
-        {/* Diagnostics / Errors & Warnings */}
-        <div
-          className="status-pill-item hoverable cursor-pointer"
-          title="Click to view diagnostics in Assistant Panel"
-          onClick={onToggleRightPanel}
-        >
-          <AlertTriangle size={11} className="text-amber-400 shrink-0" />
-          <span>4</span>
-        </div>
-
-        <div
-          className="status-pill-item hoverable cursor-pointer"
-          title="Click to view info in Assistant Panel"
-          onClick={onToggleRightPanel}
-        >
-          <Info size={11} className="text-sky-400 shrink-0" />
-          <span>0</span>
-        </div>
-
-        <div className="status-divider" />
-
-        {/* Live Share */}
-        <div
-          className="status-pill-item hoverable cursor-pointer"
-          title="Live Share Session Active"
-          onClick={(): void => alert('Live Share: Session connected.')}
-        >
-          <Radio size={11} className="text-purple-400 shrink-0 animate-pulse" />
-          <span>Live share</span>
-        </div>
-
-        {/* Auto save */}
-        <div
-          className="status-pill-item"
-          title={autoSaveEnabled ? 'Autosave active' : 'Autosave off'}
-        >
-          {activeUnsaved ? (
-            <>
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              <span className="text-amber-300">Unsaved changes</span>
-            </>
-          ) : (
-            <>
-              <CheckCircle2 size={11} className="text-emerald-400 shrink-0" />
-              <span>Auto saved</span>
-            </>
-          )}
-        </div>
+  const renderSidebarFileItems = (): React.JSX.Element => (
+    <>
+      {/* Language / File Type Mode */}
+      <div
+        className="status-pill-item language-pill hoverable"
+        title={`Language Mode: ${lang.name}`}
+      >
+        <Code2 size={11} className={`${lang.color} shrink-0`} />
+        <span>{lang.name}</span>
       </div>
 
-      <div className="status-right">
-        {/* Cursor & Word Stats */}
-        <div
-          className="status-pill-item mono hoverable"
-          title={`Line ${cursorPosition.line}, Column ${cursorPosition.column} | ${wordCount} words, ${charCount} characters`}
-        >
-          <span>
-            Ln {cursorPosition.line}, Col {cursorPosition.column} ({wordCount} words)
-          </span>
+      <div className="status-divider" />
+
+      {/* File Size */}
+      <div className="status-pill-item mono hoverable" title={`File Size: ${byteSize} bytes`}>
+        <span>{formattedFileSize}</span>
+      </div>
+    </>
+  )
+
+  const renderSavedBadge = (): React.JSX.Element => (
+    <div className="status-pill-item" title={autoSaveEnabled ? 'Autosave active' : 'Autosave off'}>
+      {activeUnsaved ? (
+        <>
+          <span className="w-1.5 h-1.5 bg-amber-400" />
+          <span className="text-amber-300">Unsaved</span>
+        </>
+      ) : (
+        <>
+          <CheckCircle2 size={11} className="text-emerald-400 shrink-0" />
+          <span>Saved</span>
+        </>
+      )}
+    </div>
+  )
+
+  return (
+    <footer className="status-bar">
+      {/* 1. Sidebar Bottom Section (aligned with Sidebar width) */}
+      <div
+        className={`status-bar-sidebar ${sidebarCollapsed ? 'is-collapsed' : ''} ${isResizing ? 'is-resizing' : ''}`}
+        style={{
+          width: sidebarCollapsed ? '0px' : `${sidebarWidth}px`,
+          minWidth: sidebarCollapsed ? '0px' : `${sidebarWidth}px`,
+          maxWidth: sidebarCollapsed ? '0px' : `${sidebarWidth}px`
+        }}
+      >
+        <div className="status-sidebar-content">{renderSidebarFileItems()}</div>
+      </div>
+
+      {/* 2. Main Workspace Bottom Section */}
+      <div className="status-bar-main">
+        <div className="status-main-left">
+          {sidebarCollapsed && (
+            <>
+              {renderSidebarFileItems()}
+              <div className="status-divider" />
+            </>
+          )}
+          {renderSavedBadge()}
         </div>
 
-        <div className="status-divider" />
+        <div className="status-right">
+          {/* Cursor & Word Stats */}
+          <div
+            className="status-pill-item mono hoverable"
+            title={`Line ${cursorPosition.line}, Column ${cursorPosition.column} | ${wordCount} words, ${charCount} characters`}
+          >
+            <span>
+              Ln {cursorPosition.line}, Col {cursorPosition.column} ({wordCount} words)
+            </span>
+          </div>
 
-        {/* Editor Encoding & Indentation */}
-        <div className="status-pill-item hoverable" title="Indentation Spaces">
-          <span>Spaces: 4</span>
-        </div>
-        <div className="status-pill-item hoverable" title="File Encoding">
-          <span>UTF-8</span>
-        </div>
-        <div className="status-pill-item hoverable" title="End of Line Sequence">
-          <span>CRLF</span>
-        </div>
+          <div className="status-divider" />
 
-        <div className="status-divider" />
-
-        {/* Language Mode */}
-        <div
-          className="status-pill-item language-pill hoverable"
-          title={`Language Mode: ${lang.name}`}
-        >
-          <Code2 size={11} className={`${lang.color} shrink-0`} />
-          <span>{lang.name}</span>
+          {/* Editor Encoding & Indentation */}
+          <div className="status-pill-item hoverable" title="Indentation Spaces">
+            <span>Spaces: 4</span>
+          </div>
+          <div className="status-pill-item hoverable" title="File Encoding">
+            <span>UTF-8</span>
+          </div>
+          <div className="status-pill-item hoverable" title="End of Line Sequence">
+            <span>CRLF</span>
+          </div>
         </div>
-
-        {/* Notifications Icon */}
-        <button className="status-icon-btn" title="Notifications">
-          <Bell size={11} />
-        </button>
       </div>
     </footer>
   )

@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react'
+import { PanelLeftOpen, Smile, Image as ImageIcon } from 'lucide-react'
 import BlockEditor from './components/BlockEditor'
 import EmojiPicker from './components/EmojiPicker'
 import BannerPicker from './components/BannerPicker'
 import WelcomeScreen from './components/WelcomeScreen'
+import SettingsModal from './components/SettingsModal'
 import TopHeader from './components/layout/TopHeader'
 import SubHeader from './components/layout/SubHeader'
 import Sidebar from './components/layout/Sidebar'
@@ -13,7 +15,7 @@ import StatusBar from './components/layout/StatusBar'
 const GraphView = lazy(() => import('./components/GraphView'))
 
 import { MarkdownMetadata, OpenFileInfo, ViewMode } from './types'
-import { normalizePath, getRelativePath } from './utils/pathUtils'
+import { normalizePath, getRelativePath, getPathKey } from './utils/pathUtils'
 import { stripFrontmatter } from './utils/metadataUtils'
 import { metadataEngine } from './utils/metadataEngine'
 import { manipulateSvgTheme } from './utils/themeSvgUtils'
@@ -44,6 +46,7 @@ export default function App(): React.JSX.Element {
   const [fileBanners, setFileBanners] = useState<Record<string, string>>({})
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false)
   const [showBannerPicker, setShowBannerPicker] = useState<boolean>(false)
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false)
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => savedState.viewMode ?? 'editor')
   const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(
@@ -196,6 +199,43 @@ export default function App(): React.JSX.Element {
       console.error('Error closing workspace:', err)
     }
   }
+
+  const handleRenameWorkspace = useCallback(
+    async (newName?: string): Promise<void> => {
+      if (!workspacePath) return
+      const currentName = workspaceName || workspacePath.split(/[\\/]/).pop() || 'Workspace'
+      const targetName =
+        newName !== undefined
+          ? newName.trim()
+          : prompt('Enter new workspace folder name:', currentName)?.trim()
+      if (!targetName || targetName === currentName) return
+
+      const parentDir = workspacePath.substring(
+        0,
+        Math.max(workspacePath.lastIndexOf('/'), workspacePath.lastIndexOf('\\'))
+      )
+      const newPath = normalizePath(`${parentDir}/${targetName}`)
+      try {
+        await window.api.fs.renamePath(workspacePath, newPath)
+        setWorkspacePath(newPath)
+        setWorkspaceName(targetName)
+        updateRecentWorkspaces(newPath, targetName)
+        setOpenFiles((prev) =>
+          prev.map((f) => {
+            const rel = f.path.substring(workspacePath.length)
+            return { ...f, path: normalizePath(`${newPath}${rel}`) }
+          })
+        )
+        if (activeFilePath && activeFilePath.startsWith(workspacePath)) {
+          const rel = activeFilePath.substring(workspacePath.length)
+          setActiveFilePath(normalizePath(`${newPath}${rel}`))
+        }
+      } catch (err) {
+        alert(`Error renaming workspace folder: ${err}`)
+      }
+    },
+    [workspacePath, workspaceName, activeFilePath, updateRecentWorkspaces]
+  )
 
   const loadFileContent = useCallback(
     async (filePath: string): Promise<string> => {
@@ -464,8 +504,23 @@ export default function App(): React.JSX.Element {
   ])
 
   // Track unsaved file changes
+  const unsavedFiles = useMemo(() => {
+    const unsaved: Record<string, boolean> = {}
+    for (const [filePath, current] of Object.entries(fileContents)) {
+      const original = originalFileContents[filePath]
+      if (original !== undefined && current !== original) {
+        unsaved[filePath] = true
+        const norm = normalizePath(filePath)
+        unsaved[norm] = true
+        unsaved[getPathKey(filePath)] = true
+      }
+    }
+    return unsaved
+  }, [fileContents, originalFileContents])
+
   const activeUnsaved = activeFilePath
-    ? fileContents[activeFilePath] !== originalFileContents[activeFilePath]
+    ? !!unsavedFiles[normalizePath(activeFilePath)] ||
+      fileContents[activeFilePath] !== originalFileContents[activeFilePath]
     : false
 
   const activeRelKey = activeFilePath
@@ -475,6 +530,18 @@ export default function App(): React.JSX.Element {
   const activeFileIcon = activeFilePath ? fileIcons[activeRelKey] : undefined
   const activeFileBanner = activeFilePath ? fileBanners[activeRelKey] : undefined
 
+  // Global keyboard shortcut for Settings (Ctrl + , or Cmd + ,)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+        e.preventDefault()
+        setShowSettingsModal((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return (): void => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   return (
     <div className="app-container">
       {/* ====== 1. TOP WINDOW TITLEBAR ====== */}
@@ -483,6 +550,13 @@ export default function App(): React.JSX.Element {
         workspaceName={workspaceName}
         activeFilePath={activeFilePath}
         fileIcons={fileIcons}
+        recentWorkspaces={recentWorkspaces}
+        onSwitchWorkspace={handleSwitchWorkspace}
+        onOpenWorkspace={handleOpenWorkspace}
+        onRenameWorkspace={handleRenameWorkspace}
+        onCloseWorkspace={handleCloseWorkspace}
+        onRemoveRecentWorkspace={handleRemoveRecentWorkspace}
+        onOpenSettings={(): void => setShowSettingsModal(true)}
       />
 
       {/* ====== 2. SUB-HEADER QUICK ACTIONS BAR ====== */}
@@ -510,6 +584,18 @@ export default function App(): React.JSX.Element {
 
       {/* ====== 3. MAIN APP CONTENT CONTAINER ====== */}
       <div className="app-main">
+        {/* Floating Open Sidebar Button when collapsed */}
+        {sidebarCollapsed && (
+          <button
+            type="button"
+            className="floating-sidebar-toggle-btn"
+            onClick={(): void => setSidebarCollapsed(false)}
+            title="Expand Explorer Sidebar"
+          >
+            <PanelLeftOpen size={13} strokeWidth={1.5} />
+          </button>
+        )}
+
         {/* Sidebar Panel */}
         <Sidebar
           sidebarCollapsed={sidebarCollapsed}
@@ -520,6 +606,7 @@ export default function App(): React.JSX.Element {
           recentWorkspaces={recentWorkspaces}
           activeFilePath={activeFilePath}
           openFiles={openFiles}
+          unsavedFiles={unsavedFiles}
           onFileSelect={handleFileSelect}
           onCreateFileAtRoot={handleCreateFileAtRoot}
           onOpenWorkspace={handleOpenWorkspace}
@@ -537,7 +624,7 @@ export default function App(): React.JSX.Element {
         />
 
         {/* Editor Workspace & Split Area */}
-        <div className="editor-workspace">
+        <div className={`editor-workspace ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
           {viewMode !== 'graph' && (
             <div className="editor-top-nav">
               <TabBar
@@ -545,6 +632,7 @@ export default function App(): React.JSX.Element {
                 activeFilePath={activeFilePath}
                 fileIcons={fileIcons}
                 workspacePath={workspacePath}
+                unsavedFiles={unsavedFiles}
                 onTabSelect={handleTabSelect}
                 onTabClose={handleTabClose}
                 onCreateFileAtRoot={handleCreateFileAtRoot}
@@ -589,7 +677,8 @@ export default function App(): React.JSX.Element {
                         className="notion-cover-btn"
                         onClick={(): void => setShowBannerPicker((prev) => !prev)}
                       >
-                        🖼️ Change cover
+                        <ImageIcon size={12} strokeWidth={1.5} className="shrink-0 opacity-80" />
+                        <span>Change cover</span>
                       </button>
                       <button
                         className="notion-cover-btn"
@@ -620,7 +709,8 @@ export default function App(): React.JSX.Element {
                             className="notion-ghost-btn"
                             onClick={(): void => setShowEmojiPicker(true)}
                           >
-                            😀 Add icon
+                            <Smile size={13} strokeWidth={1.5} className="shrink-0 opacity-70" />
+                            <span>Add icon</span>
                           </button>
                         )}
                         {!activeFileBanner && (
@@ -628,7 +718,12 @@ export default function App(): React.JSX.Element {
                             className="notion-ghost-btn"
                             onClick={(): void => setShowBannerPicker(true)}
                           >
-                            🖼️ Add cover
+                            <ImageIcon
+                              size={13}
+                              strokeWidth={1.5}
+                              className="shrink-0 opacity-70"
+                            />
+                            <span>Add cover</span>
                           </button>
                         )}
                       </div>
@@ -851,10 +946,10 @@ export default function App(): React.JSX.Element {
                       return (
                         <div
                           key={idx}
-                          className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-zinc-800/50 cursor-pointer transition-colors"
+                          className="flex items-center gap-1.5 py-1 px-2 hover:bg-zinc-800/50 cursor-pointer transition-colors"
                           style={{ paddingLeft: `${(level - 1) * 10 + 8}px` }}
                         >
-                          <span className="text-purple-400 font-mono text-[9px] shrink-0">
+                          <span className="text-zinc-400 font-mono text-[9px] shrink-0">
                             H{level}
                           </span>
                           <span className="truncate text-zinc-300">{text}</span>
@@ -879,6 +974,9 @@ export default function App(): React.JSX.Element {
       {/* ====== 5. BOTTOM STATUS BAR ====== */}
       <StatusBar
         workspacePath={workspacePath}
+        sidebarWidth={sidebarWidth}
+        sidebarCollapsed={sidebarCollapsed}
+        isResizing={isResizingLeft}
         activeFilePath={activeFilePath}
         activeFileContent={activeFilePath ? fileContents[activeFilePath] : undefined}
         stats={workerStats}
@@ -886,6 +984,14 @@ export default function App(): React.JSX.Element {
         autoSaveEnabled={autoSaveEnabled}
         activeUnsaved={activeUnsaved}
         onToggleRightPanel={(): void => setShowRightSidebar((p) => !p)}
+      />
+
+      {/* ====== 6. PREFERENCES & SETTINGS MODAL ====== */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={(): void => setShowSettingsModal(false)}
+        currentAutoSave={autoSaveEnabled}
+        onToggleAutoSave={(): void => setAutoSaveEnabled((p) => !p)}
       />
     </div>
   )

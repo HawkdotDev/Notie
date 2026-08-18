@@ -146,11 +146,7 @@ export function ProfessionalFileIcon({
     case 'cfg':
     case 'xml':
       return (
-        <Sliders
-          size={13}
-          fill="currentColor"
-          className={`text-purple-400 shrink-0 ${className}`}
-        />
+        <Sliders size={13} fill="currentColor" className={`text-zinc-400 shrink-0 ${className}`} />
       )
 
     // Documentation & Plain Text
@@ -158,11 +154,7 @@ export function ProfessionalFileIcon({
     case 'mdx':
     case 'markdown':
       return (
-        <FileText
-          size={13}
-          fill="currentColor"
-          className={`text-purple-400 shrink-0 ${className}`}
-        />
+        <FileText size={13} fill="currentColor" className={`text-zinc-300 shrink-0 ${className}`} />
       )
     case 'txt':
     case 'log':
@@ -194,7 +186,7 @@ export function ProfessionalFileIcon({
       )
     case 'cs':
       return (
-        <Binary size={13} fill="currentColor" className={`text-purple-500 shrink-0 ${className}`} />
+        <Binary size={13} fill="currentColor" className={`text-zinc-400 shrink-0 ${className}`} />
       )
     case 'java':
     case 'jar':

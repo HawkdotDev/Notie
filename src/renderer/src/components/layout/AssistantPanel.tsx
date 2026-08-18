@@ -192,13 +192,13 @@ export default function AssistantPanel({
           <span>
             <strong className="text-zinc-200">{stats.readingTime}m</strong> read
           </span>
-          <span className="text-purple-400 font-medium">Grade {stats.gradeLevel}</span>
+          <span className="text-zinc-300 font-medium">Grade {stats.gradeLevel}</span>
         </div>
         <div className="flex items-center gap-1">
           <button
-            className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+            className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${
               activeTab === 'diagnostics'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-zinc-700 text-white'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
             onClick={(): void => setActiveTab('diagnostics')}
@@ -206,9 +206,9 @@ export default function AssistantPanel({
             Issues ({issues.length})
           </button>
           <button
-            className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+            className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${
               activeTab === 'ai-tools'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-zinc-700 text-white'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
             onClick={(): void => setActiveTab('ai-tools')}
@@ -216,8 +216,8 @@ export default function AssistantPanel({
             AI Actions
           </button>
           <button
-            className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
-              activeTab === 'ask' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-zinc-200'
+            className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${
+              activeTab === 'ask' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-zinc-200'
             }`}
             onClick={(): void => setActiveTab('ask')}
           >
@@ -243,22 +243,22 @@ export default function AssistantPanel({
               issues.map((issue) => (
                 <div
                   key={issue.id}
-                  className="bg-[#1c1c22] border border-[#2e2e3a] rounded-lg p-2.5 space-y-1.5 shadow-sm"
+                  className="bg-[#1c1c22] border border-[#2e2e3a] p-2.5 space-y-1.5 shadow-sm"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-purple-300 font-semibold text-[11px]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                    <span className="flex items-center gap-1.5 text-zinc-200 font-semibold text-[11px]">
+                      <span className="w-1.5 h-1.5 bg-zinc-400" />
                       {issue.label}
                     </span>
                     <button
-                      className="px-2 py-0.5 bg-purple-600/80 hover:bg-purple-600 text-white rounded text-[10px] font-medium transition-colors flex items-center gap-1"
+                      className="px-2 py-0.5 bg-zinc-700 hover:bg-zinc-600 text-white text-[10px] font-medium transition-colors flex items-center gap-1"
                       onClick={(): void => handleApplyFix(issue)}
                     >
                       Fix <ArrowRight size={10} />
                     </button>
                   </div>
                   <p className="text-[11px] text-zinc-400 leading-snug">{issue.explanation}</p>
-                  <div className="bg-[#141417] p-1.5 rounded border border-[#262630] font-mono text-[10px] flex items-center gap-2">
+                  <div className="bg-[#141417] p-1.5 border border-[#262630] font-mono text-[10px] flex items-center gap-2">
                     <span className="line-through text-rose-400">{issue.originalText}</span>
                     <span className="text-zinc-500">›</span>
                     <span className="text-emerald-400 font-semibold">{issue.suggestedText}</span>
@@ -276,7 +276,7 @@ export default function AssistantPanel({
               1-Click AI Writing Transformations:
             </p>
             <button
-              className="w-full text-left p-2 bg-[#1c1c22] hover:bg-[#25252e] border border-[#2e2e3a] rounded-lg transition-colors flex items-center justify-between group"
+              className="w-full text-left p-2 bg-[#1c1c22] hover:bg-[#25252e] border border-[#2e2e3a] transition-colors flex items-center justify-between group"
               onClick={(): void => handleAiAction('fix-grammar')}
             >
               <div className="flex items-center gap-2">
@@ -286,11 +286,11 @@ export default function AssistantPanel({
                   <div className="text-[10px] text-zinc-400">Clean up typos and active voice</div>
                 </div>
               </div>
-              <Wand2 size={12} className="text-zinc-500 group-hover:text-purple-400" />
+              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-200" />
             </button>
 
             <button
-              className="w-full text-left p-2 bg-[#1c1c22] hover:bg-[#25252e] border border-[#2e2e3a] rounded-lg transition-colors flex items-center justify-between group"
+              className="w-full text-left p-2 bg-[#1c1c22] hover:bg-[#25252e] border border-[#2e2e3a] transition-colors flex items-center justify-between group"
               onClick={(): void => handleAiAction('summarize')}
             >
               <div className="flex items-center gap-2">
@@ -300,11 +300,11 @@ export default function AssistantPanel({
                   <div className="text-[10px] text-zinc-400">Generate executive summary</div>
                 </div>
               </div>
-              <Wand2 size={12} className="text-zinc-500 group-hover:text-purple-400" />
+              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-200" />
             </button>
 
             <button
-              className="w-full text-left p-2 bg-[#1c1c22] hover:bg-[#25252e] border border-[#2e2e3a] rounded-lg transition-colors flex items-center justify-between group"
+              className="w-full text-left p-2 bg-[#1c1c22] hover:bg-[#25252e] border border-[#2e2e3a] transition-colors flex items-center justify-between group"
               onClick={(): void => handleAiAction('takeaways')}
             >
               <div className="flex items-center gap-2">
@@ -314,21 +314,21 @@ export default function AssistantPanel({
                   <div className="text-[10px] text-zinc-400">Pull action items and insights</div>
                 </div>
               </div>
-              <Wand2 size={12} className="text-zinc-500 group-hover:text-purple-400" />
+              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-200" />
             </button>
 
             <button
-              className="w-full text-left p-2 bg-[#1c1c22] hover:bg-[#25252e] border border-[#2e2e3a] rounded-lg transition-colors flex items-center justify-between group"
+              className="w-full text-left p-2 bg-[#1c1c22] hover:bg-[#25252e] border border-[#2e2e3a] transition-colors flex items-center justify-between group"
               onClick={(): void => handleAiAction('continue')}
             >
               <div className="flex items-center gap-2">
-                <Sparkles size={14} className="text-purple-400" />
+                <Sparkles size={14} className="text-zinc-200" />
                 <div>
                   <div className="font-semibold text-zinc-200">Continue Writing</div>
                   <div className="text-[10px] text-zinc-400">Draft the next logical section</div>
                 </div>
               </div>
-              <Wand2 size={12} className="text-zinc-500 group-hover:text-purple-400" />
+              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-200" />
             </button>
           </div>
         )}
@@ -340,7 +340,7 @@ export default function AssistantPanel({
               Ask AI Assistant to edit, format, or transform:
             </label>
             <textarea
-              className="w-full h-20 bg-[#141417] border border-[#2e2e3a] rounded-lg p-2 text-zinc-200 placeholder-zinc-500 outline-none focus:border-purple-500 text-xs resize-none"
+              className="w-full h-20 bg-[#141417] border border-[#2e2e3a] p-2 text-zinc-200 placeholder-zinc-500 outline-none focus:border-zinc-500 text-xs resize-none"
               placeholder="e.g., Make tone formal, convert to table, or translate to French..."
               value={customPrompt}
               onChange={(e): void => setCustomPrompt(e.target.value)}
@@ -348,7 +348,7 @@ export default function AssistantPanel({
             <button
               type="submit"
               disabled={isProcessing || !customPrompt.trim()}
-              className="w-full py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+              className="w-full py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 disabled:opacity-50 text-white font-medium flex items-center justify-center gap-1.5 transition-colors"
             >
               <Send size={12} />
               <span>Ask AI Assistant</span>
@@ -358,7 +358,7 @@ export default function AssistantPanel({
 
         {/* Processing Indicator */}
         {isProcessing && (
-          <div className="flex items-center justify-center gap-2 py-4 text-purple-400 font-medium">
+          <div className="flex items-center justify-center gap-2 py-4 text-zinc-300 font-medium">
             <RefreshCw size={14} className="animate-spin" />
             <span>AI Assistant is analyzing document...</span>
           </div>
@@ -366,8 +366,8 @@ export default function AssistantPanel({
 
         {/* AI Response Output Box */}
         {aiOutput && !isProcessing && (
-          <div className="bg-[#1c1c22] border border-purple-500/30 rounded-lg p-2.5 space-y-2">
-            <div className="flex items-center justify-between text-purple-300 font-semibold text-[11px]">
+          <div className="bg-[#1c1c22] border border-zinc-700 p-2.5 space-y-2">
+            <div className="flex items-center justify-between text-zinc-200 font-semibold text-[11px]">
               <span className="flex items-center gap-1">
                 <Sparkles size={12} /> AI Result
               </span>
@@ -382,7 +382,7 @@ export default function AssistantPanel({
               {aiOutput}
             </div>
             <button
-              className="w-full py-1 bg-purple-600/80 hover:bg-purple-600 text-white rounded text-[10px] font-medium transition-colors"
+              className="w-full py-1 bg-zinc-700 hover:bg-zinc-600 text-white text-[10px] font-medium transition-colors"
               onClick={(): void => {
                 if (onUpdateContent && content) {
                   onUpdateContent(content + '\n\n' + aiOutput)
@@ -399,7 +399,7 @@ export default function AssistantPanel({
       {issues.length > 0 && activeTab === 'diagnostics' && (
         <div className="p-3 border-t border-[#292932] bg-[#141417]">
           <button
-            className="w-full py-2 bg-linear-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg font-medium flex items-center justify-center gap-1.5 shadow-md transition-all"
+            className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-medium flex items-center justify-center gap-1.5 transition-all"
             onClick={handleFixAll}
           >
             <Sparkles size={13} />

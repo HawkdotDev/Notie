@@ -10,9 +10,7 @@ import {
   LayoutGrid,
   BarChart2,
   Code2,
-  Check,
-  PanelLeftClose,
-  PanelLeftOpen
+  Check
 } from 'lucide-react'
 import { ViewMode } from '../../types'
 
@@ -24,14 +22,14 @@ export interface WidgetState {
 }
 
 interface SubHeaderProps {
-  sidebarCollapsed: boolean
-  onToggleSidebar: () => void
-  onSaveActiveFile: () => void
+  sidebarCollapsed?: boolean
+  onToggleSidebar?: () => void
+  onSaveActiveFile?: () => void
   viewMode: ViewMode
   onToggleViewMode: () => void
   setViewMode?: (mode: ViewMode) => void
-  onOpenWorkspace: () => void
-  onCreateFileAtRoot: () => void
+  onOpenWorkspace?: () => void
+  onCreateFileAtRoot?: () => void
   showDiffToggle: boolean
   onToggleDiff: () => void
   autoSaveEnabled: boolean
@@ -46,8 +44,6 @@ interface SubHeaderProps {
 }
 
 function SubHeader({
-  sidebarCollapsed,
-  onToggleSidebar,
   viewMode,
   onToggleViewMode,
   setViewMode,
@@ -99,14 +95,6 @@ function SubHeader({
   return (
     <div className="app-actions-bar relative">
       <div className="actions-bar-left">
-        <button
-          className="action-pill-btn home-btn"
-          title={sidebarCollapsed ? 'Open Explorer Sidebar' : 'Collapse Explorer Sidebar'}
-          onClick={onToggleSidebar}
-        >
-          {sidebarCollapsed ? <PanelLeftOpen size={13} /> : <PanelLeftClose size={13} />}
-        </button>
-
         {/* 1. File Editor Tab */}
         <button
           className={`action-pill-btn ${viewMode === 'editor' ? 'active' : ''}`}
@@ -119,7 +107,7 @@ function SubHeader({
           <FileText
             size={13}
             fill="currentColor"
-            className={viewMode === 'editor' ? 'text-purple-400' : ''}
+            className={viewMode === 'editor' ? 'text-zinc-200' : ''}
           />
           <span>File</span>
         </button>
@@ -136,7 +124,7 @@ function SubHeader({
           <Network
             size={13}
             fill="currentColor"
-            className={viewMode === 'graph' ? 'text-purple-400' : ''}
+            className={viewMode === 'graph' ? 'text-zinc-200' : ''}
           />
           <span>Graph</span>
         </button>
@@ -147,7 +135,7 @@ function SubHeader({
           onClick={onToggleRightSidebar}
           title="Toggle Document Outline"
         >
-          <ListTree size={13} className={showRightSidebar ? 'text-purple-400' : ''} />
+          <ListTree size={13} className={showRightSidebar ? 'text-zinc-200' : ''} />
           <span>Outline</span>
         </button>
 
@@ -158,7 +146,7 @@ function SubHeader({
             onClick={onToggleSearchInput}
             title="Toggle File Search"
           >
-            <Search size={13} className={showSearchInput ? 'text-purple-400' : ''} />
+            <Search size={13} className={showSearchInput ? 'text-zinc-200' : ''} />
             <span>Search</span>
           </button>
         )}
@@ -172,7 +160,7 @@ function SubHeader({
           <Terminal
             size={13}
             fill="currentColor"
-            className={widgetState.terminal ? 'text-purple-400' : ''}
+            className={widgetState.terminal ? 'text-zinc-200' : ''}
           />
           <span>Terminal</span>
         </button>
@@ -186,7 +174,7 @@ function SubHeader({
           <Sparkles
             size={13}
             fill="currentColor"
-            className={widgetState.assistant ? 'text-purple-400' : ''}
+            className={widgetState.assistant ? 'text-zinc-200' : ''}
           />
           <span>Assistant</span>
         </button>
@@ -212,9 +200,9 @@ function SubHeader({
           onClick={(): void => setShowWidgetsMenu((prev) => !prev)}
           title={`Toggle Floating Widgets (Autosave: ${autoSaveEnabled ? 'ON' : 'OFF'})`}
         >
-          <LayoutGrid size={13} fill="currentColor" className="text-purple-400" />
+          <LayoutGrid size={13} fill="currentColor" className="text-zinc-300" />
           <span>Widgets ({activeWidgetCount})</span>
-          {activeUnsaved && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+          {activeUnsaved && <span className="w-1.5 h-1.5 bg-amber-400" />}
           <ChevronDown
             size={12}
             className={`transition-transform ${showWidgetsMenu ? 'rotate-180' : ''}`}
@@ -227,7 +215,7 @@ function SubHeader({
             <div className="widgets-dropdown-header">
               <span className="font-semibold text-zinc-200">Floating Widgets</span>
               <button
-                className="text-[10px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20 hover:bg-purple-500/20 cursor-pointer transition-colors"
+                className="text-[10px] text-zinc-300 bg-zinc-800 px-1.5 py-0.5 border border-zinc-700 hover:bg-zinc-700 cursor-pointer transition-colors"
                 onClick={onToggleAutoSave}
                 title="Click to toggle Autosave"
               >
@@ -241,7 +229,7 @@ function SubHeader({
                 onClick={(): void => onToggleWidget('assistant')}
               >
                 <div className="flex items-center gap-2">
-                  <Sparkles size={13} fill="currentColor" className="text-purple-400 shrink-0" />
+                  <Sparkles size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
                   <div className="flex flex-col">
                     <span className="widget-title">Writing Assistant</span>
                     <span className="widget-desc">Grammarly style error fixes</span>

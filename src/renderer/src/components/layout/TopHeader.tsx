@@ -1,6 +1,20 @@
-import React from 'react'
-import { Folder, ChevronRight, Minus, Square, X, Bell, Settings } from 'lucide-react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
+import {
+  Folder,
+  ChevronDown,
+  Check,
+  FolderPlus,
+  XCircle,
+  Trash2,
+  Edit3,
+  Minus,
+  Square,
+  X,
+  Bell,
+  Settings
+} from 'lucide-react'
 import { ProfessionalFileIcon } from '../../utils/fileIconUtils'
+import { getPathKey } from '../../utils/pathUtils'
 import iconSvg from '../../assets/icon.svg'
 
 interface TopHeaderProps {
@@ -8,6 +22,12 @@ interface TopHeaderProps {
   workspaceName: string
   activeFilePath: string | null
   fileIcons?: Record<string, string>
+  recentWorkspaces?: { path: string; name: string }[]
+  onSwitchWorkspace?: (path: string, name?: string) => void
+  onOpenWorkspace?: () => void
+  onRenameWorkspace?: () => void
+  onCloseWorkspace?: () => void
+  onRemoveRecentWorkspace?: (path: string) => void
   onOpenSettings?: () => void
 }
 
@@ -16,15 +36,45 @@ function TopHeader({
   workspaceName,
   activeFilePath,
   fileIcons,
+  recentWorkspaces = [],
+  onSwitchWorkspace,
+  onOpenWorkspace,
+  onRenameWorkspace,
+  onCloseWorkspace,
+  onRemoveRecentWorkspace,
   onOpenSettings
 }: TopHeaderProps): React.JSX.Element {
-  const relativeParts = React.useMemo(() => {
+  const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowWorkspaceDropdown(false)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        setShowWorkspaceDropdown(false)
+      }
+    }
+    if (showWorkspaceDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
+    }
+    return (): void => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showWorkspaceDropdown])
+
+  const relativeParts = useMemo(() => {
     if (!activeFilePath) return []
     const rel = activeFilePath.replace(workspacePath || '', '').replace(/^[\\/]/, '')
     return rel ? rel.split(/[\\/]/) : []
   }, [activeFilePath, workspacePath])
 
-  const customIcon = React.useMemo(() => {
+  const customIcon = useMemo(() => {
     if (!activeFilePath || !fileIcons || !workspacePath) return undefined
     const rel = activeFilePath
       .toLowerCase()
@@ -32,6 +82,9 @@ function TopHeader({
       .replace(/^[\\/]/, '')
     return fileIcons[rel]
   }, [activeFilePath, fileIcons, workspacePath])
+
+  const currentDisplayName =
+    workspaceName || (workspacePath ? workspacePath.split(/[\\/]/).pop() : 'Select Workspace')
 
   return (
     <div className="app-top-header" onDoubleClick={(): void => window.api.window.maximize()}>
@@ -42,35 +95,156 @@ function TopHeader({
         </div>
 
         {/* Vertical Pipe Separator */}
-        {activeFilePath && <div className="header-pipe-separator" />}
+        {(activeFilePath || workspacePath) && <div className="header-pipe-separator" />}
 
-        {/* Styled Breadcrumb Path Navigation */}
-        {activeFilePath && (
+        {/* Styled Minimal Breadcrumb Path Navigation */}
+        {(activeFilePath || workspacePath) && (
           <div className="nav-breadcrumbs">
-            <div className="breadcrumb-item workspace-root" title={`Workspace: ${workspaceName}`}>
-              <Folder size={12} fill="currentColor" className="text-purple-400 shrink-0" />
-              <span>{workspaceName}</span>
+            {/* First Folder in Breadcrumbs (Workspace Root with Dropdown) */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                type="button"
+                className={`breadcrumb-item workspace-root ${showWorkspaceDropdown ? 'active' : ''}`}
+                onClick={(): void => setShowWorkspaceDropdown((prev) => !prev)}
+                title={`Workspace: ${currentDisplayName} (Click to change folder)`}
+              >
+                <Folder size={11} className="text-zinc-400 shrink-0" />
+                <span className="max-w-35 truncate">{currentDisplayName}</span>
+                <ChevronDown
+                  size={9}
+                  className={`text-zinc-500 shrink-0 transition-transform duration-150 ${showWorkspaceDropdown ? 'rotate-180 text-zinc-300' : ''}`}
+                />
+              </button>
+
+              {/* Workspace Switcher Dropdown Popover */}
+              {showWorkspaceDropdown && (
+                <div className="workspace-dropdown-popover breadcrumb-dropdown-popover">
+                  <div className="dropdown-section-title">WORKSPACES</div>
+
+                  {recentWorkspaces.length > 0 ? (
+                    <div className="dropdown-workspace-list">
+                      {recentWorkspaces.map((ws) => {
+                        const isActive =
+                          workspacePath && getPathKey(ws.path) === getPathKey(workspacePath)
+                        return (
+                          <div
+                            key={ws.path}
+                            className={`dropdown-workspace-item group ${isActive ? 'active' : ''}`}
+                            onClick={(): void => {
+                              if (onSwitchWorkspace) {
+                                onSwitchWorkspace(ws.path, ws.name)
+                              }
+                              setShowWorkspaceDropdown(false)
+                            }}
+                          >
+                            <Folder
+                              size={13}
+                              fill="currentColor"
+                              className={
+                                isActive ? 'text-zinc-200 shrink-0' : 'text-zinc-400 shrink-0'
+                              }
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="workspace-item-name">{ws.name}</div>
+                              <div className="workspace-item-path">{ws.path}</div>
+                            </div>
+                            {isActive && (
+                              <Check size={13} className="text-zinc-200 shrink-0 mr-1" />
+                            )}
+                            {onRemoveRecentWorkspace && (
+                              <button
+                                type="button"
+                                className="trash-btn opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-rose-400 rounded transition-all shrink-0"
+                                onClick={(e): void => {
+                                  e.stopPropagation()
+                                  onRemoveRecentWorkspace(ws.path)
+                                }}
+                                title="Remove from recent workspaces"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="px-2 py-1.5 text-[11px] text-zinc-500 italic">
+                      No recent workspaces
+                    </div>
+                  )}
+
+                  <div className="dropdown-divider" />
+
+                  {onOpenWorkspace && (
+                    <button
+                      type="button"
+                      className="dropdown-action-item"
+                      onClick={(): void => {
+                        onOpenWorkspace()
+                        setShowWorkspaceDropdown(false)
+                      }}
+                    >
+                      <FolderPlus
+                        size={13}
+                        fill="currentColor"
+                        className="text-zinc-300 shrink-0"
+                      />
+                      <span>Open Workspace Folder...</span>
+                    </button>
+                  )}
+
+                  {workspacePath && (
+                    <button
+                      type="button"
+                      className="dropdown-action-item"
+                      onClick={(): void => {
+                        if (onRenameWorkspace) {
+                          onRenameWorkspace()
+                        } else {
+                          window.dispatchEvent(new CustomEvent('rename-root-folder'))
+                        }
+                        setShowWorkspaceDropdown(false)
+                      }}
+                    >
+                      <Edit3 size={13} className="text-zinc-300 shrink-0" />
+                      <span>Rename Workspace...</span>
+                    </button>
+                  )}
+
+                  {workspacePath && onCloseWorkspace && (
+                    <button
+                      type="button"
+                      className="dropdown-action-item danger"
+                      onClick={(): void => {
+                        onCloseWorkspace()
+                        setShowWorkspaceDropdown(false)
+                      }}
+                    >
+                      <XCircle size={13} fill="currentColor" className="text-rose-400 shrink-0" />
+                      <span>Close Workspace</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {relativeParts.map((part, idx) => {
               const isLast = idx === relativeParts.length - 1
               return (
                 <React.Fragment key={idx}>
-                  <ChevronRight size={12} className="breadcrumb-chevron" />
+                  <span className="breadcrumb-separator">/</span>
                   <div
                     className={`breadcrumb-item ${isLast ? 'active-file' : 'directory'}`}
                     title={part}
                   >
-                    {isLast ? (
-                      customIcon ? (
-                        <span className="text-xs mr-0.5">{customIcon}</span>
+                    {isLast &&
+                      (customIcon ? (
+                        <span className="text-[11px] mr-0.5">{customIcon}</span>
                       ) : (
-                        <ProfessionalFileIcon fileName={part} className="scale-75" />
-                      )
-                    ) : (
-                      <Folder size={12} fill="currentColor" className="text-zinc-500 shrink-0" />
-                    )}
-                    <span>{part}</span>
+                        <ProfessionalFileIcon fileName={part} className="scale-75 opacity-90" />
+                      ))}
+                    <span className="truncate max-w-44">{part}</span>
                   </div>
                 </React.Fragment>
               )
@@ -88,7 +262,7 @@ function TopHeader({
           title="Notifications"
         >
           <Bell size={13} />
-          <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-purple-400" />
+          <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-zinc-400" />
         </button>
 
         {/* Settings Icon Button */}

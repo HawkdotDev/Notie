@@ -43,8 +43,8 @@ export function markdownToHtml(text: string): string {
   processed = processed.replace(/__(.*?)__/g, '<b>$1</b>')
 
   // 2. Convert italic *text* or _text_ -> <i>text</i>
-  processed = processed.replace(/(^|[^\*])\*(?!\*)(.*?)\*(?!\*)/g, '$1<i>$2</i>')
-  processed = processed.replace(/(^|[^_])_(?!_)(.*?)\_(?!_)/g, '$1<i>$2</i>')
+  processed = processed.replace(/(^|[^*])\*(?!\*)(.*?)\*(?!\*)/g, '$1<i>$2</i>')
+  processed = processed.replace(/(^|[^_])_(?!_)(.*?)_(?!_)/g, '$1<i>$2</i>')
 
   // 3. Convert strikethrough ~~text~~ -> <s>text</s>
   processed = processed.replace(/~~(.*?)~~/g, '<s>$1</s>')

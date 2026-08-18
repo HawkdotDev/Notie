@@ -4,17 +4,14 @@ import {
   FolderOpen,
   Search,
   MoreHorizontal,
-  ChevronDown,
-  Check,
   FolderPlus,
-  XCircle,
   Plus,
   ArrowRight,
   Trash2,
-  Edit3
+  Edit3,
+  PanelLeftClose
 } from 'lucide-react'
 import FileTree from '../FileTree'
-import { getPathKey } from '../../utils/pathUtils'
 
 interface SidebarProps {
   sidebarCollapsed: boolean
@@ -25,10 +22,11 @@ interface SidebarProps {
   recentWorkspaces?: { path: string; name: string }[]
   activeFilePath: string | null
   openFiles?: { path: string; name: string }[]
+  unsavedFiles?: Record<string, boolean>
   onFileSelect: (filePath: string) => void
   onCreateFileAtRoot: () => void
   onOpenWorkspace: () => void
-  onCloseWorkspace: () => void
+  onCloseWorkspace?: () => void
   onSwitchWorkspace?: (path: string, name?: string) => void
   onRemoveRecentWorkspace?: (path: string) => void
   onToggleSidebar?: () => void
@@ -46,16 +44,16 @@ function Sidebar({
   sidebarWidth,
   isResizing = false,
   workspacePath,
-  workspaceName,
   recentWorkspaces = [],
   activeFilePath,
   openFiles,
+  unsavedFiles,
   onFileSelect,
   onCreateFileAtRoot,
   onOpenWorkspace,
-  onCloseWorkspace,
   onSwitchWorkspace,
   onRemoveRecentWorkspace,
+  onToggleSidebar,
   showSearchInput,
   onToggleSearchInput,
   searchQuery,
@@ -64,13 +62,6 @@ function Sidebar({
   onMetadataLoaded,
   onStartResize
 }: SidebarProps): React.JSX.Element {
-  const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('notie_workspace_dropdown') === 'true'
-    } catch {
-      return false
-    }
-  })
   const [showExplorerMenu, setShowExplorerMenu] = useState<boolean>(() => {
     try {
       return localStorage.getItem('notie_explorer_menu') === 'true'
@@ -78,16 +69,7 @@ function Sidebar({
       return false
     }
   })
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const explorerMenuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('notie_workspace_dropdown', String(showWorkspaceDropdown))
-    } catch {
-      // ignore
-    }
-  }, [showWorkspaceDropdown])
 
   useEffect(() => {
     try {
@@ -99,9 +81,6 @@ function Sidebar({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowWorkspaceDropdown(false)
-      }
       if (explorerMenuRef.current && !explorerMenuRef.current.contains(e.target as Node)) {
         setShowExplorerMenu(false)
       }
@@ -109,9 +88,6 @@ function Sidebar({
     document.addEventListener('mousedown', handleClickOutside)
     return (): void => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  const currentDisplayName =
-    workspaceName || (workspacePath ? workspacePath.split(/[\\/]/).pop() : 'Select Workspace')
 
   const hasRecentWorkspaces = recentWorkspaces.length > 0
 
@@ -125,100 +101,82 @@ function Sidebar({
       }}
     >
       <div className="sidebar-content flex flex-col h-full overflow-hidden w-full min-w-0">
-        {/* Top Action Row: Always visible */}
-        <div className="sidebar-top-actions relative" ref={dropdownRef}>
-          <button
-            className={`sidebar-workspace-dropdown-btn ${showWorkspaceDropdown ? 'active' : ''}`}
-            onClick={(): void => setShowWorkspaceDropdown((prev) => !prev)}
-            title="Switch Workspace"
-          >
-            <Folder size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
-            <span className="workspace-name-label">{currentDisplayName}</span>
-            <ChevronDown size={13} className="text-zinc-400 shrink-0" />
-          </button>
+        {/* Top Action Row: Explorer Title + Action Buttons */}
+        <div className="sidebar-top-actions">
+          <div className="sidebar-header-title">
+            <span>Explorer</span>
+          </div>
 
-          <button
-            className={`sidebar-search-toggle-btn ${showSearchInput ? 'active' : ''}`}
-            onClick={onToggleSearchInput}
-            title="Search Files"
-          >
-            <Search size={14} />
-          </button>
+          <div className="sidebar-header-buttons">
+            {workspacePath && (
+              <div className="relative" ref={explorerMenuRef}>
+                <button
+                  type="button"
+                  className={`sidebar-action-btn ${showExplorerMenu ? 'active' : ''}`}
+                  onClick={(): void => setShowExplorerMenu((prev) => !prev)}
+                  title="More Options"
+                >
+                  <MoreHorizontal size={13} strokeWidth={1.5} />
+                </button>
 
-          {/* Workspace Dropdown Popover */}
-          {showWorkspaceDropdown && (
-            <div className="workspace-dropdown-popover">
-              <div className="dropdown-section-title">WORKSPACES</div>
-
-              <div className="dropdown-workspace-list">
-                {recentWorkspaces.map((ws) => {
-                  const isActive =
-                    workspacePath && getPathKey(ws.path) === getPathKey(workspacePath)
-                  return (
-                    <div
-                      key={ws.path}
-                      className={`dropdown-workspace-item group ${isActive ? 'active' : ''}`}
+                {showExplorerMenu && (
+                  <div className="explorer-options-popover">
+                    <button
+                      className="context-menu-item"
                       onClick={(): void => {
-                        if (onSwitchWorkspace) {
-                          onSwitchWorkspace(ws.path, ws.name)
-                        }
-                        setShowWorkspaceDropdown(false)
+                        onCreateFileAtRoot()
+                        setShowExplorerMenu(false)
                       }}
                     >
-                      <Folder
-                        size={13}
-                        fill="currentColor"
-                        className={isActive ? 'text-purple-400 shrink-0' : 'text-zinc-400 shrink-0'}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="workspace-item-name">{ws.name}</div>
-                        <div className="workspace-item-path">{ws.path}</div>
-                      </div>
-                      {isActive && <Check size={13} className="text-purple-400 shrink-0 mr-1" />}
-                      <button
-                        className="trash-btn opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-rose-400 rounded transition-all shrink-0"
-                        onClick={(e): void => {
-                          e.stopPropagation()
-                          if (onRemoveRecentWorkspace) {
-                            onRemoveRecentWorkspace(ws.path)
-                          }
-                        }}
-                        title="Remove from recent workspaces"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  )
-                })}
+                      <Plus size={12} strokeWidth={1.5} />
+                      <span>New File</span>
+                    </button>
+                    <button
+                      className="context-menu-item"
+                      onClick={(): void => {
+                        window.dispatchEvent(new CustomEvent('create-root-folder'))
+                        setShowExplorerMenu(false)
+                      }}
+                    >
+                      <FolderPlus size={12} strokeWidth={1.5} fill="currentColor" />
+                      <span>New Folder</span>
+                    </button>
+                    <div className="context-menu-divider" />
+                    <button
+                      className="context-menu-item"
+                      onClick={(): void => {
+                        window.dispatchEvent(new CustomEvent('rename-root-folder'))
+                        setShowExplorerMenu(false)
+                      }}
+                    >
+                      <Edit3 size={12} strokeWidth={1.5} />
+                      <span>Rename</span>
+                    </button>
+                  </div>
+                )}
               </div>
+            )}
 
-              <div className="dropdown-divider" />
+            <button
+              type="button"
+              className={`sidebar-action-btn ${showSearchInput ? 'active' : ''}`}
+              onClick={onToggleSearchInput}
+              title="Search Files"
+            >
+              <Search size={13} strokeWidth={1.5} />
+            </button>
 
+            {onToggleSidebar && (
               <button
-                className="dropdown-action-item"
-                onClick={(): void => {
-                  onOpenWorkspace()
-                  setShowWorkspaceDropdown(false)
-                }}
+                type="button"
+                className="sidebar-action-btn"
+                onClick={onToggleSidebar}
+                title="Collapse Sidebar"
               >
-                <FolderPlus size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
-                <span>Open Workspace Folder...</span>
+                <PanelLeftClose size={13} strokeWidth={1.5} />
               </button>
-
-              {workspacePath && (
-                <button
-                  className="dropdown-action-item danger"
-                  onClick={(): void => {
-                    onCloseWorkspace()
-                    setShowWorkspaceDropdown(false)
-                  }}
-                >
-                  <XCircle size={13} fill="currentColor" className="text-rose-400 shrink-0" />
-                  <span>Close Workspace</span>
-                </button>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Main Sidebar Body Area */}
@@ -239,72 +197,13 @@ function Sidebar({
               </div>
             )}
 
-            {/* Section Header */}
-            <div className="sidebar-section-header">
-              <span>Explorer</span>
-              <div className="flex items-center gap-1 relative" ref={explorerMenuRef}>
-                <button
-                  className="sidebar-dots-btn"
-                  onClick={(): void => setShowExplorerMenu((prev) => !prev)}
-                  title="Explorer Options"
-                >
-                  <MoreHorizontal size={14} />
-                </button>
-
-                {showExplorerMenu && (
-                  <div className="explorer-options-popover">
-                    <button
-                      className="context-menu-item"
-                      onClick={(): void => {
-                        onCreateFileAtRoot()
-                        setShowExplorerMenu(false)
-                      }}
-                    >
-                      <Plus size={12} />
-                      <span>New File</span>
-                    </button>
-                    <button
-                      className="context-menu-item"
-                      onClick={(): void => {
-                        window.dispatchEvent(new CustomEvent('create-root-folder'))
-                        setShowExplorerMenu(false)
-                      }}
-                    >
-                      <FolderPlus size={12} fill="currentColor" />
-                      <span>New Folder</span>
-                    </button>
-                    <div className="context-menu-divider" />
-                    <button
-                      className="context-menu-item"
-                      onClick={(): void => {
-                        window.dispatchEvent(new CustomEvent('rename-root-folder'))
-                        setShowExplorerMenu(false)
-                      }}
-                    >
-                      <Edit3 size={12} />
-                      <span>Rename</span>
-                    </button>
-                    <button
-                      className="context-menu-item danger"
-                      onClick={(): void => {
-                        onCloseWorkspace()
-                        setShowExplorerMenu(false)
-                      }}
-                    >
-                      <XCircle size={12} fill="currentColor" />
-                      <span>Close Workspace</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* File Tree */}
             <div className="flex-1 overflow-y-auto">
               <FileTree
                 rootPath={workspacePath}
                 activeFilePath={activeFilePath}
                 openFiles={openFiles}
+                unsavedFiles={unsavedFiles}
                 onFileSelect={onFileSelect}
                 fileIcons={fileIcons}
                 onMetadataLoaded={onMetadataLoaded}
@@ -361,14 +260,14 @@ function Sidebar({
           /* Opening for First Time (No Recent Workspaces) */
           <div className="flex flex-col items-center justify-center p-6 text-center h-full">
             <div className="first-time-icon-wrapper mb-4">
-              <FolderOpen size={32} fill="currentColor" className="text-purple-400" />
+              <FolderOpen size={32} fill="currentColor" className="text-zinc-400" />
             </div>
             <h3 className="text-sm font-semibold text-zinc-100 mb-1">No Workspace Open</h3>
             <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
               Open a local folder or workspace project to start exploring files and editing code.
             </p>
             <button
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-900/40 transition-all cursor-pointer border border-purple-500/50"
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-white transition-all cursor-pointer border border-zinc-700"
               onClick={onOpenWorkspace}
             >
               <FolderOpen size={14} />

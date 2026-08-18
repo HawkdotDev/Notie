@@ -48,9 +48,9 @@ function FloatingWidgetsOverlayComponent({
         <FloatingWindow
           id="assistant"
           title="Writing Assistant"
-          icon={<Sparkles size={13} fill="currentColor" className="text-purple-400" />}
+          icon={<Sparkles size={13} fill="currentColor" className="text-zinc-300" />}
           badge={
-            <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-mono">
+            <span className="text-[10px] bg-zinc-800 text-zinc-300 px-1.5 py-0.5 font-mono">
               AI Powered
             </span>
           }

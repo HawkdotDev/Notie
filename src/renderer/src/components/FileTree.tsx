@@ -20,6 +20,7 @@ interface FileTreeProps {
   rootName?: string
   activeFilePath: string | null
   openFiles?: { path: string; name: string }[]
+  unsavedFiles?: Record<string, boolean>
   onFileSelect: (filePath: string) => void
   fileIcons?: Record<string, string>
   onMetadataLoaded?: (filePath: string, metadata: MarkdownMetadata) => void
@@ -29,7 +30,7 @@ interface FileTreeProps {
 function FileTree({
   rootPath,
   activeFilePath,
-  openFiles,
+  unsavedFiles,
   onFileSelect,
   fileIcons,
   onMetadataLoaded,
@@ -433,8 +434,11 @@ function FileTree({
       .filter(Boolean)
       .join(' ')
 
-    const isOpen = openFiles ? openFiles.some((f) => getPathKey(f.path) === nodeKey) : false
-    const showDot = isSelected || isOpen
+    const isUnsaved = unsavedFiles
+      ? !!unsavedFiles[nodeKey] ||
+        !!unsavedFiles[node.path] ||
+        !!unsavedFiles[normalizePath(node.path)]
+      : false
 
     return (
       <div key={nodeKey} className="tree-node">
@@ -473,7 +477,7 @@ function FileTree({
             )}
           </span>
           <span className="tree-node-right">
-            {showDot && <span className="tree-node-active-dot" />}
+            {isUnsaved && <span className="tree-node-active-dot" title="Unsaved changes" />}
             <button
               className="tree-node-dots-btn opacity-0 group-hover:opacity-100 p-0.5 hover:text-white text-zinc-400 rounded transition-all"
               onClick={(e): void => {

@@ -22,7 +22,7 @@ export default function QuickTerminalWidget(): React.JSX.Element {
     <div className="flex flex-col h-full gap-2 p-3 font-mono text-xs overflow-hidden bg-zinc-950">
       <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
         <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-semibold">
-          <TerminalIcon size={12} className="text-purple-400" />
+          <TerminalIcon size={12} className="text-zinc-300" />
           <span>Console & Python Output</span>
         </span>
         <div className="flex items-center gap-2">
@@ -31,7 +31,7 @@ export default function QuickTerminalWidget(): React.JSX.Element {
             <span>Ready</span>
           </span>
           <button
-            className="text-zinc-500 hover:text-zinc-200 p-0.5 rounded transition-colors"
+            className="text-zinc-500 hover:text-zinc-200 p-0.5 transition-colors"
             onClick={(): void => setLogs([])}
             title="Clear Logs"
           >
@@ -46,7 +46,7 @@ export default function QuickTerminalWidget(): React.JSX.Element {
             key={i}
             className={
               log.startsWith('>')
-                ? 'text-purple-400 font-semibold'
+                ? 'text-zinc-200 font-semibold'
                 : log.includes('ERROR')
                   ? 'text-red-400'
                   : 'text-zinc-400'
@@ -61,7 +61,7 @@ export default function QuickTerminalWidget(): React.JSX.Element {
         onSubmit={handleRunCommand}
         className="flex items-center gap-1.5 border-t border-zinc-800 pt-2"
       >
-        <span className="text-purple-400 select-none font-bold">&gt;</span>
+        <span className="text-zinc-400 select-none font-bold">&gt;</span>
         <input
           type="text"
           value={inputVal}
@@ -71,7 +71,7 @@ export default function QuickTerminalWidget(): React.JSX.Element {
         />
         <button
           type="submit"
-          className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+          className="p-1 text-zinc-300 hover:text-white transition-colors"
           title="Run"
         >
           <Play size={12} />

@@ -40,15 +40,15 @@ export default function DocumentStatsWidget({
   return (
     <div className="flex flex-col h-full gap-3 p-3 text-xs overflow-y-auto">
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-lg p-2.5 flex items-center gap-2">
-          <FileText size={14} className="text-purple-400" />
+        <div className="bg-zinc-900/70 border border-zinc-800/80 p-2.5 flex items-center gap-2">
+          <FileText size={14} className="text-zinc-300" />
           <div>
             <div className="font-bold text-zinc-200">{words}</div>
             <div className="text-[10px] text-zinc-500">Words</div>
           </div>
         </div>
 
-        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-lg p-2.5 flex items-center gap-2">
+        <div className="bg-zinc-900/70 border border-zinc-800/80 p-2.5 flex items-center gap-2">
           <Hash size={14} className="text-emerald-400" />
           <div>
             <div className="font-bold text-zinc-200">{chars}</div>
@@ -56,7 +56,7 @@ export default function DocumentStatsWidget({
           </div>
         </div>
 
-        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-lg p-2.5 flex items-center gap-2">
+        <div className="bg-zinc-900/70 border border-zinc-800/80 p-2.5 flex items-center gap-2">
           <AlignLeft size={14} className="text-blue-400" />
           <div>
             <div className="font-bold text-zinc-200">{lines}</div>
@@ -64,7 +64,7 @@ export default function DocumentStatsWidget({
           </div>
         </div>
 
-        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-lg p-2.5 flex items-center gap-2">
+        <div className="bg-zinc-900/70 border border-zinc-800/80 p-2.5 flex items-center gap-2">
           <Clock size={14} className="text-amber-400" />
           <div>
             <div className="font-bold text-zinc-200">{readingTime} min</div>
@@ -84,10 +84,10 @@ export default function DocumentStatsWidget({
             headings.map((h, i) => (
               <div
                 key={i}
-                className="hover:bg-zinc-800/50 p-1 rounded text-zinc-300 truncate cursor-pointer transition-colors"
+                className="hover:bg-zinc-800/50 p-1 text-zinc-300 truncate cursor-pointer transition-colors"
                 style={{ paddingLeft: `${(h.level - 1) * 10 + 4}px` }}
               >
-                <span className="text-purple-400 font-mono text-[10px] mr-1.5">H{h.level}</span>
+                <span className="text-zinc-400 font-mono text-[10px] mr-1.5">H{h.level}</span>
                 {h.text}
               </div>
             ))

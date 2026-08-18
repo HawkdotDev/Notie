@@ -8,11 +8,14 @@ interface BannerPickerProps {
 type TabType = 'gallery' | 'upload' | 'link'
 
 const gradientPresets = [
-  { name: 'Deep Purple', style: 'linear-gradient(135deg, #2e1065 0%, #1e1b4b 50%, #0f172a 100%)' },
+  {
+    name: 'Monochrome Charcoal',
+    style: 'linear-gradient(135deg, #18181b 0%, #27272a 50%, #09090b 100%)'
+  },
   { name: 'Midnight Ocean', style: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' },
   { name: 'Emerald Forest', style: 'linear-gradient(135deg, #064e3b, #022c22, #0f172a)' },
-  { name: 'Sunset Glow', style: 'linear-gradient(135deg, #831843, #701a75, #312e81)' },
-  { name: 'Cyber Neon', style: 'linear-gradient(135deg, #4c1d95, #c026d3, #2563eb)' },
+  { name: 'Slate Minimal', style: 'linear-gradient(135deg, #334155, #1e293b, #0f172a)' },
+  { name: 'Dark Metallic', style: 'linear-gradient(135deg, #27272a, #3f3f46, #18181b)' },
   { name: 'Solar Flare', style: 'linear-gradient(135deg, #7c2d12, #9a3412, #451a03)' }
 ]
 
