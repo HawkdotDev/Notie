@@ -46,6 +46,8 @@ export default function App(): React.JSX.Element {
   const [fileBanners, setFileBanners] = useState<Record<string, string>>({})
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false)
   const [showBannerPicker, setShowBannerPicker] = useState<boolean>(false)
+  const [showCover, setShowCover] = useState<boolean>(true)
+  const [showIcon, setShowIcon] = useState<boolean>(true)
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false)
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => savedState.viewMode ?? 'editor')
@@ -685,7 +687,7 @@ export default function App(): React.JSX.Element {
             ) : activeFilePath ? (
               <div className="editor-container">
                 {/* 1. NOTION-STYLE FULL-WIDTH COVER BANNER */}
-                {activeFileBanner && (
+                {showCover && activeFileBanner && (
                   <div
                     className="notion-cover-banner group"
                     style={
@@ -727,11 +729,13 @@ export default function App(): React.JSX.Element {
 
                 <div className="editor-wrapper">
                   {/* NOTION-STYLE PAGE HEADER */}
-                  <div className={`notion-page-header ${activeFileBanner ? 'has-cover' : ''}`}>
+                  <div
+                    className={`notion-page-header ${showCover && activeFileBanner ? 'has-cover' : ''}`}
+                  >
                     {/* Top ghost buttons when no icon or cover exists */}
-                    {(!activeFileIcon || !activeFileBanner) && (
+                    {((showIcon && !activeFileIcon) || (showCover && !activeFileBanner)) && (
                       <div className="notion-header-ghost-actions">
-                        {!activeFileIcon && (
+                        {showIcon && !activeFileIcon && (
                           <button
                             className="notion-ghost-btn"
                             onClick={(): void => setShowEmojiPicker(true)}
@@ -740,7 +744,7 @@ export default function App(): React.JSX.Element {
                             <span>Add icon</span>
                           </button>
                         )}
-                        {!activeFileBanner && (
+                        {showCover && !activeFileBanner && (
                           <button
                             className="notion-ghost-btn"
                             onClick={(): void => setShowBannerPicker(true)}
@@ -757,9 +761,9 @@ export default function App(): React.JSX.Element {
                     )}
 
                     {/* Page Icon Display */}
-                    {activeFileIcon && (
+                    {showIcon && activeFileIcon && (
                       <div
-                        className={`notion-icon-container group ${activeFileBanner ? 'has-cover' : ''}`}
+                        className={`notion-icon-container group ${showCover && activeFileBanner ? 'has-cover' : ''}`}
                       >
                         <button
                           className="notion-icon-btn"
@@ -947,6 +951,10 @@ export default function App(): React.JSX.Element {
               activeUnsaved={activeUnsaved}
               statsConfig={statsConfig}
               onToggleStat={handleToggleStat}
+              showCover={showCover}
+              showIcon={showIcon}
+              onToggleCover={(): void => setShowCover((prev) => !prev)}
+              onToggleIcon={(): void => setShowIcon((prev) => !prev)}
             />
           )}
         </div>

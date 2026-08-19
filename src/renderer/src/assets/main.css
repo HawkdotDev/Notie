@@ -2340,7 +2340,7 @@ code.inline-code {
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.02);
+  /* background: rgba(255, 255, 255, 0.02); */
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -2351,13 +2351,13 @@ code.inline-code {
 }
 
 .widget-menu-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(82, 82, 82, 0.06);
   border-color: rgba(255, 255, 255, 0.08);
 }
 
 .widget-menu-item.selected {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  /* border-color: rgba(255, 255, 255, 0.15); */
 }
 
 .widget-title {
@@ -2723,37 +2723,42 @@ code.inline-code {
 
 .floating-metrics-topright-trigger:hover,
 .floating-metrics-topright-trigger.active {
-  background: rgba(22, 22, 28, 0.98);
-  border-color: #454552;
-  color: #d1d1d8;
-  box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: rgba(18, 18, 22, 0.98);
+  border-color: #383842;
+  color: #bfbfc7;
 }
 
 .floating-metrics-topright-menu {
   position: absolute;
-  top: calc(100% + 7px);
+  top: calc(100% + 6px);
   right: 0;
-  width: 236px;
-  background: rgba(15, 15, 19, 0.97);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid #2a2a32;
+  width: 230px;
+  background: rgba(18, 18, 22, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   padding: 6px;
-  box-shadow:
-    0 20px 40px -8px rgba(0, 0, 0, 0.8),
-    0 0 0 1px rgba(255, 255, 255, 0.04);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.75);
   z-index: 500;
   display: flex;
   flex-direction: column;
-  animation: floatWidgetIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 6px;
+  animation: floatWidgetIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.floating-metrics-topright-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
 }
 
 .floating-metrics-topright-list {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  gap: 4px;
 }
 
 /* Submenu / Accordion Dropdown Rows inside Floating Menus */
@@ -2767,8 +2772,8 @@ code.inline-code {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 8px;
-  background: rgba(255, 255, 255, 0.02);
+  padding: 6px 8px;
+  /* background: rgba(255, 255, 255, 0.02); */
   border: 1px solid transparent;
   width: 100%;
   color: var(--text-main);
@@ -2777,49 +2782,25 @@ code.inline-code {
   user-select: none;
 }
 
-.options-submenu-trigger:hover,
-.options-submenu-trigger.expanded {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.06);
-}
-
-.options-trigger-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: #d1d1d8;
-  letter-spacing: -0.01em;
-}
-
-.options-count-badge {
-  font-size: 9.5px;
-  font-family: var(--font-mono);
-  color: #71717a;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 1px 5px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
 .options-submenu-content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 6px 0 2px 8px;
-  border-left: 2px solid rgba(255, 255, 255, 0.06);
+  gap: 3px;
+  padding: 4px 0 2px 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
   margin-left: 8px;
   margin-top: 4px;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
-.options-empty-card {
+.options-empty-content {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 14px 8px;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px dashed rgba(255, 255, 255, 0.07);
-  margin: 4px 0;
+  padding: 8px 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .status-pill-item.mono {
