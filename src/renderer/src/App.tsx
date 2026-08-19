@@ -721,10 +721,12 @@ export default function App(): React.JSX.Element {
                     </div>
                   )}
 
-                  <div className="editor-wrapper">
+                  <div
+                    className={`editor-wrapper ${showCover && activeFileBanner ? 'has-cover' : ''}`}
+                  >
                     {/* NOTION-STYLE PAGE HEADER */}
                     <div
-                      className={`notion-page-header ${showCover && activeFileBanner ? 'has-cover' : ''}`}
+                      className={`notion-page-header ${showCover && activeFileBanner ? 'has-cover' : ''} ${showIcon && activeFileIcon ? 'has-icon' : ''}`}
                     >
                       {/* Top ghost buttons when no icon or cover exists */}
                       {((showIcon && !activeFileIcon) || (showCover && !activeFileBanner)) && (

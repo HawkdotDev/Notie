@@ -1613,9 +1613,13 @@ body {
   max-width: 900px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 96px 40px;
+  padding: 56px 96px 40px;
   position: relative;
   box-sizing: border-box;
+}
+
+.editor-wrapper.has-cover {
+  padding-top: 0;
 }
 
 .notion-page-header {
@@ -1623,13 +1627,16 @@ body {
   margin-bottom: 8px;
 }
 
+.notion-page-header.has-cover:not(.has-icon) {
+  padding-top: 24px;
+}
+
 .notion-header-ghost-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 28px;
-  margin-top: 12px;
-  margin-bottom: 4px;
+  height: 26px;
+  margin-bottom: 6px;
   opacity: 0;
   transition: opacity 0.15s ease;
 }
