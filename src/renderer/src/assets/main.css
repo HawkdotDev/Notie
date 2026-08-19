@@ -2371,6 +2371,44 @@ code.inline-code {
   color: var(--text-muted);
 }
 
+/* Widgets Submenu inside Widgets Dropdown */
+.widget-submenu-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.widget-submenu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  width: 100%;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.widget-submenu-trigger:hover,
+.widget-submenu-trigger.expanded {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.widget-submenu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 0 2px 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+  margin-left: 8px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
 .widget-checkbox {
   width: 16px;
   height: 16px;
@@ -2549,6 +2587,8 @@ code.inline-code {
 .sidebar-floating-filetype,
 .floating-editor-statusbar-left,
 .floating-editor-statusbar {
+  position: absolute;
+  bottom: 16px;
   height: 29px;
   background: rgba(14, 14, 17, 0.9);
   backdrop-filter: blur(12px);
@@ -2574,36 +2614,20 @@ code.inline-code {
 }
 
 .sidebar-floating-filetype {
-  position: absolute;
-  bottom: 16px;
   left: 16px;
 }
 
 .floating-editor-statusbar-left {
-  position: absolute;
-  bottom: 16px;
   left: 20px;
 }
 
-.floating-editor-statusbar-container {
-  position: absolute;
-  bottom: 16px;
+.floating-editor-statusbar {
   right: 20px;
-  z-index: 80;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.floating-editor-statusbar-container .floating-editor-statusbar {
-  position: relative;
-  cursor: pointer;
 }
 
 .sidebar-floating-filetype:hover,
 .floating-editor-statusbar-left:hover,
-.floating-editor-statusbar:hover,
-.floating-editor-statusbar.active {
+.floating-editor-statusbar:hover {
   background: rgba(18, 18, 22, 0.98);
   border-color: #383842;
 }
@@ -2654,70 +2678,6 @@ code.inline-code {
 .floating-editor-statusbar .status-pill-item.language-pill {
   color: #bfbfc7;
   font-weight: 500;
-}
-
-/* Upward Floating Metrics Dropdown Menu */
-.floating-editor-statusbar-container .floating-metrics-dropdown-menu {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  right: 0;
-  width: 220px;
-  background: rgba(18, 18, 22, 0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 8px;
-  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.75);
-  z-index: 500;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  animation: floatWidgetIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.floating-editor-statusbar-container .floating-metrics-dropdown-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 2px 4px 6px 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 11px;
-}
-
-.floating-editor-statusbar-container .floating-metrics-dropdown-list {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.floating-editor-statusbar-container .metric-dropdown-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 8px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid transparent;
-  font-size: 11px;
-  transition: all 0.12s ease;
-}
-
-.floating-editor-statusbar-container .metric-dropdown-row:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.floating-editor-statusbar-container .metric-dropdown-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-muted);
-}
-
-.floating-editor-statusbar-container .metric-dropdown-value {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  color: #bfbfc7;
 }
 
 .status-pill-item.mono {

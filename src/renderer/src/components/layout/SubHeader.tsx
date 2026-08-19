@@ -70,6 +70,13 @@ function SubHeader({
       return false
     }
   })
+  const [metricsSubmenuOpen, setMetricsSubmenuOpen] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('notie_metrics_submenu_open') === 'true'
+    } catch {
+      return false
+    }
+  })
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -79,6 +86,14 @@ function SubHeader({
       // ignore
     }
   }, [showWidgetsMenu])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('notie_metrics_submenu_open', String(metricsSubmenuOpen))
+    } catch {
+      // ignore
+    }
+  }, [metricsSubmenuOpen])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
@@ -291,104 +306,121 @@ function SubHeader({
               </div>
             </div>
 
-            {/* STATUS BAR METRICS TOGGLE SECTION */}
+            {/* STATUS BAR METRICS SUB-DROPDOWN INSIDE WIDGETS */}
             {statsConfig && onToggleStat && (
-              <>
-                <div className="widgets-dropdown-header mt-1 border-t border-zinc-800 pt-2">
-                  <span className="font-semibold text-zinc-300">Status Bar Metrics</span>
-                  <span className="text-[10px] text-zinc-500">Toggle</span>
-                </div>
-
-                <div className="widgets-dropdown-list">
-                  <div
-                    className={`widget-menu-item compact ${statsConfig.showWords ? 'selected' : ''}`}
-                    onClick={(): void => onToggleStat('showWords')}
-                  >
-                    <span className="widget-title text-xs font-normal text-zinc-300">
-                      Word Count
-                    </span>
-                    <div className={`widget-checkbox ${statsConfig.showWords ? 'checked' : ''}`}>
-                      {statsConfig.showWords && <Check size={11} />}
+              <div className="widget-submenu-group">
+                <div className="dropdown-divider my-1" />
+                <button
+                  type="button"
+                  className={`widget-submenu-trigger ${metricsSubmenuOpen ? 'expanded' : ''}`}
+                  onClick={(e): void => {
+                    e.stopPropagation()
+                    setMetricsSubmenuOpen((prev) => {
+                      const next = !prev
+                      try {
+                        localStorage.setItem('notie_metrics_submenu_open', String(next))
+                      } catch {
+                        // ignore
+                      }
+                      return next
+                    })
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <BarChart2 size={13} className="text-emerald-400 shrink-0" />
+                    <div className="flex flex-col text-left">
+                      <span className="widget-title">Status Bar Metrics</span>
+                      <span className="widget-desc">Customize stats visibility</span>
                     </div>
                   </div>
+                  <ChevronDown
+                    size={12}
+                    className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
+                      metricsSubmenuOpen ? 'rotate-180 text-zinc-300' : ''
+                    }`}
+                  />
+                </button>
 
-                  <div
-                    className={`widget-menu-item compact ${statsConfig.showLines ? 'selected' : ''}`}
-                    onClick={(): void => onToggleStat('showLines')}
-                  >
-                    <span className="widget-title text-xs font-normal text-zinc-300">
-                      Line Count (&quot;12 lines&quot;)
-                    </span>
-                    <div className={`widget-checkbox ${statsConfig.showLines ? 'checked' : ''}`}>
-                      {statsConfig.showLines && <Check size={11} />}
-                    </div>
-                  </div>
-
-                  <div
-                    className={`widget-menu-item compact ${statsConfig.showSpaces ? 'selected' : ''}`}
-                    onClick={(): void => onToggleStat('showSpaces')}
-                  >
-                    <span className="widget-title text-xs font-normal text-zinc-300">
-                      Number of Spaces
-                    </span>
-                    <div className={`widget-checkbox ${statsConfig.showSpaces ? 'checked' : ''}`}>
-                      {statsConfig.showSpaces && <Check size={11} />}
-                    </div>
-                  </div>
-
-                  <div
-                    className={`widget-menu-item compact ${statsConfig.showChars ? 'selected' : ''}`}
-                    onClick={(): void => onToggleStat('showChars')}
-                  >
-                    <span className="widget-title text-xs font-normal text-zinc-300">
-                      Character Count
-                    </span>
-                    <div className={`widget-checkbox ${statsConfig.showChars ? 'checked' : ''}`}>
-                      {statsConfig.showChars && <Check size={11} />}
-                    </div>
-                  </div>
-
-                  <div
-                    className={`widget-menu-item compact ${statsConfig.showReadingTime ? 'selected' : ''}`}
-                    onClick={(): void => onToggleStat('showReadingTime')}
-                  >
-                    <span className="widget-title text-xs font-normal text-zinc-300">
-                      Reading Time
-                    </span>
+                {metricsSubmenuOpen && (
+                  <div className="widget-submenu-content">
                     <div
-                      className={`widget-checkbox ${statsConfig.showReadingTime ? 'checked' : ''}`}
+                      className={`widget-menu-item compact ${statsConfig.showWords ? 'selected' : ''}`}
+                      onClick={(): void => onToggleStat('showWords')}
                     >
-                      {statsConfig.showReadingTime && <Check size={11} />}
+                      <span className="widget-title text-xs font-normal text-zinc-300">
+                        Word Count
+                      </span>
+                      <div className={`widget-checkbox ${statsConfig.showWords ? 'checked' : ''}`}>
+                        {statsConfig.showWords && <Check size={11} />}
+                      </div>
                     </div>
-                  </div>
 
-                  <div
-                    className={`widget-menu-item compact ${statsConfig.showLanguage ? 'selected' : ''}`}
-                    onClick={(): void => onToggleStat('showLanguage')}
-                  >
-                    <span className="widget-title text-xs font-normal text-zinc-300">
-                      Language Mode
-                    </span>
-                    <div className={`widget-checkbox ${statsConfig.showLanguage ? 'checked' : ''}`}>
-                      {statsConfig.showLanguage && <Check size={11} />}
-                    </div>
-                  </div>
-
-                  <div
-                    className={`widget-menu-item compact ${statsConfig.showSavedBadge ? 'selected' : ''}`}
-                    onClick={(): void => onToggleStat('showSavedBadge')}
-                  >
-                    <span className="widget-title text-xs font-normal text-zinc-300">
-                      Floating Saved Badge
-                    </span>
                     <div
-                      className={`widget-checkbox ${statsConfig.showSavedBadge ? 'checked' : ''}`}
+                      className={`widget-menu-item compact ${statsConfig.showLines ? 'selected' : ''}`}
+                      onClick={(): void => onToggleStat('showLines')}
                     >
-                      {statsConfig.showSavedBadge && <Check size={11} />}
+                      <span className="widget-title text-xs font-normal text-zinc-300">
+                        Line Count (&quot;12 lines&quot;)
+                      </span>
+                      <div className={`widget-checkbox ${statsConfig.showLines ? 'checked' : ''}`}>
+                        {statsConfig.showLines && <Check size={11} />}
+                      </div>
+                    </div>
+
+                    <div
+                      className={`widget-menu-item compact ${statsConfig.showSpaces ? 'selected' : ''}`}
+                      onClick={(): void => onToggleStat('showSpaces')}
+                    >
+                      <span className="widget-title text-xs font-normal text-zinc-300">
+                        Number of Spaces
+                      </span>
+                      <div className={`widget-checkbox ${statsConfig.showSpaces ? 'checked' : ''}`}>
+                        {statsConfig.showSpaces && <Check size={11} />}
+                      </div>
+                    </div>
+
+                    <div
+                      className={`widget-menu-item compact ${statsConfig.showChars ? 'selected' : ''}`}
+                      onClick={(): void => onToggleStat('showChars')}
+                    >
+                      <span className="widget-title text-xs font-normal text-zinc-300">
+                        Character Count
+                      </span>
+                      <div className={`widget-checkbox ${statsConfig.showChars ? 'checked' : ''}`}>
+                        {statsConfig.showChars && <Check size={11} />}
+                      </div>
+                    </div>
+
+                    <div
+                      className={`widget-menu-item compact ${statsConfig.showReadingTime ? 'selected' : ''}`}
+                      onClick={(): void => onToggleStat('showReadingTime')}
+                    >
+                      <span className="widget-title text-xs font-normal text-zinc-300">
+                        Reading Time
+                      </span>
+                      <div
+                        className={`widget-checkbox ${statsConfig.showReadingTime ? 'checked' : ''}`}
+                      >
+                        {statsConfig.showReadingTime && <Check size={11} />}
+                      </div>
+                    </div>
+
+                    <div
+                      className={`widget-menu-item compact ${statsConfig.showSavedBadge ? 'selected' : ''}`}
+                      onClick={(): void => onToggleStat('showSavedBadge')}
+                    >
+                      <span className="widget-title text-xs font-normal text-zinc-300">
+                        Floating Saved Badge
+                      </span>
+                      <div
+                        className={`widget-checkbox ${statsConfig.showSavedBadge ? 'checked' : ''}`}
+                      >
+                        {statsConfig.showSavedBadge && <Check size={11} />}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </>
+                )}
+              </div>
             )}
           </div>
         )}

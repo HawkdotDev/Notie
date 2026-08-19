@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { CheckCircle2, ChevronUp, FileText, AlignLeft, Hash, Clock } from 'lucide-react'
+import React from 'react'
+import { CheckCircle2 } from 'lucide-react'
 import { StatusStatsConfig } from '../../types'
 
 interface StatusBarProps {
@@ -27,23 +27,6 @@ function StatusBar({
     showSavedBadge: true
   }
 }: StatusBarProps): React.JSX.Element | null {
-  const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent): void => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isOpen])
-
   if (!activeFilePath) return null
 
   // Multithreaded background content statistics
@@ -131,81 +114,18 @@ function StatusBar({
         </div>
       )}
 
-      {/* 2. Floating Document Stats Dropdown on the Right */}
+      {/* 2. Floating Document Stats on the Right */}
       {activeStatItems.length > 0 && (
-        <div ref={dropdownRef} className="floating-editor-statusbar-container">
-          <button
-            type="button"
-            className={`floating-editor-statusbar ${isOpen ? 'active' : ''}`}
-            onClick={(): void => setIsOpen((prev) => !prev)}
-            title="Document Metrics (Click to toggle details)"
-          >
-            {activeStatItems.map((item, idx) => (
-              <React.Fragment key={idx}>
-                {idx > 0 && <div className="status-divider" />}
-                {item}
-              </React.Fragment>
-            ))}
-            <div className="status-divider" />
-            <ChevronUp
-              size={12}
-              className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                isOpen ? 'rotate-180 text-zinc-300' : ''
-              }`}
-            />
-          </button>
-
-          {/* Floating Dropdown Details Card */}
-          {isOpen && (
-            <div className="floating-metrics-dropdown-menu">
-              <div className="floating-metrics-dropdown-header">
-                <span className="font-semibold text-zinc-300">Document Metrics</span>
-                <span className="text-[10px] text-zinc-500 font-mono">Live</span>
-              </div>
-
-              <div className="floating-metrics-dropdown-list">
-                <div className="metric-dropdown-row">
-                  <div className="metric-dropdown-label">
-                    <FileText size={12} className="text-zinc-400" />
-                    <span>Words</span>
-                  </div>
-                  <span className="metric-dropdown-value">{wordCount.toLocaleString()}</span>
-                </div>
-
-                <div className="metric-dropdown-row">
-                  <div className="metric-dropdown-label">
-                    <AlignLeft size={12} className="text-zinc-400" />
-                    <span>Lines</span>
-                  </div>
-                  <span className="metric-dropdown-value">{lineCount.toLocaleString()}</span>
-                </div>
-
-                <div className="metric-dropdown-row">
-                  <div className="metric-dropdown-label">
-                    <Hash size={12} className="text-zinc-400" />
-                    <span>Spaces</span>
-                  </div>
-                  <span className="metric-dropdown-value">{spaceCount.toLocaleString()}</span>
-                </div>
-
-                <div className="metric-dropdown-row">
-                  <div className="metric-dropdown-label">
-                    <FileText size={12} className="text-zinc-400" />
-                    <span>Characters</span>
-                  </div>
-                  <span className="metric-dropdown-value">{charCount.toLocaleString()}</span>
-                </div>
-
-                <div className="metric-dropdown-row">
-                  <div className="metric-dropdown-label">
-                    <Clock size={12} className="text-zinc-400" />
-                    <span>Reading Time</span>
-                  </div>
-                  <span className="metric-dropdown-value">~{readingTime} min</span>
-                </div>
-              </div>
-            </div>
-          )}
+        <div
+          className="floating-editor-statusbar"
+          title={`File: ${activeFilePath} | ~${readingTime} min read`}
+        >
+          {activeStatItems.map((item, idx) => (
+            <React.Fragment key={idx}>
+              {idx > 0 && <div className="status-divider" />}
+              {item}
+            </React.Fragment>
+          ))}
         </div>
       )}
     </>
