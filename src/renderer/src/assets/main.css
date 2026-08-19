@@ -2788,7 +2788,13 @@ code.inline-code {
 .floating-metrics-topright-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
+}
+
+.options-dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 3px 2px;
 }
 
 /* Submenu / Accordion Dropdown Rows inside Floating Menus */

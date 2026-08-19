@@ -339,6 +339,9 @@ function StatusBar({
                   </div>
                 )}
 
+                {/* Gap / Divider between Metrics and Icon & Cover */}
+                <div className="options-dropdown-divider" />
+
                 {/* 2. Icon & Cover Sub-dropdown (Below Metrics inside Option 1) */}
                 <div className="options-submenu-group">
                   <button
