@@ -156,7 +156,7 @@ export default function SettingsModal({
     })
 
     setSaveToast(true)
-    setTimeout(() => setSaveToast(false), 1200)
+    setTimeout(() => setSaveToast(false), 1500)
   }
 
   const handleResetDefaults = (): void => {
@@ -165,7 +165,7 @@ export default function SettingsModal({
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(DEFAULT_USER_SETTINGS))
       if (onSettingsChange) onSettingsChange(DEFAULT_USER_SETTINGS)
       setSaveToast(true)
-      setTimeout(() => setSaveToast(false), 1200)
+      setTimeout(() => setSaveToast(false), 1500)
     }
   }
 
@@ -198,39 +198,22 @@ export default function SettingsModal({
   return (
     <div className="settings-modal-backdrop" onClick={onClose}>
       <div className="settings-modal-dialog" onClick={(e): void => e.stopPropagation()}>
-        {/* Minimal Integrated Header */}
+        {/* Top Header Bar */}
         <div className="settings-modal-header">
-          <div className="flex items-center gap-2">
-            <Sliders size={13} strokeWidth={1.5} className="text-zinc-400" />
-            <span className="settings-title">Settings</span>
+          <div className="flex items-center gap-3">
+            <div className="settings-header-icon-box">
+              <Sliders size={14} className="text-zinc-300" />
+            </div>
+            <div>
+              <h2 className="settings-title">Preferences & Settings</h2>
+              <p className="settings-subtitle">Customize editor, behavior, themes, and shortcuts</p>
+            </div>
           </div>
 
-          {/* Integrated Search Bar */}
-          <div className="settings-header-search">
-            <Search size={12} strokeWidth={1.5} className="text-zinc-500 shrink-0" />
-            <input
-              type="text"
-              className="settings-header-search-input"
-              placeholder="Filter settings..."
-              value={searchQuery}
-              onChange={(e): void => setSearchQuery(e.target.value)}
-              autoFocus
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                className="settings-search-clear"
-                onClick={(): void => setSearchQuery('')}
-              >
-                <X size={11} strokeWidth={1.5} />
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {saveToast && (
               <div className="settings-save-toast">
-                <Check size={10} strokeWidth={2} className="text-emerald-400" />
+                <Check size={11} className="text-emerald-400" />
                 <span>Saved</span>
               </div>
             )}
@@ -239,11 +222,33 @@ export default function SettingsModal({
               type="button"
               className="settings-close-btn"
               onClick={onClose}
-              title="Close (Esc)"
+              title="Close Settings (Esc)"
             >
-              <X size={14} strokeWidth={1.5} />
+              <X size={15} strokeWidth={1.5} />
             </button>
           </div>
+        </div>
+
+        {/* Search Filter Header */}
+        <div className="settings-search-bar">
+          <Search size={13} className="text-zinc-500 shrink-0" />
+          <input
+            type="text"
+            className="settings-search-input"
+            placeholder="Search settings, options, or shortcuts..."
+            value={searchQuery}
+            onChange={(e): void => setSearchQuery(e.target.value)}
+            autoFocus
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              className="settings-search-clear"
+              onClick={(): void => setSearchQuery('')}
+            >
+              <X size={12} />
+            </button>
+          )}
         </div>
 
         {/* Main Body (Left Sidebar Nav + Right Options Pane) */}
@@ -255,7 +260,7 @@ export default function SettingsModal({
               className={`settings-nav-item ${activeTab === 'general' ? 'active' : ''}`}
               onClick={(): void => setActiveTab('general')}
             >
-              <Sliders size={12} strokeWidth={1.5} />
+              <Sliders size={13} />
               <span>General</span>
             </button>
 
@@ -264,8 +269,8 @@ export default function SettingsModal({
               className={`settings-nav-item ${activeTab === 'editor' ? 'active' : ''}`}
               onClick={(): void => setActiveTab('editor')}
             >
-              <Type size={12} strokeWidth={1.5} />
-              <span>Editor</span>
+              <Type size={13} />
+              <span>Editor & Text</span>
             </button>
 
             <button
@@ -273,7 +278,7 @@ export default function SettingsModal({
               className={`settings-nav-item ${activeTab === 'appearance' ? 'active' : ''}`}
               onClick={(): void => setActiveTab('appearance')}
             >
-              <Palette size={12} strokeWidth={1.5} />
+              <Palette size={13} />
               <span>Appearance</span>
             </button>
 
@@ -282,8 +287,8 @@ export default function SettingsModal({
               className={`settings-nav-item ${activeTab === 'files' ? 'active' : ''}`}
               onClick={(): void => setActiveTab('files')}
             >
-              <FolderCog size={12} strokeWidth={1.5} />
-              <span>Files</span>
+              <FolderCog size={13} />
+              <span>Files & Explorer</span>
             </button>
 
             <button
@@ -291,8 +296,8 @@ export default function SettingsModal({
               className={`settings-nav-item ${activeTab === 'ai' ? 'active' : ''}`}
               onClick={(): void => setActiveTab('ai')}
             >
-              <Bot size={12} strokeWidth={1.5} />
-              <span>AI</span>
+              <Bot size={13} />
+              <span>AI & Analysis</span>
             </button>
 
             <button
@@ -300,7 +305,7 @@ export default function SettingsModal({
               className={`settings-nav-item ${activeTab === 'shortcuts' ? 'active' : ''}`}
               onClick={(): void => setActiveTab('shortcuts')}
             >
-              <Keyboard size={12} strokeWidth={1.5} />
+              <Keyboard size={13} />
               <span>Shortcuts</span>
             </button>
 
@@ -309,18 +314,18 @@ export default function SettingsModal({
               className={`settings-nav-item ${activeTab === 'about' ? 'active' : ''}`}
               onClick={(): void => setActiveTab('about')}
             >
-              <Info size={12} strokeWidth={1.5} />
-              <span>About</span>
+              <Info size={13} />
+              <span>About & System</span>
             </button>
 
-            <div className="mt-auto pt-3 border-t border-zinc-800/50">
+            <div className="mt-auto pt-4 border-t border-zinc-800/80">
               <button
                 type="button"
                 className="settings-reset-btn"
                 onClick={handleResetDefaults}
-                title="Reset all settings to defaults"
+                title="Reset all settings to factory defaults"
               >
-                <RotateCcw size={11} strokeWidth={1.5} />
+                <RotateCcw size={12} />
                 <span>Reset Defaults</span>
               </button>
             </div>
@@ -332,8 +337,8 @@ export default function SettingsModal({
             {activeTab === 'general' && (
               <div className="settings-section">
                 <div className="settings-section-header">
-                  <h3>General</h3>
-                  <p>Document persistence and safety</p>
+                  <h3>General Preferences</h3>
+                  <p>Configure document saving, recovery, and confirmation dialogs</p>
                 </div>
 
                 <div className="settings-card">
@@ -342,7 +347,7 @@ export default function SettingsModal({
                     <div className="settings-row-text">
                       <label className="settings-row-label">Automatic Save</label>
                       <span className="settings-row-desc">
-                        Save modified documents automatically
+                        Automatically write modified documents to disk after editing
                       </span>
                     </div>
                     <label className="settings-toggle">
@@ -357,10 +362,12 @@ export default function SettingsModal({
 
                   {/* Autosave Delay */}
                   {settings.autoSaveEnabled && (
-                    <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                    <div className="settings-row border-t border-zinc-800/60 pt-3">
                       <div className="settings-row-text">
-                        <label className="settings-row-label">Save Delay</label>
-                        <span className="settings-row-desc">Inactivity interval before saving</span>
+                        <label className="settings-row-label">Autosave Delay</label>
+                        <span className="settings-row-desc">
+                          Interval of inactivity before saving changes
+                        </span>
                       </div>
                       <select
                         className="settings-select"
@@ -369,18 +376,21 @@ export default function SettingsModal({
                           updateSetting('autoSaveDelay', Number(e.target.value))
                         }
                       >
-                        <option value={1}>1s (Instant)</option>
-                        <option value={2}>2s (Default)</option>
-                        <option value={5}>5s</option>
+                        <option value={1}>1 second (Instant)</option>
+                        <option value={2}>2 seconds (Default)</option>
+                        <option value={5}>5 seconds</option>
+                        <option value={10}>10 seconds</option>
                       </select>
                     </div>
                   )}
 
                   {/* Restore Tabs on Startup */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Restore Open Tabs</label>
-                      <span className="settings-row-desc">Reopen active tabs upon launch</span>
+                      <label className="settings-row-label">Restore Tabs on Startup</label>
+                      <span className="settings-row-desc">
+                        Reopen all previously open documents when launching Notie
+                      </span>
                     </div>
                     <label className="settings-toggle">
                       <input
@@ -395,11 +405,11 @@ export default function SettingsModal({
                   </div>
 
                   {/* Confirm Delete */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Confirm Deletion</label>
+                      <label className="settings-row-label">Confirm File Deletion</label>
                       <span className="settings-row-desc">
-                        Prompt before deleting files or folders
+                        Prompt confirmation before permanently removing files or folders
                       </span>
                     </div>
                     <label className="settings-toggle">
@@ -415,12 +425,12 @@ export default function SettingsModal({
               </div>
             )}
 
-            {/* 2. EDITOR TAB */}
+            {/* 2. EDITOR & TEXT TAB */}
             {activeTab === 'editor' && (
               <div className="settings-section">
                 <div className="settings-section-header">
-                  <h3>Editor</h3>
-                  <p>Typography and editing parameters</p>
+                  <h3>Editor & Typography</h3>
+                  <p>Customize fonts, text scaling, line height, and editing behaviors</p>
                 </div>
 
                 <div className="settings-card">
@@ -428,7 +438,9 @@ export default function SettingsModal({
                   <div className="settings-row">
                     <div className="settings-row-text">
                       <label className="settings-row-label">Font Family</label>
-                      <span className="settings-row-desc">Primary editor typeface</span>
+                      <span className="settings-row-desc">
+                        Typeface used across documents and markdown content
+                      </span>
                     </div>
                     <select
                       className="settings-select"
@@ -437,39 +449,43 @@ export default function SettingsModal({
                         updateSetting('fontFamily', e.target.value as 'sans' | 'mono' | 'serif')
                       }
                     >
-                      <option value="sans">Sans (Inter)</option>
-                      <option value="mono">Mono (JetBrains Mono)</option>
-                      <option value="serif">Serif (Georgia)</option>
+                      <option value="sans">Modern Sans (Inter / System)</option>
+                      <option value="mono">Code Monospace (JetBrains Mono)</option>
+                      <option value="serif">Literary Serif (Georgia / Merriweather)</option>
                     </select>
                   </div>
 
                   {/* Font Size */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
                       <label className="settings-row-label">Font Size</label>
-                      <span className="settings-row-desc">Base paragraph scale</span>
+                      <span className="settings-row-desc">
+                        Base font size for document paragraphs ({settings.fontSize}px)
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-3">
                       <input
                         type="range"
                         min={12}
-                        max={18}
+                        max={20}
                         step={1}
                         className="settings-range"
                         value={settings.fontSize}
                         onChange={(e): void => updateSetting('fontSize', Number(e.target.value))}
                       />
-                      <span className="text-[11px] font-mono text-zinc-400 w-7 text-right">
+                      <span className="text-xs font-mono text-zinc-300 w-8 text-right">
                         {settings.fontSize}px
                       </span>
                     </div>
                   </div>
 
                   {/* Line Height */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
                       <label className="settings-row-label">Line Spacing</label>
-                      <span className="settings-row-desc">Vertical line height</span>
+                      <span className="settings-row-desc">
+                        Vertical line height for reading comfort
+                      </span>
                     </div>
                     <div className="settings-segment-group">
                       {(['compact', 'normal', 'relaxed'] as const).map((lh) => (
@@ -486,10 +502,10 @@ export default function SettingsModal({
                   </div>
 
                   {/* Tab Size */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Tab Size</label>
-                      <span className="settings-row-desc">Indentation spaces</span>
+                      <label className="settings-row-label">Tab Indentation</label>
+                      <span className="settings-row-desc">Spaces inserted on Tab press</span>
                     </div>
                     <select
                       className="settings-select"
@@ -502,10 +518,12 @@ export default function SettingsModal({
                   </div>
 
                   {/* Word Wrap */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Word Wrap</label>
-                      <span className="settings-row-desc">Wrap lines to container width</span>
+                      <label className="settings-row-label">Soft Word Wrap</label>
+                      <span className="settings-row-desc">
+                        Wrap long text lines within the editor window width
+                      </span>
                     </div>
                     <label className="settings-toggle">
                       <input
@@ -518,10 +536,12 @@ export default function SettingsModal({
                   </div>
 
                   {/* Spellcheck */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Spellcheck</label>
-                      <span className="settings-row-desc">Native dictionary checking</span>
+                      <label className="settings-row-label">Browser Spellcheck</label>
+                      <span className="settings-row-desc">
+                        Enable native spellcheck and dictionary suggestions
+                      </span>
                     </div>
                     <label className="settings-toggle">
                       <input
@@ -540,16 +560,18 @@ export default function SettingsModal({
             {activeTab === 'appearance' && (
               <div className="settings-section">
                 <div className="settings-section-header">
-                  <h3>Appearance</h3>
-                  <p>Layout dimensions and dock elements</p>
+                  <h3>Appearance & Layout</h3>
+                  <p>Configure workspace bounds, cover height, and visual dock elements</p>
                 </div>
 
                 <div className="settings-card">
                   {/* Editor Max Width */}
                   <div className="settings-row">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Content Width</label>
-                      <span className="settings-row-desc">Editor reading boundary</span>
+                      <label className="settings-row-label">Editor Container Width</label>
+                      <span className="settings-row-desc">
+                        Horizontal boundary for document content
+                      </span>
                     </div>
                     <select
                       className="settings-select"
@@ -564,21 +586,24 @@ export default function SettingsModal({
                       <option value="compact">Compact (750px)</option>
                       <option value="standard">Standard (850px)</option>
                       <option value="wide">Wide (1050px)</option>
-                      <option value="full">Full Width</option>
+                      <option value="full">Full Window Width</option>
                     </select>
                   </div>
 
                   {/* Banner Cover Height */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Cover Height</label>
-                      <span className="settings-row-desc">Banner header height</span>
+                      <label className="settings-row-label">Cover Banner Height</label>
+                      <span className="settings-row-desc">
+                        Default height of Notion-style banner headers ({settings.coverBannerHeight}
+                        px)
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-3">
                       <input
                         type="range"
                         min={140}
-                        max={300}
+                        max={320}
                         step={20}
                         className="settings-range"
                         value={settings.coverBannerHeight}
@@ -586,17 +611,19 @@ export default function SettingsModal({
                           updateSetting('coverBannerHeight', Number(e.target.value))
                         }
                       />
-                      <span className="text-[11px] font-mono text-zinc-400 w-10 text-right">
+                      <span className="text-xs font-mono text-zinc-300 w-12 text-right">
                         {settings.coverBannerHeight}px
                       </span>
                     </div>
                   </div>
 
                   {/* Show Breadcrumbs Navigation */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Breadcrumbs Bar</label>
-                      <span className="settings-row-desc">Show sub-header path</span>
+                      <label className="settings-row-label">Show Breadcrumb Bar</label>
+                      <span className="settings-row-desc">
+                        Display minimal navigation path in sub-header
+                      </span>
                     </div>
                     <label className="settings-toggle">
                       <input
@@ -609,10 +636,12 @@ export default function SettingsModal({
                   </div>
 
                   {/* Show Status Bar */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Bottom Status Bar</label>
-                      <span className="settings-row-desc">Show 2-part footer bar</span>
+                      <label className="settings-row-label">Show Bottom Status Strip</label>
+                      <span className="settings-row-desc">
+                        Display the 2-part bottom status bar with file info and word stats
+                      </span>
                     </div>
                     <label className="settings-toggle">
                       <input
@@ -627,20 +656,22 @@ export default function SettingsModal({
               </div>
             )}
 
-            {/* 4. FILES TAB */}
+            {/* 4. FILES & EXPLORER TAB */}
             {activeTab === 'files' && (
               <div className="settings-section">
                 <div className="settings-section-header">
-                  <h3>Files</h3>
-                  <p>Explorer and indexing patterns</p>
+                  <h3>Files & Explorer Settings</h3>
+                  <p>Configure file exclusion patterns and directory tree filtering</p>
                 </div>
 
                 <div className="settings-card">
                   {/* Show Hidden Files */}
                   <div className="settings-row">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Dot Files</label>
-                      <span className="settings-row-desc">Show hidden dot files</span>
+                      <label className="settings-row-label">Show Dot / Hidden Files</label>
+                      <span className="settings-row-desc">
+                        Display files starting with a dot (e.g. .env, .gitignore) in explorer
+                      </span>
                     </div>
                     <label className="settings-toggle">
                       <input
@@ -653,11 +684,11 @@ export default function SettingsModal({
                   </div>
 
                   {/* Exclusion Patterns */}
-                  <div className="border-t border-zinc-800/40 pt-2.5">
-                    <div className="mb-1.5">
-                      <label className="settings-row-label">Exclude Patterns</label>
-                      <span className="settings-row-desc block">
-                        Ignored folders during background index
+                  <div className="border-t border-zinc-800/60 pt-3">
+                    <div className="mb-2">
+                      <label className="settings-row-label">Excluded Directories & Patterns</label>
+                      <span className="settings-row-desc block mt-0.5">
+                        Comma-separated folder names to ignore during background indexing
                       </span>
                     </div>
                     <input
@@ -672,20 +703,22 @@ export default function SettingsModal({
               </div>
             )}
 
-            {/* 5. AI TAB */}
+            {/* 5. AI & ANALYSIS TAB */}
             {activeTab === 'ai' && (
               <div className="settings-section">
                 <div className="settings-section-header">
-                  <h3>AI</h3>
-                  <p>Writing diagnostics and providers</p>
+                  <h3>AI Assistant & Document Diagnostics</h3>
+                  <p>Configure automated writing analysis, grammar rules, and AI endpoints</p>
                 </div>
 
                 <div className="settings-card">
                   {/* Automatic AI Analysis */}
                   <div className="settings-row">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Auto Diagnostics</label>
-                      <span className="settings-row-desc">Scan active text continuously</span>
+                      <label className="settings-row-label">Automated Document Analysis</label>
+                      <span className="settings-row-desc">
+                        Scan document text continuously for style improvements and clarity
+                      </span>
                     </div>
                     <label className="settings-toggle">
                       <input
@@ -698,10 +731,12 @@ export default function SettingsModal({
                   </div>
 
                   {/* AI Provider */}
-                  <div className="settings-row border-t border-zinc-800/40 pt-2.5">
+                  <div className="settings-row border-t border-zinc-800/60 pt-3">
                     <div className="settings-row-text">
-                      <label className="settings-row-label">Engine Provider</label>
-                      <span className="settings-row-desc">Diagnostic suggestions provider</span>
+                      <label className="settings-row-label">AI Engine Provider</label>
+                      <span className="settings-row-desc">
+                        Select engine for document summarization and rewrite suggestions
+                      </span>
                     </div>
                     <select
                       className="settings-select"
@@ -713,18 +748,20 @@ export default function SettingsModal({
                         )
                       }
                     >
-                      <option value="local">Local (Offline)</option>
-                      <option value="gemini">Google Gemini</option>
-                      <option value="custom">Custom Endpoint</option>
+                      <option value="local">Local Heuristic Engine (Fast, Offline)</option>
+                      <option value="gemini">Google Gemini AI (Cloud API)</option>
+                      <option value="custom">Custom OpenAI / Ollama Endpoint</option>
                     </select>
                   </div>
 
                   {/* Gemini API Key */}
                   {settings.aiModelProvider === 'gemini' && (
-                    <div className="border-t border-zinc-800/40 pt-2.5">
-                      <div className="mb-1.5">
-                        <label className="settings-row-label">API Key</label>
-                        <span className="settings-row-desc block">Personal Gemini API key</span>
+                    <div className="border-t border-zinc-800/60 pt-3">
+                      <div className="mb-2">
+                        <label className="settings-row-label">Gemini API Key</label>
+                        <span className="settings-row-desc block mt-0.5">
+                          Personal API key for Gemini 1.5 Pro / Flash models
+                        </span>
                       </div>
                       <input
                         type="password"
@@ -737,8 +774,8 @@ export default function SettingsModal({
                   )}
 
                   {/* Diagnostic Checkers */}
-                  <div className="border-t border-zinc-800/40 pt-2.5">
-                    <span className="settings-row-label block mb-2">Active Rules</span>
+                  <div className="border-t border-zinc-800/60 pt-3">
+                    <span className="settings-row-label block mb-2">Active Diagnostic Rules</span>
                     <div className="grid grid-cols-3 gap-2">
                       <label className="settings-checkbox-card">
                         <input
@@ -746,7 +783,7 @@ export default function SettingsModal({
                           checked={settings.checkGrammar}
                           onChange={(e): void => updateSetting('checkGrammar', e.target.checked)}
                         />
-                        <span>Grammar</span>
+                        <span>Grammar & Typo</span>
                       </label>
 
                       <label className="settings-checkbox-card">
@@ -755,7 +792,7 @@ export default function SettingsModal({
                           checked={settings.checkStyle}
                           onChange={(e): void => updateSetting('checkStyle', e.target.checked)}
                         />
-                        <span>Style</span>
+                        <span>Style & Wordiness</span>
                       </label>
 
                       <label className="settings-checkbox-card">
@@ -766,7 +803,7 @@ export default function SettingsModal({
                             updateSetting('checkPassiveVoice', e.target.checked)
                           }
                         />
-                        <span>Passive</span>
+                        <span>Passive Voice</span>
                       </label>
                     </div>
                   </div>
@@ -774,20 +811,20 @@ export default function SettingsModal({
               </div>
             )}
 
-            {/* 6. SHORTCUTS TAB */}
+            {/* 6. KEYBOARD SHORTCUTS TAB */}
             {activeTab === 'shortcuts' && (
               <div className="settings-section">
                 <div className="settings-section-header">
-                  <h3>Shortcuts</h3>
-                  <p>Keyboard keybindings</p>
+                  <h3>Keyboard Shortcuts</h3>
+                  <p>Standard keybindings for navigation, editing, and window control</p>
                 </div>
 
                 <div className="settings-card p-0 overflow-hidden">
                   <div className="settings-shortcuts-table">
                     <div className="settings-shortcuts-thead">
-                      <span>Command</span>
+                      <span>Action / Command</span>
                       <span>Category</span>
-                      <span className="text-right">Key</span>
+                      <span className="text-right">Keybinding</span>
                     </div>
 
                     <div className="settings-shortcuts-tbody">
@@ -798,7 +835,7 @@ export default function SettingsModal({
                           <div className="settings-shortcut-keys">
                             {item.keyCombo.split('+').map((k, i) => (
                               <React.Fragment key={i}>
-                                {i > 0 && <span className="text-zinc-600 text-[10px]">+</span>}
+                                {i > 0 && <span className="text-zinc-600 text-xs">+</span>}
                                 <kbd className="settings-kbd">{k.trim()}</kbd>
                               </React.Fragment>
                             ))}
@@ -807,7 +844,7 @@ export default function SettingsModal({
                       ))}
 
                       {filteredShortcuts.length === 0 && (
-                        <div className="text-center py-6 text-[11px] text-zinc-500">
+                        <div className="text-center py-6 text-xs text-zinc-500">
                           No shortcuts match &quot;{searchQuery}&quot;
                         </div>
                       )}
@@ -821,41 +858,39 @@ export default function SettingsModal({
             {activeTab === 'about' && (
               <div className="settings-section">
                 <div className="settings-section-header">
-                  <h3>About</h3>
-                  <p>Environment diagnostics</p>
+                  <h3>About Notie</h3>
+                  <p>Application specifications and environment diagnostics</p>
                 </div>
 
                 <div className="settings-card">
-                  <div className="flex items-center gap-3 pb-3 border-b border-zinc-800/50">
-                    <div className="w-8 h-8 bg-zinc-800 flex items-center justify-center border border-zinc-700 font-bold text-xs text-white">
+                  <div className="flex items-center gap-4 pb-4 border-b border-zinc-800/80">
+                    <div className="w-12 h-12 bg-zinc-800 flex items-center justify-center border border-zinc-700 font-bold text-lg text-white">
                       N
                     </div>
                     <div>
-                      <h4 className="text-xs font-semibold text-white">Notie Markdown IDE</h4>
-                      <p className="text-[10px] text-zinc-500">Version 0.1.0 • Hybrid IDE</p>
+                      <h4 className="text-sm font-semibold text-white">Notie Markdown IDE</h4>
+                      <p className="text-xs text-zinc-400">
+                        Version 0.1.0 • Hybrid Brutalist &amp; Notion-Style Architecture
+                      </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-2.5 text-[11px]">
+                  <div className="grid grid-cols-2 gap-3 pt-3 text-xs">
                     <div className="settings-info-item">
-                      <span className="text-zinc-500 text-[10px]">Platform</span>
-                      <span className="text-zinc-300 font-mono text-[11px]">
-                        Windows / Electron
-                      </span>
+                      <span className="text-zinc-500">Platform:</span>
+                      <span className="text-zinc-300 font-mono">Windows x64 / Electron</span>
                     </div>
                     <div className="settings-info-item">
-                      <span className="text-zinc-500 text-[10px]">Renderer</span>
-                      <span className="text-zinc-300 font-mono text-[11px]">
-                        React 19 + TypeScript
-                      </span>
+                      <span className="text-zinc-500">Rendering Engine:</span>
+                      <span className="text-zinc-300 font-mono">React 19 + TypeScript</span>
                     </div>
                     <div className="settings-info-item">
-                      <span className="text-zinc-500 text-[10px]">Graph</span>
-                      <span className="text-zinc-300 font-mono text-[11px]">2D Force Graph</span>
+                      <span className="text-zinc-500">Graph Visualizer:</span>
+                      <span className="text-zinc-300 font-mono">2D Force Graph (Canvas)</span>
                     </div>
                     <div className="settings-info-item">
-                      <span className="text-zinc-500 text-[10px]">Indexer</span>
-                      <span className="text-zinc-300 font-mono text-[11px]">Worker (Active)</span>
+                      <span className="text-zinc-500">Web Worker Indexer:</span>
+                      <span className="text-zinc-300 font-mono">Active (Multithreaded)</span>
                     </div>
                   </div>
                 </div>
@@ -864,10 +899,10 @@ export default function SettingsModal({
           </div>
         </div>
 
-        {/* Minimal Footer */}
+        {/* Footer / Status */}
         <div className="settings-modal-footer">
-          <span className="text-zinc-500 text-[10px]">
-            Press <kbd className="settings-kbd text-[9px]">Esc</kbd> to close
+          <span className="text-zinc-500 text-xs">
+            Press <kbd className="settings-kbd text-[10px]">Esc</kbd> to close preferences
           </span>
           <button type="button" className="settings-done-btn" onClick={onClose}>
             Done
