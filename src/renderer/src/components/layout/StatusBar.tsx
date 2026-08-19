@@ -6,10 +6,7 @@ import {
   Check,
   BarChart2,
   Sliders,
-  Layers,
-  Clock,
-  Type,
-  Sparkles
+  Layers
 } from 'lucide-react'
 import { StatusStatsConfig } from '../../types'
 
@@ -44,11 +41,8 @@ function StatusBar({
     'metrics' | 'preferences' | 'extensions' | null
   >(null)
   const [metricsSub1Open, setMetricsSub1Open] = useState(true)
-  const [metricsSub2Open, setMetricsSub2Open] = useState(false)
   const [prefSub1Open, setPrefSub1Open] = useState(true)
-  const [prefSub2Open, setPrefSub2Open] = useState(false)
   const [extSub1Open, setExtSub1Open] = useState(true)
-  const [extSub2Open, setExtSub2Open] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -185,16 +179,8 @@ function StatusBar({
 
             {activeDropdown === 'metrics' && (
               <div className="floating-metrics-topright-menu">
-                <div className="floating-metrics-topright-header">
-                  <div className="flex items-center gap-1.5">
-                    <BarChart2 size={12} className="text-emerald-400" />
-                    <span className="font-semibold text-zinc-300">Metrics</span>
-                  </div>
-                  <span className="text-[10px] text-zinc-500 font-mono">Options</span>
-                </div>
-
                 <div className="floating-metrics-topright-list">
-                  {/* Metrics Sub-dropdown 1: Visible Metrics */}
+                  {/* The entire metrics option is a dropdown */}
                   <div className="options-submenu-group">
                     <button
                       type="button"
@@ -203,7 +189,7 @@ function StatusBar({
                     >
                       <div className="flex items-center gap-2">
                         <BarChart2 size={13} className="text-emerald-400 shrink-0" />
-                        <span className="widget-title">Visible Counters</span>
+                        <span className="widget-title font-semibold">Metrics</span>
                       </div>
                       <ChevronDown
                         size={11}
@@ -301,41 +287,13 @@ function StatusBar({
                       </div>
                     )}
                   </div>
-
-                  {/* Metrics Sub-dropdown 2: Reading Targets */}
-                  <div className="options-submenu-group">
-                    <button
-                      type="button"
-                      className={`options-submenu-trigger ${metricsSub2Open ? 'expanded' : ''}`}
-                      onClick={(): void => setMetricsSub2Open((p) => !p)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Clock size={13} className="text-amber-400 shrink-0" />
-                        <span className="widget-title">Reading Speed</span>
-                      </div>
-                      <ChevronDown
-                        size={11}
-                        className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                          metricsSub2Open ? 'rotate-180 text-zinc-300' : ''
-                        }`}
-                      />
-                    </button>
-
-                    {metricsSub2Open && (
-                      <div className="options-submenu-content">
-                        <div className="options-empty-content">
-                          <span>Standard 200 words / min</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* Dropdown 2: Editor Preferences */}
+        {/* Dropdown 2: Empty Dropdown 1 */}
         <div className="floating-tool-item">
           <button
             type="button"
@@ -343,23 +301,14 @@ function StatusBar({
             onClick={(): void =>
               setActiveDropdown((prev) => (prev === 'preferences' ? null : 'preferences'))
             }
-            title="Editor Preferences"
+            title="Dropdown 2"
           >
             <Sliders size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
           </button>
 
           {activeDropdown === 'preferences' && (
             <div className="floating-metrics-topright-menu">
-              <div className="floating-metrics-topright-header">
-                <div className="flex items-center gap-1.5">
-                  <Sliders size={12} className="text-blue-400" />
-                  <span className="font-semibold text-zinc-300">Preferences</span>
-                </div>
-                <span className="text-[10px] text-zinc-500 font-mono">Editor</span>
-              </div>
-
               <div className="floating-metrics-topright-list">
-                {/* Preferences Sub-dropdown 1: Formatting */}
                 <div className="options-submenu-group">
                   <button
                     type="button"
@@ -368,7 +317,7 @@ function StatusBar({
                   >
                     <div className="flex items-center gap-2">
                       <Sliders size={13} className="text-blue-400 shrink-0" />
-                      <span className="widget-title">Formatting</span>
+                      <span className="widget-title font-semibold">Dropdown 2</span>
                     </div>
                     <ChevronDown
                       size={11}
@@ -381,35 +330,7 @@ function StatusBar({
                   {prefSub1Open && (
                     <div className="options-submenu-content">
                       <div className="options-empty-content">
-                        <span>No formatting options available</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Preferences Sub-dropdown 2: Typography */}
-                <div className="options-submenu-group">
-                  <button
-                    type="button"
-                    className={`options-submenu-trigger ${prefSub2Open ? 'expanded' : ''}`}
-                    onClick={(): void => setPrefSub2Open((p) => !p)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Type size={13} className="text-cyan-400 shrink-0" />
-                      <span className="widget-title">Typography</span>
-                    </div>
-                    <ChevronDown
-                      size={11}
-                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                        prefSub2Open ? 'rotate-180 text-zinc-300' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {prefSub2Open && (
-                    <div className="options-submenu-content">
-                      <div className="options-empty-content">
-                        <span>Default font configuration</span>
+                        <span>No options available</span>
                       </div>
                     </div>
                   )}
@@ -419,7 +340,7 @@ function StatusBar({
           )}
         </div>
 
-        {/* Dropdown 3: Extensions */}
+        {/* Dropdown 3: Empty Dropdown 2 */}
         <div className="floating-tool-item">
           <button
             type="button"
@@ -427,23 +348,14 @@ function StatusBar({
             onClick={(): void =>
               setActiveDropdown((prev) => (prev === 'extensions' ? null : 'extensions'))
             }
-            title="Extensions"
+            title="Dropdown 3"
           >
             <Layers size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
           </button>
 
           {activeDropdown === 'extensions' && (
             <div className="floating-metrics-topright-menu">
-              <div className="floating-metrics-topright-header">
-                <div className="flex items-center gap-1.5">
-                  <Layers size={12} className="text-purple-400" />
-                  <span className="font-semibold text-zinc-300">Extensions</span>
-                </div>
-                <span className="text-[10px] text-zinc-500 font-mono">Plugins</span>
-              </div>
-
               <div className="floating-metrics-topright-list">
-                {/* Extensions Sub-dropdown 1: Plugins */}
                 <div className="options-submenu-group">
                   <button
                     type="button"
@@ -452,7 +364,7 @@ function StatusBar({
                   >
                     <div className="flex items-center gap-2">
                       <Layers size={13} className="text-purple-400 shrink-0" />
-                      <span className="widget-title">Installed Plugins</span>
+                      <span className="widget-title font-semibold">Dropdown 3</span>
                     </div>
                     <ChevronDown
                       size={11}
@@ -465,35 +377,7 @@ function StatusBar({
                   {extSub1Open && (
                     <div className="options-submenu-content">
                       <div className="options-empty-content">
-                        <span>No plugins installed</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Extensions Sub-dropdown 2: Community Tools */}
-                <div className="options-submenu-group">
-                  <button
-                    type="button"
-                    className={`options-submenu-trigger ${extSub2Open ? 'expanded' : ''}`}
-                    onClick={(): void => setExtSub2Open((p) => !p)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Sparkles size={13} className="text-amber-400 shrink-0" />
-                      <span className="widget-title">Community Tools</span>
-                    </div>
-                    <ChevronDown
-                      size={11}
-                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                        extSub2Open ? 'rotate-180 text-zinc-300' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {extSub2Open && (
-                    <div className="options-submenu-content">
-                      <div className="options-empty-content">
-                        <span>No tools enabled</span>
+                        <span>No options available</span>
                       </div>
                     </div>
                   )}
