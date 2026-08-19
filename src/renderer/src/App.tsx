@@ -607,8 +607,6 @@ export default function App(): React.JSX.Element {
         onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
         showSearchInput={showSearchInput}
         onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
-        statsConfig={statsConfig}
-        onToggleStat={handleToggleStat}
       />
 
       {/* ====== 3. MAIN APP CONTENT CONTAINER ====== */}
@@ -948,6 +946,7 @@ export default function App(): React.JSX.Element {
               autoSaveEnabled={autoSaveEnabled}
               activeUnsaved={activeUnsaved}
               statsConfig={statsConfig}
+              onToggleStat={handleToggleStat}
             />
           )}
         </div>

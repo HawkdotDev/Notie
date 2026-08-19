@@ -1,5 +1,5 @@
-import React from 'react'
-import { CheckCircle2 } from 'lucide-react'
+import React, { useState, useRef, useEffect } from 'react'
+import { CheckCircle2, SlidersHorizontal, ChevronDown, Check } from 'lucide-react'
 import { StatusStatsConfig } from '../../types'
 
 interface StatusBarProps {
@@ -9,6 +9,7 @@ interface StatusBarProps {
   autoSaveEnabled: boolean
   activeUnsaved: boolean
   statsConfig?: StatusStatsConfig
+  onToggleStat?: (key: keyof StatusStatsConfig) => void
 }
 
 function StatusBar({
@@ -25,8 +26,26 @@ function StatusBar({
     showReadingTime: false,
     showLanguage: false,
     showSavedBadge: true
-  }
+  },
+  onToggleStat
 }: StatusBarProps): React.JSX.Element | null {
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false)
+  const optionsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (optionsRef.current && !optionsRef.current.contains(e.target as Node)) {
+        setIsOptionsOpen(false)
+      }
+    }
+    if (isOptionsOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOptionsOpen])
+
   if (!activeFilePath) return null
 
   // Multithreaded background content statistics
@@ -39,7 +58,7 @@ function StatusBar({
   const spaceCount = activeFileContent ? (activeFileContent.match(/ /g) || []).length : 0
   const readingTime = stats?.readingTimeMinutes ?? Math.max(1, Math.ceil(wordCount / 200))
 
-  // Build the list of active stats for the right pill
+  // Build the list of active stats for the bottom right pill
   const activeStatItems: React.JSX.Element[] = []
 
   if (statsConfig.showWords) {
@@ -92,7 +111,7 @@ function StatusBar({
 
   return (
     <>
-      {/* 1. Floating Saved Status on the Left */}
+      {/* 1. Floating Saved Status on the Bottom-Left */}
       {statsConfig.showSavedBadge && (
         <div
           className="floating-editor-statusbar-left"
@@ -114,7 +133,7 @@ function StatusBar({
         </div>
       )}
 
-      {/* 2. Floating Document Stats on the Right */}
+      {/* 2. Floating Document Stats on the Bottom-Right */}
       {activeStatItems.length > 0 && (
         <div
           className="floating-editor-statusbar"
@@ -126,6 +145,111 @@ function StatusBar({
               {item}
             </React.Fragment>
           ))}
+        </div>
+      )}
+
+      {/* 3. Floating Status Bar Metrics Options Dropdown in the Top-Right Corner */}
+      {onToggleStat && (
+        <div ref={optionsRef} className="floating-editor-metrics-topright">
+          <button
+            type="button"
+            className={`floating-metrics-topright-trigger ${isOptionsOpen ? 'active' : ''}`}
+            onClick={(): void => setIsOptionsOpen((prev) => !prev)}
+            title="Status Bar Metrics Options"
+          >
+            <SlidersHorizontal size={12} className="text-zinc-400 shrink-0" />
+            <span className="text-xs text-zinc-300 font-medium">Metrics Options</span>
+            <ChevronDown
+              size={11}
+              className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
+                isOptionsOpen ? 'rotate-180 text-zinc-300' : ''
+              }`}
+            />
+          </button>
+
+          {/* Floating Dropdown Options Menu */}
+          {isOptionsOpen && (
+            <div className="floating-metrics-topright-menu">
+              <div className="floating-metrics-topright-header">
+                <span className="font-semibold text-zinc-300">Status Bar Metrics</span>
+                <span className="text-[10px] text-zinc-500 font-mono">Options</span>
+              </div>
+
+              <div className="floating-metrics-topright-list">
+                <div
+                  className={`widget-menu-item compact ${statsConfig.showWords ? 'selected' : ''}`}
+                  onClick={(): void => onToggleStat('showWords')}
+                >
+                  <span className="widget-title text-xs font-normal text-zinc-300">Word Count</span>
+                  <div className={`widget-checkbox ${statsConfig.showWords ? 'checked' : ''}`}>
+                    {statsConfig.showWords && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item compact ${statsConfig.showLines ? 'selected' : ''}`}
+                  onClick={(): void => onToggleStat('showLines')}
+                >
+                  <span className="widget-title text-xs font-normal text-zinc-300">
+                    Line Count (&quot;12 lines&quot;)
+                  </span>
+                  <div className={`widget-checkbox ${statsConfig.showLines ? 'checked' : ''}`}>
+                    {statsConfig.showLines && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item compact ${statsConfig.showSpaces ? 'selected' : ''}`}
+                  onClick={(): void => onToggleStat('showSpaces')}
+                >
+                  <span className="widget-title text-xs font-normal text-zinc-300">
+                    Number of Spaces
+                  </span>
+                  <div className={`widget-checkbox ${statsConfig.showSpaces ? 'checked' : ''}`}>
+                    {statsConfig.showSpaces && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item compact ${statsConfig.showChars ? 'selected' : ''}`}
+                  onClick={(): void => onToggleStat('showChars')}
+                >
+                  <span className="widget-title text-xs font-normal text-zinc-300">
+                    Character Count
+                  </span>
+                  <div className={`widget-checkbox ${statsConfig.showChars ? 'checked' : ''}`}>
+                    {statsConfig.showChars && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item compact ${statsConfig.showReadingTime ? 'selected' : ''}`}
+                  onClick={(): void => onToggleStat('showReadingTime')}
+                >
+                  <span className="widget-title text-xs font-normal text-zinc-300">
+                    Reading Time
+                  </span>
+                  <div
+                    className={`widget-checkbox ${statsConfig.showReadingTime ? 'checked' : ''}`}
+                  >
+                    {statsConfig.showReadingTime && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item compact ${statsConfig.showSavedBadge ? 'selected' : ''}`}
+                  onClick={(): void => onToggleStat('showSavedBadge')}
+                >
+                  <span className="widget-title text-xs font-normal text-zinc-300">
+                    Floating Saved Badge
+                  </span>
+                  <div className={`widget-checkbox ${statsConfig.showSavedBadge ? 'checked' : ''}`}>
+                    {statsConfig.showSavedBadge && <Check size={11} />}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>

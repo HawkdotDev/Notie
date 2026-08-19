@@ -2680,6 +2680,82 @@ code.inline-code {
   font-weight: 500;
 }
 
+/* ====== FLOATING METRICS OPTIONS DROPDOWN (Writing Area Top-Right Corner) ====== */
+.floating-editor-metrics-topright {
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.floating-metrics-topright-trigger {
+  height: 29px;
+  background: rgba(14, 14, 17, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #28282e;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  user-select: none;
+  cursor: pointer;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+  pointer-events: auto;
+}
+
+.floating-metrics-topright-trigger:hover,
+.floating-metrics-topright-trigger.active {
+  background: rgba(18, 18, 22, 0.98);
+  border-color: #383842;
+  color: #bfbfc7;
+}
+
+.floating-metrics-topright-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 240px;
+  background: rgba(18, 18, 22, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.75);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: floatWidgetIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.floating-metrics-topright-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+}
+
+.floating-metrics-topright-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
 .status-pill-item.mono {
   font-family: var(--font-mono);
   font-size: 10.5px;
