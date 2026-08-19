@@ -198,7 +198,7 @@ export default function AssistantPanel({
           <button
             className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${
               activeTab === 'diagnostics'
-                ? 'bg-zinc-700 text-white'
+                ? 'bg-zinc-700 text-zinc-200'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
             onClick={(): void => setActiveTab('diagnostics')}
@@ -208,7 +208,7 @@ export default function AssistantPanel({
           <button
             className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${
               activeTab === 'ai-tools'
-                ? 'bg-zinc-700 text-white'
+                ? 'bg-zinc-700 text-zinc-200'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
             onClick={(): void => setActiveTab('ai-tools')}
@@ -217,7 +217,9 @@ export default function AssistantPanel({
           </button>
           <button
             className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${
-              activeTab === 'ask' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-zinc-200'
+              activeTab === 'ask'
+                ? 'bg-zinc-700 text-zinc-200'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
             onClick={(): void => setActiveTab('ask')}
           >
@@ -251,7 +253,7 @@ export default function AssistantPanel({
                       {issue.label}
                     </span>
                     <button
-                      className="px-2 py-0.5 bg-zinc-700 hover:bg-zinc-600 text-white text-[10px] font-medium transition-colors flex items-center gap-1"
+                      className="px-2 py-0.5 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 text-[10px] font-medium transition-colors flex items-center gap-1"
                       onClick={(): void => handleApplyFix(issue)}
                     >
                       Fix <ArrowRight size={10} />
@@ -348,7 +350,7 @@ export default function AssistantPanel({
             <button
               type="submit"
               disabled={isProcessing || !customPrompt.trim()}
-              className="w-full py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 disabled:opacity-50 text-white font-medium flex items-center justify-center gap-1.5 transition-colors"
+              className="w-full py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 disabled:opacity-50 text-zinc-200 font-medium flex items-center justify-center gap-1.5 transition-colors"
             >
               <Send size={12} />
               <span>Ask AI Assistant</span>
@@ -382,7 +384,7 @@ export default function AssistantPanel({
               {aiOutput}
             </div>
             <button
-              className="w-full py-1 bg-zinc-700 hover:bg-zinc-600 text-white text-[10px] font-medium transition-colors"
+              className="w-full py-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 text-[10px] font-medium transition-colors"
               onClick={(): void => {
                 if (onUpdateContent && content) {
                   onUpdateContent(content + '\n\n' + aiOutput)
@@ -399,7 +401,7 @@ export default function AssistantPanel({
       {issues.length > 0 && activeTab === 'diagnostics' && (
         <div className="p-3 border-t border-[#292932] bg-[#141417]">
           <button
-            className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-medium flex items-center justify-center gap-1.5 transition-all"
+            className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-medium flex items-center justify-center gap-1.5 transition-all"
             onClick={handleFixAll}
           >
             <Sparkles size={13} />

@@ -71,7 +71,7 @@ export default function QuickTerminalWidget(): React.JSX.Element {
         />
         <button
           type="submit"
-          className="p-1 text-zinc-300 hover:text-white transition-colors"
+          className="p-1 text-zinc-300 hover:text-zinc-200 transition-colors"
           title="Run"
         >
           <Play size={12} />

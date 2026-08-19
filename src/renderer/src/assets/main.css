@@ -368,7 +368,7 @@ body {
 
 .window-control-btn.close-btn:hover {
   background: #ef4444;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .top-header-right {
@@ -401,7 +401,7 @@ body {
   width: 24px;
   height: 24px;
   background: #27272a;
-  color: #ffffff;
+  color: #EDEDF0;
   font-weight: 700;
   font-size: 10px;
   display: flex;
@@ -449,7 +449,7 @@ body {
   left: 2px;
   width: 12px;
   height: 12px;
-  background: #ffffff;
+  background: #EDEDF0;
   transition: transform 0.2s ease;
 }
 
@@ -535,7 +535,7 @@ body {
 
 .window-control-btn.close-btn:hover {
   background: #e81123;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 /* ====== SUB-HEADER QUICK ACTIONS BAR ====== */
@@ -583,7 +583,7 @@ body {
 .action-pill-btn:hover {
   background: #2a2a30;
   border-color: #3e3e46;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .action-pill-btn.home-btn {
@@ -891,7 +891,7 @@ body {
 }
 
 .recent-workspace-card:hover .recent-workspace-card-arrow {
-  color: #ffffff;
+  color: #EDEDF0;
   transform: translateX(2px);
 }
 
@@ -915,7 +915,7 @@ body {
 .sidebar-open-folder-btn:hover {
   background: #2d2d34;
   border-color: #71717a;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 /* First-Time Empty State */
@@ -952,7 +952,7 @@ body {
 .sidebar-search-toggle-btn:hover,
 .sidebar-search-toggle-btn.active {
   background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: #EDEDF0;
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -978,7 +978,7 @@ body {
 
 .floating-sidebar-toggle-btn:hover {
   background: #27272e;
-  color: #ffffff;
+  color: #EDEDF0;
   border-color: #3f3f46;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
@@ -1057,7 +1057,7 @@ body {
 }
 
 .sidebar-dots-btn:hover {
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 /* File Tree Container & Rows */
@@ -1097,20 +1097,20 @@ body {
 
 .tree-node-item:hover {
   background-color: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+  color: #EDEDF0;
   transform: translateX(2px);
 }
 
 /* Open folder pill card highlight */
 .tree-node-item.expanded-folder {
   background-color: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  color: #EDEDF0;
   font-weight: 500;
 }
 
 .tree-node-item.active {
   background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: #EDEDF0;
   font-weight: 500;
   border-left: 2.5px solid #71717a;
   padding-left: 6.5px;
@@ -1206,13 +1206,13 @@ body {
 .file-badge.ts,
 .file-badge.ts-config {
   background: #3b82f6;
-  color: #ffffff;
+  color: #EDEDF0;
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
 }
 
 .file-badge.tsx {
   background: #0284c7;
-  color: #ffffff;
+  color: #EDEDF0;
   font-size: 8px;
   box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
 }
@@ -1233,58 +1233,58 @@ body {
 
 .file-badge.py {
   background: #10b981;
-  color: #ffffff;
+  color: #EDEDF0;
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
 }
 
 .file-badge.css {
   background: #06b6d4;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .file-badge.html {
   background: #ea580c;
-  color: #ffffff;
+  color: #EDEDF0;
   font-size: 8px;
 }
 
 .file-badge.yaml {
   background: #cb3837;
-  color: #ffffff;
+  color: #EDEDF0;
   font-size: 8px;
 }
 
 .file-badge.md {
   background: #52525b;
-  color: #ffffff;
+  color: #EDEDF0;
   box-shadow: none;
 }
 
 .file-badge.rust {
   background: #f97316;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .file-badge.go {
   background: #00add8;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .file-badge.c-lang,
 .file-badge.cpp {
   background: #2563eb;
-  color: #ffffff;
+  color: #EDEDF0;
   font-size: 8px;
 }
 
 .file-badge.csharp {
   background: #475569;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .file-badge.java {
   background: #dc2626;
-  color: #ffffff;
+  color: #EDEDF0;
   font-size: 7.5px;
 }
 
@@ -1295,13 +1295,13 @@ body {
 
 .file-badge.git {
   background: #f05032;
-  color: #ffffff;
+  color: #EDEDF0;
   font-size: 8px;
 }
 
 .file-badge.env {
   background: #ec4899;
-  color: #ffffff;
+  color: #EDEDF0;
   font-size: 8px;
 }
 
@@ -1487,7 +1487,7 @@ body {
 .breadcrumb-item.workspace-root:hover,
 .breadcrumb-item.workspace-root.active {
   background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: #EDEDF0;
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -1593,7 +1593,7 @@ body {
 .notion-cover-btn:hover {
   background: rgba(30, 30, 36, 0.9);
   border-color: rgba(255, 255, 255, 0.3);
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .editor-wrapper {
@@ -1690,7 +1690,7 @@ svg.theme-svg,
 }
 
 .notion-icon-btn:hover svg {
-  color: #ffffff;
+  color: #EDEDF0;
   filter: none;
 }
 
@@ -1703,7 +1703,7 @@ svg.theme-svg,
   width: 100%;
   font-size: 36px;
   font-weight: 700;
-  color: #ffffff;
+  color: #EDEDF0;
   background: transparent;
   border: none;
   outline: none;
@@ -1750,7 +1750,7 @@ svg.theme-svg,
 .cdx-list__item b,
 .cdx-list__item strong {
   font-weight: 700;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .ce-paragraph i,
@@ -1813,7 +1813,7 @@ code.inline-code {
 
 .notion-icon-quick-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 /* ====== NOTION STYLE BANNER & EMOJI PICKER POPOVERS ====== */
@@ -1869,7 +1869,7 @@ code.inline-code {
 
 .banner-tab-btn.active {
   background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  color: #EDEDF0;
   font-weight: 600;
 }
 
@@ -1885,7 +1885,7 @@ code.inline-code {
 }
 
 .banner-picker-close-btn:hover {
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .banner-picker-section-title {
@@ -1931,7 +1931,7 @@ code.inline-code {
 
 .banner-picker-upload-label:hover {
   border-color: #71717a;
-  color: #ffffff;
+  color: #EDEDF0;
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -1962,7 +1962,7 @@ code.inline-code {
 .banner-picker-url-submit-btn {
   background: #3f3f46;
   border: none;
-  color: #ffffff;
+  color: #EDEDF0;
   font-size: 11px;
   font-weight: 600;
   padding: 6px 12px;
@@ -2034,7 +2034,7 @@ code.inline-code {
 
 .emoji-picker-action-btn:hover {
   background: #2e2e38;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .emoji-picker-action-btn.remove:hover {
@@ -2054,7 +2054,7 @@ code.inline-code {
 }
 
 .emoji-picker-close-btn:hover {
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .emoji-picker-scroll-area {
@@ -2370,14 +2370,14 @@ code.inline-code {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: #EDEDF0;
   transition: all 0.15s ease;
 }
 
 .widget-checkbox.checked {
   background: #52525b;
   border-color: #52525b;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .right-panel-header {
@@ -2451,14 +2451,14 @@ code.inline-code {
 
 .diff-tag-highlight {
   background: #3f3f46;
-  color: #ffffff;
+  color: #EDEDF0;
   font-weight: 700;
   padding: 1px 6px;
 }
 
 .btn-fix-all {
   background: #27272a;
-  color: #ffffff;
+  color: #EDEDF0;
   font-weight: 600;
   font-size: 12px;
   padding: 8px 14px;
@@ -2632,7 +2632,7 @@ code.inline-code {
 
 .status-pill-item.hoverable:hover {
   background: rgba(255, 255, 255, 0.07);
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .status-pill-item.mono {
@@ -2834,7 +2834,7 @@ code.inline-code {
 
 .settings-close-btn:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 .settings-save-toast {
@@ -2884,7 +2884,7 @@ code.inline-code {
 }
 
 .settings-search-clear:hover {
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 /* Body (2 columns) */
@@ -2930,7 +2930,7 @@ code.inline-code {
 .settings-nav-item.active {
   background: #222228;
   border-color: #2e2e36;
-  color: #ffffff;
+  color: #EDEDF0;
   font-weight: 500;
 }
 
@@ -2973,7 +2973,7 @@ code.inline-code {
 .settings-section-header h3 {
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
+  color: #EDEDF0;
   margin: 0 0 2px 0;
 }
 
@@ -3061,7 +3061,7 @@ code.inline-code {
 
 .settings-toggle input:checked+.settings-toggle-slider:before {
   transform: translateX(16px);
-  background-color: #ffffff;
+  background-color: #EDEDF0;
 }
 
 .settings-select {
@@ -3136,7 +3136,7 @@ code.inline-code {
 
 .settings-segment-btn.active {
   background: #27272a;
-  color: #ffffff;
+  color: #EDEDF0;
   font-weight: 500;
 }
 
@@ -3155,7 +3155,7 @@ code.inline-code {
 
 .settings-checkbox-card:hover {
   border-color: #3f3f46;
-  color: #ffffff;
+  color: #EDEDF0;
 }
 
 /* Shortcuts Table */
@@ -3250,7 +3250,7 @@ code.inline-code {
 .settings-done-btn {
   background: #27272a;
   border: 1px solid #3f3f46;
-  color: #ffffff;
+  color: #EDEDF0;
   font-size: 11px;
   font-weight: 500;
   padding: 4px 14px;

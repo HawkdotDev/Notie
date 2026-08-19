@@ -374,7 +374,7 @@ function FileTree({
             </span>
             <span className="tree-node-right">
               <button
-                className="tree-node-dots-btn opacity-0 group-hover:opacity-100 p-0.5 hover:text-white text-zinc-400 rounded transition-all"
+                className="tree-node-dots-btn opacity-0 group-hover:opacity-100 p-0.5 hover:text-zinc-200 text-zinc-400 rounded transition-all"
                 onClick={(e): void => {
                   e.stopPropagation()
                   handleContextMenu(e, node.path, true, parentPath)
@@ -479,7 +479,7 @@ function FileTree({
           <span className="tree-node-right">
             {isUnsaved && <span className="tree-node-active-dot" title="Unsaved changes" />}
             <button
-              className="tree-node-dots-btn opacity-0 group-hover:opacity-100 p-0.5 hover:text-white text-zinc-400 rounded transition-all"
+              className="tree-node-dots-btn opacity-0 group-hover:opacity-100 p-0.5 hover:text-zinc-200 text-zinc-400 rounded transition-all"
               onClick={(e): void => {
                 e.stopPropagation()
                 handleContextMenu(e, node.path, false, parentPath)

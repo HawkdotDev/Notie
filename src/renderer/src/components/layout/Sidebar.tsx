@@ -267,7 +267,7 @@ function Sidebar({
               Open a local folder or workspace project to start exploring files and editing code.
             </p>
             <button
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-white transition-all cursor-pointer border border-zinc-700"
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-all cursor-pointer border border-zinc-700"
               onClick={onOpenWorkspace}
             >
               <FolderOpen size={14} />

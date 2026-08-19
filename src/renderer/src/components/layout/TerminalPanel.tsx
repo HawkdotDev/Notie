@@ -49,10 +49,10 @@ export default function TerminalPanel({
 
         <div className="terminal-controls">
           <span>1: Node</span>
-          <Plus size={12} className="cursor-pointer hover:text-white" />
-          <Square size={10} className="cursor-pointer hover:text-white" />
-          <Trash2 size={12} className="cursor-pointer hover:text-white" />
-          <ChevronUp size={12} className="cursor-pointer hover:text-white" />
+          <Plus size={12} className="cursor-pointer hover:text-zinc-200" />
+          <Square size={10} className="cursor-pointer hover:text-zinc-200" />
+          <Trash2 size={12} className="cursor-pointer hover:text-zinc-200" />
+          <ChevronUp size={12} className="cursor-pointer hover:text-zinc-200" />
           <X size={13} className="cursor-pointer hover:text-red-400" onClick={onCloseTerminal} />
         </div>
       </div>
