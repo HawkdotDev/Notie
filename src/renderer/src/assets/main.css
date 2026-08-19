@@ -1718,7 +1718,33 @@ svg.theme-svg,
   color: #52525b;
 }
 
-/* ====== EDITOR.JS RICH TEXT & BULLET STYLING ====== */
+/* ====== WRITING AREA & EDITOR.JS STYLING ====== */
+.editor-wrapper,
+.block-editor-container,
+.codex-editor,
+.codex-editor__redactor,
+.ce-block,
+.ce-block__content,
+.ce-paragraph,
+.ce-header,
+.cdx-list,
+.cdx-list__item,
+.cdx-quote,
+.cdx-quote__text,
+.ce-rawtool,
+.ce-rawtool__textarea,
+.ce-code,
+.ce-code__textarea,
+.cdx-input {
+  color: #c8c8d0;
+}
+
+.ce-paragraph {
+  color: #c8c8d0;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
 .ce-paragraph b,
 .ce-paragraph strong,
 .cdx-list__item b,
@@ -1732,7 +1758,7 @@ svg.theme-svg,
 .cdx-list__item i,
 .cdx-list__item em {
   font-style: italic;
-  color: #e4e4e7;
+  color: #dcdce2;
 }
 
 .cdx-list {
@@ -1744,7 +1770,7 @@ svg.theme-svg,
   padding: 3px 0;
   font-size: 15px;
   line-height: 1.6;
-  color: #ececec;
+  color: #c8c8d0;
   list-style-type: disc;
 }
 
