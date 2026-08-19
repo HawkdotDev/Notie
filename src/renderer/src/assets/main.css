@@ -663,8 +663,8 @@ body {
   min-height: 32px;
   max-height: 32px;
   box-sizing: border-box;
-  border-bottom: 1px solid #222226;
-  background-color: #141416;
+  /* border-bottom: 1px solid #222226; */
+  /* background-color: #141416; */
 }
 
 .sidebar-header-title {
@@ -2169,8 +2169,8 @@ code.inline-code {
   height: 32px;
   min-height: 32px;
   padding: 0 12px;
-  background: #141416;
-  border-bottom: 1px solid var(--border-color);
+  /* background: #141416; */
+  /* border-bottom: 1px solid var(--border-color); */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2601,9 +2601,9 @@ code.inline-code {
   position: absolute;
   bottom: 16px;
   height: 29px;
-  background: rgba(14, 14, 17);
-  /* backdrop-filter: blur(20px); */
-  /* -webkit-backdrop-filter: blur(20px); */
+  /* background: #161619; */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   /* border: 1px solid #28282e; */
   /* box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.5),
