@@ -90,8 +90,6 @@ function SubHeader({
     }
   }, [showWidgetsMenu])
 
-  const activeWidgetCount = Object.values(widgetState).filter(Boolean).length
-
   return (
     <div className="app-actions-bar relative">
       <div className="actions-bar-left">
@@ -201,7 +199,7 @@ function SubHeader({
           title={`Toggle Floating Widgets (Autosave: ${autoSaveEnabled ? 'ON' : 'OFF'})`}
         >
           <LayoutGrid size={13} fill="currentColor" className="text-zinc-300" />
-          <span>Widgets ({activeWidgetCount})</span>
+          <span>Widgets</span>
           {activeUnsaved && <span className="w-1.5 h-1.5 bg-amber-400" />}
           <ChevronDown
             size={12}
