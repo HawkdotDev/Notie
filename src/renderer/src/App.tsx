@@ -64,9 +64,6 @@ export default function App(): React.JSX.Element {
   const [showSearchInput, setShowSearchInput] = useState<boolean>(
     () => savedState.showSearchInput ?? false
   )
-  const [showDiffToggle, setShowDiffToggle] = useState<boolean>(
-    () => savedState.showDiffToggle ?? false
-  )
   const [searchQuery, setSearchQuery] = useState<string>(() => savedState.searchQuery ?? '')
 
   const {
@@ -320,7 +317,6 @@ export default function App(): React.JSX.Element {
       showRightSidebar,
       rightSidebarWidth,
       showSearchInput,
-      showDiffToggle,
       searchQuery,
       widgetState,
       widgetZIndexes,
@@ -338,7 +334,6 @@ export default function App(): React.JSX.Element {
     showRightSidebar,
     rightSidebarWidth,
     showSearchInput,
-    showDiffToggle,
     searchQuery,
     widgetState,
     widgetZIndexes,
@@ -598,8 +593,6 @@ export default function App(): React.JSX.Element {
         setViewMode={setViewMode}
         onOpenWorkspace={handleOpenWorkspace}
         onCreateFileAtRoot={handleCreateFileAtRoot}
-        showDiffToggle={showDiffToggle}
-        onToggleDiff={(): void => setShowDiffToggle((prev) => !prev)}
         autoSaveEnabled={autoSaveEnabled}
         onToggleAutoSave={(): void => setAutoSaveEnabled((p) => !p)}
         activeUnsaved={activeUnsaved}

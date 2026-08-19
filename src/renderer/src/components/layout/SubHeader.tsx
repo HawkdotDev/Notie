@@ -30,8 +30,6 @@ interface SubHeaderProps {
   setViewMode?: (mode: ViewMode) => void
   onOpenWorkspace?: () => void
   onCreateFileAtRoot?: () => void
-  showDiffToggle?: boolean
-  onToggleDiff?: () => void
   autoSaveEnabled: boolean
   onToggleAutoSave: () => void
   activeUnsaved: boolean
@@ -47,8 +45,6 @@ function SubHeader({
   viewMode,
   onToggleViewMode,
   setViewMode,
-  showDiffToggle,
-  onToggleDiff,
   autoSaveEnabled,
   onToggleAutoSave,
   activeUnsaved,
@@ -179,9 +175,13 @@ function SubHeader({
       </div>
 
       <div className="actions-bar-right relative" ref={menuRef}>
-        <div className="header-toggle-group">
-          <span>Show difference</span>
-          <div className={`toggle-switch ${showDiffToggle ? 'active' : ''}`} onClick={onToggleDiff}>
+        <div
+          className="header-toggle-group cursor-pointer"
+          onClick={onToggleAutoSave}
+          title={`Autosave is ${autoSaveEnabled ? 'Enabled' : 'Disabled'}`}
+        >
+          <span>Autosave</span>
+          <div className={`toggle-switch ${autoSaveEnabled ? 'active' : ''}`}>
             <div className="toggle-knob" />
           </div>
         </div>

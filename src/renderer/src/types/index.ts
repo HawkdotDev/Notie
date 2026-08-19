@@ -68,7 +68,7 @@ export interface PersistentAppState {
   showRightSidebar: boolean
   rightSidebarWidth: number
   showSearchInput: boolean
-  showDiffToggle: boolean
+  showDiffToggle?: boolean
   searchQuery: string
   widgetState: WidgetState
   widgetZIndexes: Record<string, number>
