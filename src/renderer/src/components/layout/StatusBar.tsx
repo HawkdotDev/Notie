@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { CheckCircle2, SlidersHorizontal, ChevronDown, Check } from 'lucide-react'
+import { CheckCircle2, SlidersHorizontal, Check } from 'lucide-react'
 import { StatusStatsConfig } from '../../types'
 
 interface StatusBarProps {
@@ -148,30 +148,23 @@ function StatusBar({
         </div>
       )}
 
-      {/* 3. Floating Status Bar Metrics Options Dropdown in the Top-Right Corner */}
+      {/* 3. Floating Metrics Options Icon Dropdown in the Top-Right Corner */}
       {onToggleStat && (
         <div ref={optionsRef} className="floating-editor-metrics-topright">
           <button
             type="button"
             className={`floating-metrics-topright-trigger ${isOptionsOpen ? 'active' : ''}`}
             onClick={(): void => setIsOptionsOpen((prev) => !prev)}
-            title="Status Bar Metrics Options"
+            title="Metrics Options"
           >
-            <SlidersHorizontal size={12} className="text-zinc-400 shrink-0" />
-            <span className="text-xs text-zinc-300 font-medium">Metrics Options</span>
-            <ChevronDown
-              size={11}
-              className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                isOptionsOpen ? 'rotate-180 text-zinc-300' : ''
-              }`}
-            />
+            <SlidersHorizontal size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
           </button>
 
           {/* Floating Dropdown Options Menu */}
           {isOptionsOpen && (
             <div className="floating-metrics-topright-menu">
               <div className="floating-metrics-topright-header">
-                <span className="font-semibold text-zinc-300">Status Bar Metrics</span>
+                <span className="font-semibold text-zinc-300">Metrics</span>
                 <span className="text-[10px] text-zinc-500 font-mono">Options</span>
               </div>
 
