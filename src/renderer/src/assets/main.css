@@ -2680,15 +2680,19 @@ code.inline-code {
   font-weight: 500;
 }
 
-/* ====== FLOATING METRICS OPTIONS DROPDOWN (Writing Area Top-Right Corner) ====== */
-.floating-editor-metrics-topright {
+/* ====== FLOATING TOOL DROPDOWNS (Writing Area Top-Right Corner) ====== */
+.floating-editor-tools-topright {
   position: absolute;
   top: 48px;
   right: 20px;
   z-index: 100;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.floating-tool-item {
+  position: relative;
 }
 
 .floating-metrics-topright-trigger {
@@ -2728,7 +2732,7 @@ code.inline-code {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  width: 240px;
+  width: 230px;
   background: rgba(18, 18, 22, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -2757,49 +2761,11 @@ code.inline-code {
   gap: 4px;
 }
 
-/* Options Submenus inside Top-Right Dropdown */
-.options-submenu-group {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.options-submenu-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid transparent;
-  width: 100%;
-  color: var(--text-main);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
-}
-
-.options-submenu-trigger:hover,
-.options-submenu-trigger.expanded {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.options-submenu-content {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 4px 0 2px 8px;
-  border-left: 2px solid rgba(255, 255, 255, 0.08);
-  margin-left: 8px;
-  margin-top: 4px;
-  margin-bottom: 2px;
-}
-
 .options-empty-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px;
+  padding: 10px 4px;
   font-size: 11px;
   color: var(--text-muted);
   font-style: italic;
