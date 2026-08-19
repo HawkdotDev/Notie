@@ -228,9 +228,9 @@ function StatusBar({
 
           {activeDropdown === 'opt1' && (
             <div className="floating-metrics-topright-menu">
-              <div className="floating-metrics-topright-list">
-                {/* 1. Metrics Sub-dropdown */}
-                {onToggleStat && (
+              {/* 1. Metrics Separate Card */}
+              {onToggleStat && (
+                <div className="options-card-section">
                   <div className="options-submenu-group">
                     <button
                       type="button"
@@ -337,12 +337,11 @@ function StatusBar({
                       </div>
                     )}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Gap / Divider between Metrics and Icon & Cover */}
-                <div className="options-dropdown-divider" />
-
-                {/* 2. Icon & Cover Sub-dropdown (Below Metrics inside Option 1) */}
+              {/* 2. Icon & Cover Separate Card */}
+              <div className="options-card-section">
                 <div className="options-submenu-group">
                   <button
                     type="button"
@@ -413,7 +412,7 @@ function StatusBar({
 
           {activeDropdown === 'opt2' && (
             <div className="floating-metrics-topright-menu">
-              <div className="floating-metrics-topright-list">
+              <div className="options-card-section">
                 <div className="options-submenu-group">
                   <button
                     type="button"
@@ -458,7 +457,7 @@ function StatusBar({
 
           {activeDropdown === 'opt3' && (
             <div className="floating-metrics-topright-menu">
-              <div className="floating-metrics-topright-list">
+              <div className="options-card-section">
                 <div className="options-submenu-group">
                   <button
                     type="button"
