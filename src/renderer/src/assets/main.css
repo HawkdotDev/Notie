@@ -2541,8 +2541,8 @@ code.inline-code {
 .status-bar {
   height: 30px;
   min-height: 30px;
-  background: #0d0d0f;
-  border-top: 1px solid #1c1c20;
+  background: transparent;
+  border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   padding: 0;
@@ -2555,7 +2555,7 @@ code.inline-code {
 
 .status-bar-sidebar {
   height: 100%;
-  background: #111113;
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -2598,7 +2598,7 @@ code.inline-code {
   justify-content: space-between;
   padding: 0 10px;
   min-width: 0;
-  background: #0d0d0f;
+  background: transparent;
 }
 
 .status-main-left,
