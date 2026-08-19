@@ -308,10 +308,7 @@ function Sidebar({
 
       {/* Floating File Type Pill in Sidebar Bottom Left Corner */}
       {workspacePath && activeFilePath && (
-        <div
-          className="sidebar-floating-filetype"
-          title={`File Type: ${lang.name}`}
-        >
+        <div className="sidebar-floating-filetype" title={`File Type: ${lang.name}`}>
           <div className="status-pill-item">
             <Code2 size={13} strokeWidth={1.5} className={`${lang.color} shrink-0`} />
             <span className="font-medium text-[#BFBFC7]">{lang.name}</span>

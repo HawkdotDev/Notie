@@ -44,39 +44,67 @@ function StatusBar({
 
   if (statsConfig.showWords) {
     activeStatItems.push(
-      <div key="words" className="status-pill-item mono hoverable" title={`${wordCount} total words`}>
-        <span>{wordCount} {wordCount === 1 ? 'word' : 'words'}</span>
+      <div
+        key="words"
+        className="status-pill-item mono hoverable"
+        title={`${wordCount} total words`}
+      >
+        <span>
+          {wordCount} {wordCount === 1 ? 'word' : 'words'}
+        </span>
       </div>
     )
   }
 
   if (statsConfig.showLines) {
     activeStatItems.push(
-      <div key="lines" className="status-pill-item mono hoverable" title={`${lineCount} total lines`}>
-        <span>{lineCount} {lineCount === 1 ? 'line' : 'lines'}</span>
+      <div
+        key="lines"
+        className="status-pill-item mono hoverable"
+        title={`${lineCount} total lines`}
+      >
+        <span>
+          {lineCount} {lineCount === 1 ? 'line' : 'lines'}
+        </span>
       </div>
     )
   }
 
   if (statsConfig.showSpaces) {
     activeStatItems.push(
-      <div key="spaces" className="status-pill-item mono hoverable" title={`${spaceCount} total spaces`}>
-        <span>{spaceCount} {spaceCount === 1 ? 'space' : 'spaces'}</span>
+      <div
+        key="spaces"
+        className="status-pill-item mono hoverable"
+        title={`${spaceCount} total spaces`}
+      >
+        <span>
+          {spaceCount} {spaceCount === 1 ? 'space' : 'spaces'}
+        </span>
       </div>
     )
   }
 
   if (statsConfig.showChars) {
     activeStatItems.push(
-      <div key="chars" className="status-pill-item mono hoverable" title={`${charCount} total characters`}>
-        <span>{charCount} {charCount === 1 ? 'char' : 'chars'}</span>
+      <div
+        key="chars"
+        className="status-pill-item mono hoverable"
+        title={`${charCount} total characters`}
+      >
+        <span>
+          {charCount} {charCount === 1 ? 'char' : 'chars'}
+        </span>
       </div>
     )
   }
 
   if (statsConfig.showReadingTime) {
     activeStatItems.push(
-      <div key="reading" className="status-pill-item mono hoverable" title={`Estimated reading time`}>
+      <div
+        key="reading"
+        className="status-pill-item mono hoverable"
+        title={`Estimated reading time`}
+      >
         <span>~{readingTime} min</span>
       </div>
     )
@@ -125,4 +153,3 @@ function StatusBar({
 }
 
 export default React.memo(StatusBar)
-

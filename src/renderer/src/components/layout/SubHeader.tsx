@@ -304,7 +304,9 @@ function SubHeader({
                     className={`widget-menu-item compact ${statsConfig.showWords ? 'selected' : ''}`}
                     onClick={(): void => onToggleStat('showWords')}
                   >
-                    <span className="widget-title text-xs font-normal text-zinc-300">Word Count</span>
+                    <span className="widget-title text-xs font-normal text-zinc-300">
+                      Word Count
+                    </span>
                     <div className={`widget-checkbox ${statsConfig.showWords ? 'checked' : ''}`}>
                       {statsConfig.showWords && <Check size={11} />}
                     </div>
@@ -314,7 +316,9 @@ function SubHeader({
                     className={`widget-menu-item compact ${statsConfig.showLines ? 'selected' : ''}`}
                     onClick={(): void => onToggleStat('showLines')}
                   >
-                    <span className="widget-title text-xs font-normal text-zinc-300">Line Count ("12 lines")</span>
+                    <span className="widget-title text-xs font-normal text-zinc-300">
+                      Line Count (&quot;12 lines&quot;)
+                    </span>
                     <div className={`widget-checkbox ${statsConfig.showLines ? 'checked' : ''}`}>
                       {statsConfig.showLines && <Check size={11} />}
                     </div>
@@ -324,7 +328,9 @@ function SubHeader({
                     className={`widget-menu-item compact ${statsConfig.showSpaces ? 'selected' : ''}`}
                     onClick={(): void => onToggleStat('showSpaces')}
                   >
-                    <span className="widget-title text-xs font-normal text-zinc-300">Number of Spaces</span>
+                    <span className="widget-title text-xs font-normal text-zinc-300">
+                      Number of Spaces
+                    </span>
                     <div className={`widget-checkbox ${statsConfig.showSpaces ? 'checked' : ''}`}>
                       {statsConfig.showSpaces && <Check size={11} />}
                     </div>
@@ -334,7 +340,9 @@ function SubHeader({
                     className={`widget-menu-item compact ${statsConfig.showChars ? 'selected' : ''}`}
                     onClick={(): void => onToggleStat('showChars')}
                   >
-                    <span className="widget-title text-xs font-normal text-zinc-300">Character Count</span>
+                    <span className="widget-title text-xs font-normal text-zinc-300">
+                      Character Count
+                    </span>
                     <div className={`widget-checkbox ${statsConfig.showChars ? 'checked' : ''}`}>
                       {statsConfig.showChars && <Check size={11} />}
                     </div>
@@ -344,8 +352,12 @@ function SubHeader({
                     className={`widget-menu-item compact ${statsConfig.showReadingTime ? 'selected' : ''}`}
                     onClick={(): void => onToggleStat('showReadingTime')}
                   >
-                    <span className="widget-title text-xs font-normal text-zinc-300">Reading Time</span>
-                    <div className={`widget-checkbox ${statsConfig.showReadingTime ? 'checked' : ''}`}>
+                    <span className="widget-title text-xs font-normal text-zinc-300">
+                      Reading Time
+                    </span>
+                    <div
+                      className={`widget-checkbox ${statsConfig.showReadingTime ? 'checked' : ''}`}
+                    >
                       {statsConfig.showReadingTime && <Check size={11} />}
                     </div>
                   </div>
@@ -354,7 +366,9 @@ function SubHeader({
                     className={`widget-menu-item compact ${statsConfig.showLanguage ? 'selected' : ''}`}
                     onClick={(): void => onToggleStat('showLanguage')}
                   >
-                    <span className="widget-title text-xs font-normal text-zinc-300">Language Mode</span>
+                    <span className="widget-title text-xs font-normal text-zinc-300">
+                      Language Mode
+                    </span>
                     <div className={`widget-checkbox ${statsConfig.showLanguage ? 'checked' : ''}`}>
                       {statsConfig.showLanguage && <Check size={11} />}
                     </div>
@@ -364,8 +378,12 @@ function SubHeader({
                     className={`widget-menu-item compact ${statsConfig.showSavedBadge ? 'selected' : ''}`}
                     onClick={(): void => onToggleStat('showSavedBadge')}
                   >
-                    <span className="widget-title text-xs font-normal text-zinc-300">Floating Saved Badge</span>
-                    <div className={`widget-checkbox ${statsConfig.showSavedBadge ? 'checked' : ''}`}>
+                    <span className="widget-title text-xs font-normal text-zinc-300">
+                      Floating Saved Badge
+                    </span>
+                    <div
+                      className={`widget-checkbox ${statsConfig.showSavedBadge ? 'checked' : ''}`}
+                    >
                       {statsConfig.showSavedBadge && <Check size={11} />}
                     </div>
                   </div>

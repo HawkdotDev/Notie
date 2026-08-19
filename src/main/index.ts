@@ -1,4 +1,13 @@
-import { app, shell, BrowserWindow, ipcMain, dialog, nativeTheme, Menu, nativeImage } from 'electron'
+import {
+  app,
+  shell,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  nativeTheme,
+  Menu,
+  nativeImage
+} from 'electron'
 import { join, basename, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.svg?asset'
