@@ -11,8 +11,8 @@
 
 :root {
   --bg-app-wrapper: #101012;
-  --bg-primary: #131316;
-  --bg-sidebar: #0e0e11;
+  --bg-primary: #0e0e11;
+  --bg-sidebar: #131316;
   --bg-active: #1e1e22;
   --bg-hover: #17171a;
   --border-color: #222226;
@@ -625,8 +625,8 @@ body {
 /* ====== SIDEBAR ====== */
 .sidebar {
   height: 100%;
-  background: #111113;
-  border-right: 1px solid #1c1c20;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -663,8 +663,8 @@ body {
   min-height: 32px;
   max-height: 32px;
   box-sizing: border-box;
-  border-bottom: 1px solid #222226;
-  background-color: #141416;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-sidebar);
 }
 
 .sidebar-header-title {
@@ -1418,8 +1418,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 4px;
-  border-bottom: 1px solid #222226;
-  background-color: #161618;
+  border-bottom: 1px solid var(--border-color);
+  background-color: #111114;
   font-size: 11px;
   color: var(--text-muted);
 }
@@ -2555,7 +2555,7 @@ code.inline-code {
 
 .status-bar-sidebar {
   height: 100%;
-  background: #111113;
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -2598,7 +2598,7 @@ code.inline-code {
   justify-content: space-between;
   padding: 0 10px;
   min-width: 0;
-  background: #0d0d0f;
+  background: var(--bg-primary);
 }
 
 .status-main-left,
