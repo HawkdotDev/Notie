@@ -10,12 +10,12 @@
 }
 
 :root {
-  --bg-app-wrapper: #0b0b0d;
-  --bg-primary: #101013;
-  --bg-sidebar: #0c0c0e;
-  --bg-active: #1a1a1e;
-  --bg-hover: #141417;
-  --border-color: #1c1c20;
+  --bg-app-wrapper: #121214;
+  --bg-primary: #18181b;
+  --bg-sidebar: #121214;
+  --bg-active: #242427;
+  --bg-hover: #1f1f22;
+  --border-color: #27272a;
   --text-main: #A5A5AD;
   --text-muted: #74747D;
   --text-active: #BFBFC7;
@@ -625,7 +625,7 @@ body {
 /* ====== SIDEBAR ====== */
 .sidebar {
   height: 100%;
-  background: #0c0c0e;
+  background: #111113;
   border-right: 1px solid #1c1c20;
   display: flex;
   flex-direction: column;
@@ -663,8 +663,8 @@ body {
   min-height: 32px;
   max-height: 32px;
   box-sizing: border-box;
-  border-bottom: 1px solid #1c1c20;
-  background-color: #0e0e11;
+  border-bottom: 1px solid #222226;
+  background-color: #141416;
 }
 
 .sidebar-header-title {
@@ -1418,8 +1418,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 4px;
-  border-bottom: 1px solid #1c1c20;
-  background-color: #101013;
+  border-bottom: 1px solid #222226;
+  background-color: #161618;
   font-size: 11px;
   color: var(--text-muted);
 }
@@ -2541,7 +2541,7 @@ code.inline-code {
 .status-bar {
   height: 30px;
   min-height: 30px;
-  background: #09090b;
+  background: #0d0d0f;
   border-top: 1px solid #1c1c20;
   display: flex;
   align-items: center;
@@ -2555,7 +2555,7 @@ code.inline-code {
 
 .status-bar-sidebar {
   height: 100%;
-  background: #0c0c0e;
+  background: #111113;
   border-right: 1px solid var(--border-color);
   display: flex;
   align-items: center;
