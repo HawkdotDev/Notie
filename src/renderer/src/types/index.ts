@@ -32,6 +32,16 @@ export type ViewMode = 'editor' | 'graph'
 
 export type TerminalTabType = 'PROBLEMS' | 'OUTPUT' | 'TERMINAL' | 'DEBUG CONSOLE'
 
+export interface StatusStatsConfig {
+  showWords: boolean
+  showLines: boolean
+  showChars: boolean
+  showSpaces: boolean
+  showReadingTime: boolean
+  showLanguage: boolean
+  showSavedBadge: boolean
+}
+
 export interface WidgetState {
   assistant: boolean
   stats: boolean

@@ -14,7 +14,7 @@ import StatusBar from './components/layout/StatusBar'
 
 const GraphView = lazy(() => import('./components/GraphView'))
 
-import { MarkdownMetadata, OpenFileInfo, ViewMode } from './types'
+import { MarkdownMetadata, OpenFileInfo, ViewMode, StatusStatsConfig } from './types'
 import { normalizePath, getRelativePath, getPathKey } from './utils/pathUtils'
 import { stripFrontmatter } from './utils/metadataUtils'
 import { metadataEngine } from './utils/metadataEngine'
@@ -52,10 +52,6 @@ export default function App(): React.JSX.Element {
   const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(
     () => savedState.autoSaveEnabled ?? true
   )
-  const [cursorPosition] = useState<{ line: number; column: number }>({
-    line: 12,
-    column: 6
-  })
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
     () => savedState.sidebarCollapsed ?? false
@@ -130,6 +126,37 @@ export default function App(): React.JSX.Element {
         // ignore
       }
       return updated
+    })
+  }, [])
+
+  // Granular Status Bar Stats Metrics Configuration
+  const [statsConfig, setStatsConfig] = useState<StatusStatsConfig>(() => {
+    try {
+      const saved = localStorage.getItem('notie_status_stats_config')
+      if (saved) return JSON.parse(saved)
+    } catch {
+      // ignore
+    }
+    return {
+      showWords: true,
+      showLines: true,
+      showChars: false,
+      showSpaces: true,
+      showReadingTime: false,
+      showLanguage: true,
+      showSavedBadge: true
+    }
+  })
+
+  const handleToggleStat = useCallback((key: keyof StatusStatsConfig) => {
+    setStatsConfig((prev) => {
+      const next = { ...prev, [key]: !prev[key] }
+      try {
+        localStorage.setItem('notie_status_stats_config', JSON.stringify(next))
+      } catch {
+        // ignore
+      }
+      return next
     })
   }, [])
 
@@ -580,6 +607,8 @@ export default function App(): React.JSX.Element {
         onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
         showSearchInput={showSearchInput}
         onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
+        statsConfig={statsConfig}
+        onToggleStat={handleToggleStat}
       />
 
       {/* ====== 3. MAIN APP CONTENT CONTAINER ====== */}
@@ -916,9 +945,9 @@ export default function App(): React.JSX.Element {
               activeFilePath={activeFilePath}
               activeFileContent={activeFilePath ? fileContents[activeFilePath] : undefined}
               stats={workerStats}
-              cursorPosition={cursorPosition}
               autoSaveEnabled={autoSaveEnabled}
               activeUnsaved={activeUnsaved}
+              statsConfig={statsConfig}
             />
           )}
         </div>

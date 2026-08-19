@@ -2302,7 +2302,9 @@ code.inline-code {
   top: 100%;
   right: 0;
   margin-top: 6px;
-  width: 270px;
+  width: 280px;
+  max-height: 520px;
+  overflow-y: auto;
   background: rgba(20, 20, 26, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -2340,6 +2342,10 @@ code.inline-code {
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.15s ease;
+}
+
+.widget-menu-item.compact {
+  padding: 5px 8px;
 }
 
 .widget-menu-item:hover {
