@@ -68,7 +68,7 @@ function StatusBar({
 
   return (
     <>
-      {/* 1. Floating Saved / Unsaved Status Badge on the Left */}
+      {/* 1. Floating Saved Status on the Left */}
       <div
         className="floating-editor-statusbar-left"
         title={autoSaveEnabled ? 'Autosave active' : 'Autosave disabled'}
@@ -76,12 +76,12 @@ function StatusBar({
         <div className="status-pill-item">
           {activeUnsaved ? (
             <>
-              <span className="w-1.5 h-1.5 bg-amber-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               <span className="text-amber-300 font-medium">Unsaved</span>
             </>
           ) : (
             <>
-              <CheckCircle2 size={11} className="text-emerald-400 shrink-0" />
+              <CheckCircle2 size={13} strokeWidth={1.75} className="text-emerald-400 shrink-0" />
               <span>Saved</span>
             </>
           )}
@@ -93,7 +93,7 @@ function StatusBar({
         className="floating-editor-statusbar"
         title={`File: ${activeFilePath} | ${byteSize} bytes | ~${readingTime} min read`}
       >
-        {/* Word & Char Stats */}
+        {/* Word Count */}
         <div
           className="status-pill-item mono hoverable"
           title={`${wordCount} words, ${charCount} characters, ~${readingTime} min read`}
@@ -120,7 +120,7 @@ function StatusBar({
           className="status-pill-item language-pill hoverable"
           title={`Language: ${lang.name} (${formattedFileSize})`}
         >
-          <Code2 size={11} className={`${lang.color} shrink-0`} />
+          <Code2 size={13} strokeWidth={1.5} className={`${lang.color} shrink-0`} />
           <span>{lang.name}</span>
         </div>
       </div>
