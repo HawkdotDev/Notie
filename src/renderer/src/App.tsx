@@ -685,232 +685,251 @@ export default function App(): React.JSX.Element {
                 />
               </Suspense>
             ) : activeFilePath ? (
-              <div className="editor-container">
-                {/* 1. NOTION-STYLE FULL-WIDTH COVER BANNER */}
-                {showCover && activeFileBanner && (
-                  <div
-                    className="notion-cover-banner group"
-                    style={
-                      activeFileBanner.startsWith('linear-gradient')
-                        ? { background: activeFileBanner }
-                        : {
-                            backgroundImage: `url("${activeFileBanner}")`,
-                            backgroundPosition: 'center',
-                            backgroundSize: 'cover',
-                            backgroundRepeat: 'no-repeat'
-                          }
-                    }
-                  >
-                    <div className="notion-cover-actions opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        className="notion-cover-btn"
-                        onClick={(): void => setShowBannerPicker((prev) => !prev)}
-                      >
-                        <ImageIcon size={12} strokeWidth={1.5} className="shrink-0 opacity-80" />
-                        <span>Change cover</span>
-                      </button>
-                      <button
-                        className="notion-cover-btn"
-                        onClick={(): void => {
-                          if (!activeFilePath) return
-                          const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
-                          setFileBanners((prev) => {
-                            const updated = { ...prev }
-                            delete updated[rel]
-                            return updated
-                          })
-                        }}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="editor-wrapper">
-                  {/* NOTION-STYLE PAGE HEADER */}
-                  <div
-                    className={`notion-page-header ${showCover && activeFileBanner ? 'has-cover' : ''}`}
-                  >
-                    {/* Top ghost buttons when no icon or cover exists */}
-                    {((showIcon && !activeFileIcon) || (showCover && !activeFileBanner)) && (
-                      <div className="notion-header-ghost-actions">
-                        {showIcon && !activeFileIcon && (
-                          <button
-                            className="notion-ghost-btn"
-                            onClick={(): void => setShowEmojiPicker(true)}
-                          >
-                            <Smile size={13} strokeWidth={1.5} className="shrink-0 opacity-70" />
-                            <span>Add icon</span>
-                          </button>
-                        )}
-                        {showCover && !activeFileBanner && (
-                          <button
-                            className="notion-ghost-btn"
-                            onClick={(): void => setShowBannerPicker(true)}
-                          >
-                            <ImageIcon
-                              size={13}
-                              strokeWidth={1.5}
-                              className="shrink-0 opacity-70"
-                            />
-                            <span>Add cover</span>
-                          </button>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Page Icon Display */}
-                    {showIcon && activeFileIcon && (
-                      <div
-                        className={`notion-icon-container group ${showCover && activeFileBanner ? 'has-cover' : ''}`}
-                      >
+              <div className="editor-writing-viewport">
+                <div className="editor-container">
+                  {/* 1. NOTION-STYLE FULL-WIDTH COVER BANNER */}
+                  {showCover && activeFileBanner && (
+                    <div
+                      className="notion-cover-banner group"
+                      style={
+                        activeFileBanner.startsWith('linear-gradient')
+                          ? { background: activeFileBanner }
+                          : {
+                              backgroundImage: `url("${activeFileBanner}")`,
+                              backgroundPosition: 'center',
+                              backgroundSize: 'cover',
+                              backgroundRepeat: 'no-repeat'
+                            }
+                      }
+                    >
+                      <div className="notion-cover-actions opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          className="notion-icon-btn"
-                          onClick={(): void => setShowEmojiPicker((prev) => !prev)}
-                          title="Change icon"
+                          className="notion-cover-btn"
+                          onClick={(): void => setShowBannerPicker((prev) => !prev)}
                         >
-                          {typeof activeFileIcon === 'string' && activeFileIcon.includes('<svg') ? (
-                            <span
-                              className="theme-svg-container"
-                              dangerouslySetInnerHTML={{
-                                __html: manipulateSvgTheme(activeFileIcon)
-                              }}
-                            />
-                          ) : (
-                            activeFileIcon
-                          )}
+                          <ImageIcon size={12} strokeWidth={1.5} className="shrink-0 opacity-80" />
+                          <span>Change cover</span>
                         </button>
-
-                        <div className="notion-icon-hover-toolbar opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            className="notion-icon-quick-btn"
-                            onClick={(): void => {
-                              if (!activeFilePath) return
-                              const emojis = [
-                                '📝',
-                                '🚀',
-                                '💡',
-                                '🔥',
-                                '⭐',
-                                '🎨',
-                                '💻',
-                                '⚡',
-                                '🎯',
-                                '🌱'
-                              ]
-                              const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)]
-                              const rel = getRelativePath(
-                                activeFilePath,
-                                workspacePath
-                              ).toLowerCase()
-                              setFileIcons((prev) => ({
-                                ...prev,
-                                [rel]: randomEmoji
-                              }))
-                            }}
-                          >
-                            Random
-                          </button>
-                          <button
-                            className="notion-icon-quick-btn"
-                            onClick={(): void => {
-                              if (!activeFilePath) return
-                              const rel = getRelativePath(
-                                activeFilePath,
-                                workspacePath
-                              ).toLowerCase()
-                              setFileIcons((prev) => {
-                                const updated = { ...prev }
-                                delete updated[rel]
-                                return updated
-                              })
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </div>
+                        <button
+                          className="notion-cover-btn"
+                          onClick={(): void => {
+                            if (!activeFilePath) return
+                            const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
+                            setFileBanners((prev) => {
+                              const updated = { ...prev }
+                              delete updated[rel]
+                              return updated
+                            })
+                          }}
+                        >
+                          Remove
+                        </button>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Popovers */}
-                    {showEmojiPicker && (
-                      <EmojiPicker
-                        onSelect={(emoji): void => {
-                          if (!activeFilePath) return
-                          const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
-                          setFileIcons((prev) => ({ ...prev, [rel]: emoji }))
-                          setShowEmojiPicker(false)
-                        }}
-                        onRemove={(): void => {
-                          if (!activeFilePath) return
-                          const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
-                          setFileIcons((prev) => {
-                            const updated = { ...prev }
-                            delete updated[rel]
-                            return updated
-                          })
-                        }}
-                        onClose={(): void => setShowEmojiPicker(false)}
-                      />
-                    )}
+                  <div className="editor-wrapper">
+                    {/* NOTION-STYLE PAGE HEADER */}
+                    <div
+                      className={`notion-page-header ${showCover && activeFileBanner ? 'has-cover' : ''}`}
+                    >
+                      {/* Top ghost buttons when no icon or cover exists */}
+                      {((showIcon && !activeFileIcon) || (showCover && !activeFileBanner)) && (
+                        <div className="notion-header-ghost-actions">
+                          {showIcon && !activeFileIcon && (
+                            <button
+                              className="notion-ghost-btn"
+                              onClick={(): void => setShowEmojiPicker(true)}
+                            >
+                              <Smile size={13} strokeWidth={1.5} className="shrink-0 opacity-70" />
+                              <span>Add icon</span>
+                            </button>
+                          )}
+                          {showCover && !activeFileBanner && (
+                            <button
+                              className="notion-ghost-btn"
+                              onClick={(): void => setShowBannerPicker(true)}
+                            >
+                              <ImageIcon
+                                size={13}
+                                strokeWidth={1.5}
+                                className="shrink-0 opacity-70"
+                              />
+                              <span>Add cover</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
 
-                    {showBannerPicker && (
-                      <BannerPicker
-                        onSelect={(bannerUrl): void => {
-                          if (!activeFilePath) return
-                          const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
-                          setFileBanners((prev) => ({ ...prev, [rel]: bannerUrl }))
-                          setShowBannerPicker(false)
-                        }}
-                        onClose={(): void => setShowBannerPicker(false)}
-                      />
-                    )}
-                  </div>
+                      {/* Page Icon Display */}
+                      {showIcon && activeFileIcon && (
+                        <div
+                          className={`notion-icon-container group ${showCover && activeFileBanner ? 'has-cover' : ''}`}
+                        >
+                          <button
+                            className="notion-icon-btn"
+                            onClick={(): void => setShowEmojiPicker((prev) => !prev)}
+                            title="Change icon"
+                          >
+                            {typeof activeFileIcon === 'string' &&
+                            activeFileIcon.includes('<svg') ? (
+                              <span
+                                className="theme-svg-container"
+                                dangerouslySetInnerHTML={{
+                                  __html: manipulateSvgTheme(activeFileIcon)
+                                }}
+                              />
+                            ) : (
+                              activeFileIcon
+                            )}
+                          </button>
 
-                  <input
-                    className="document-title-input"
-                    type="text"
-                    value={
-                      activeFilePath
-                        ? activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || ''
-                        : ''
-                    }
-                    onChange={(e): void => {
-                      const newTitle = e.target.value
-                      if (!activeFilePath || !workspacePath) return
-                      const dir = activeFilePath.substring(0, activeFilePath.lastIndexOf('/'))
-                      const newPath = `${dir}/${newTitle}.md`
-                      if (newPath !== activeFilePath) {
-                        void window.api.fs
-                          .renamePath(activeFilePath, newPath)
-                          .then(() => {
-                            setActiveFilePath(newPath)
-                            setOpenFiles((prev) =>
-                              prev.map((f) =>
-                                f.path === activeFilePath
-                                  ? { path: newPath, name: `${newTitle}.md` }
-                                  : f
+                          <div className="notion-icon-hover-toolbar opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              className="notion-icon-quick-btn"
+                              onClick={(): void => {
+                                if (!activeFilePath) return
+                                const emojis = [
+                                  '📝',
+                                  '🚀',
+                                  '💡',
+                                  '🔥',
+                                  '⭐',
+                                  '🎨',
+                                  '💻',
+                                  '⚡',
+                                  '🎯',
+                                  '🌱'
+                                ]
+                                const randomEmoji =
+                                  emojis[Math.floor(Math.random() * emojis.length)]
+                                const rel = getRelativePath(
+                                  activeFilePath,
+                                  workspacePath
+                                ).toLowerCase()
+                                setFileIcons((prev) => ({
+                                  ...prev,
+                                  [rel]: randomEmoji
+                                }))
+                              }}
+                            >
+                              Random
+                            </button>
+                            <button
+                              className="notion-icon-quick-btn"
+                              onClick={(): void => {
+                                if (!activeFilePath) return
+                                const rel = getRelativePath(
+                                  activeFilePath,
+                                  workspacePath
+                                ).toLowerCase()
+                                setFileIcons((prev) => {
+                                  const updated = { ...prev }
+                                  delete updated[rel]
+                                  return updated
+                                })
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Popovers */}
+                      {showEmojiPicker && (
+                        <EmojiPicker
+                          onSelect={(emoji): void => {
+                            if (!activeFilePath) return
+                            const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
+                            setFileIcons((prev) => ({ ...prev, [rel]: emoji }))
+                            setShowEmojiPicker(false)
+                          }}
+                          onRemove={(): void => {
+                            if (!activeFilePath) return
+                            const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
+                            setFileIcons((prev) => {
+                              const updated = { ...prev }
+                              delete updated[rel]
+                              return updated
+                            })
+                          }}
+                          onClose={(): void => setShowEmojiPicker(false)}
+                        />
+                      )}
+
+                      {showBannerPicker && (
+                        <BannerPicker
+                          onSelect={(bannerUrl): void => {
+                            if (!activeFilePath) return
+                            const rel = getRelativePath(activeFilePath, workspacePath).toLowerCase()
+                            setFileBanners((prev) => ({ ...prev, [rel]: bannerUrl }))
+                            setShowBannerPicker(false)
+                          }}
+                          onClose={(): void => setShowBannerPicker(false)}
+                        />
+                      )}
+                    </div>
+
+                    <input
+                      className="document-title-input"
+                      type="text"
+                      value={
+                        activeFilePath
+                          ? activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || ''
+                          : ''
+                      }
+                      onChange={(e): void => {
+                        const newTitle = e.target.value
+                        if (!activeFilePath || !workspacePath) return
+                        const dir = activeFilePath.substring(0, activeFilePath.lastIndexOf('/'))
+                        const newPath = `${dir}/${newTitle}.md`
+                        if (newPath !== activeFilePath) {
+                          void window.api.fs
+                            .renamePath(activeFilePath, newPath)
+                            .then(() => {
+                              setActiveFilePath(newPath)
+                              setOpenFiles((prev) =>
+                                prev.map((f) =>
+                                  f.path === activeFilePath
+                                    ? { path: newPath, name: `${newTitle}.md` }
+                                    : f
+                                )
                               )
-                            )
-                          })
-                          .catch((err) => alert(`Rename error: ${err}`))
-                      }
-                    }}
-                    placeholder="Untitled"
-                  />
+                            })
+                            .catch((err) => alert(`Rename error: ${err}`))
+                        }
+                      }}
+                      placeholder="Untitled"
+                    />
 
-                  <BlockEditor
-                    value={fileContents[activeFilePath] || ''}
-                    onChange={(value): void => {
-                      if (activeFilePath) {
-                        setFileContents((prev) => ({ ...prev, [activeFilePath]: value }))
-                      }
-                    }}
-                    activeFilePath={activeFilePath}
-                    onWikilinkClick={handleWikilinkClick}
-                  />
+                    <BlockEditor
+                      value={fileContents[activeFilePath] || ''}
+                      onChange={(value): void => {
+                        if (activeFilePath) {
+                          setFileContents((prev) => ({ ...prev, [activeFilePath]: value }))
+                        }
+                      }}
+                      activeFilePath={activeFilePath}
+                      onWikilinkClick={handleWikilinkClick}
+                    />
+                  </div>
                 </div>
+
+                {/* Floating Stats, Tools & Autosave Pill inside Writing Area Viewport */}
+                <StatusBar
+                  activeFilePath={activeFilePath}
+                  activeFileContent={activeFilePath ? fileContents[activeFilePath] : undefined}
+                  stats={workerStats}
+                  autoSaveEnabled={autoSaveEnabled}
+                  activeUnsaved={activeUnsaved}
+                  statsConfig={statsConfig}
+                  onToggleStat={handleToggleStat}
+                  showCover={showCover}
+                  showIcon={showIcon}
+                  onToggleCover={(): void => setShowCover((prev) => !prev)}
+                  onToggleIcon={(): void => setShowIcon((prev) => !prev)}
+                />
               </div>
             ) : (
               <WelcomeScreen workspacePath={workspacePath} />
@@ -1012,23 +1031,6 @@ export default function App(): React.JSX.Element {
               </div>
             )}
           </div>
-
-          {/* Floating Stats & Autosave Pill inside Writing Area */}
-          {activeFilePath && viewMode !== 'graph' && (
-            <StatusBar
-              activeFilePath={activeFilePath}
-              activeFileContent={activeFilePath ? fileContents[activeFilePath] : undefined}
-              stats={workerStats}
-              autoSaveEnabled={autoSaveEnabled}
-              activeUnsaved={activeUnsaved}
-              statsConfig={statsConfig}
-              onToggleStat={handleToggleStat}
-              showCover={showCover}
-              showIcon={showIcon}
-              onToggleCover={(): void => setShowCover((prev) => !prev)}
-              onToggleIcon={(): void => setShowIcon((prev) => !prev)}
-            />
-          )}
         </div>
       </div>
 

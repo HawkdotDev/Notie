@@ -1549,6 +1549,17 @@ body {
   position: relative;
 }
 
+.editor-writing-viewport {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  height: 100%;
+  background-color: var(--bg-primary);
+}
+
 .editor-container {
   flex: 1;
   position: relative;
@@ -2713,7 +2724,7 @@ code.inline-code {
 /* ====== FLOATING TOOL DROPDOWNS (Writing Area Top-Right Corner) ====== */
 .floating-editor-tools-topright {
   position: absolute;
-  top: 48px;
+  top: 16px;
   right: 20px;
   z-index: 100;
   display: flex;
