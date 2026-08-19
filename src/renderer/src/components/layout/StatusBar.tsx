@@ -6,7 +6,13 @@ import {
   Check,
   BarChart2,
   Sliders,
-  Layers
+  Layers,
+  FileText,
+  AlignLeft,
+  Space,
+  Hash,
+  Clock,
+  Inbox
 } from 'lucide-react'
 import { StatusStatsConfig } from '../../types'
 
@@ -38,11 +44,11 @@ function StatusBar({
   onToggleStat
 }: StatusBarProps): React.JSX.Element | null {
   const [activeDropdown, setActiveDropdown] = useState<
-    'metrics' | 'preferences' | 'extensions' | null
+    'metrics' | 'dropdown2' | 'dropdown3' | null
   >(null)
-  const [metricsSub1Open, setMetricsSub1Open] = useState(true)
-  const [prefSub1Open, setPrefSub1Open] = useState(true)
-  const [extSub1Open, setExtSub1Open] = useState(true)
+  const [isMetricsSubOpen, setIsMetricsSubOpen] = useState(true)
+  const [isSub2Open, setIsSub2Open] = useState(true)
+  const [isSub3Open, setIsSub3Open] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -184,30 +190,36 @@ function StatusBar({
                   <div className="options-submenu-group">
                     <button
                       type="button"
-                      className={`options-submenu-trigger ${metricsSub1Open ? 'expanded' : ''}`}
-                      onClick={(): void => setMetricsSub1Open((p) => !p)}
+                      className={`options-submenu-trigger ${isMetricsSubOpen ? 'expanded' : ''}`}
+                      onClick={(): void => setIsMetricsSubOpen((p) => !p)}
                     >
                       <div className="flex items-center gap-2">
                         <BarChart2 size={13} className="text-emerald-400 shrink-0" />
-                        <span className="widget-title font-semibold">Metrics</span>
+                        <span className="options-trigger-title">Metrics</span>
                       </div>
-                      <ChevronDown
-                        size={11}
-                        className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                          metricsSub1Open ? 'rotate-180 text-zinc-300' : ''
-                        }`}
-                      />
+                      <div className="flex items-center gap-1.5">
+                        <span className="options-count-badge">6 options</span>
+                        <ChevronDown
+                          size={11}
+                          className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
+                            isMetricsSubOpen ? 'rotate-180 text-zinc-300' : ''
+                          }`}
+                        />
+                      </div>
                     </button>
 
-                    {metricsSub1Open && (
+                    {isMetricsSubOpen && (
                       <div className="options-submenu-content">
                         <div
                           className={`widget-menu-item compact ${statsConfig.showWords ? 'selected' : ''}`}
                           onClick={(): void => onToggleStat('showWords')}
                         >
-                          <span className="widget-title text-xs font-normal text-zinc-300">
-                            Word Count
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <FileText size={12} className="text-zinc-500 shrink-0" />
+                            <span className="widget-title text-xs font-normal text-zinc-300">
+                              Word Count
+                            </span>
+                          </div>
                           <div
                             className={`widget-checkbox ${statsConfig.showWords ? 'checked' : ''}`}
                           >
@@ -219,9 +231,12 @@ function StatusBar({
                           className={`widget-menu-item compact ${statsConfig.showLines ? 'selected' : ''}`}
                           onClick={(): void => onToggleStat('showLines')}
                         >
-                          <span className="widget-title text-xs font-normal text-zinc-300">
-                            Line Count (&quot;12 lines&quot;)
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <AlignLeft size={12} className="text-zinc-500 shrink-0" />
+                            <span className="widget-title text-xs font-normal text-zinc-300">
+                              Line Count (&quot;12 lines&quot;)
+                            </span>
+                          </div>
                           <div
                             className={`widget-checkbox ${statsConfig.showLines ? 'checked' : ''}`}
                           >
@@ -233,9 +248,12 @@ function StatusBar({
                           className={`widget-menu-item compact ${statsConfig.showSpaces ? 'selected' : ''}`}
                           onClick={(): void => onToggleStat('showSpaces')}
                         >
-                          <span className="widget-title text-xs font-normal text-zinc-300">
-                            Number of Spaces
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Space size={12} className="text-zinc-500 shrink-0" />
+                            <span className="widget-title text-xs font-normal text-zinc-300">
+                              Number of Spaces
+                            </span>
+                          </div>
                           <div
                             className={`widget-checkbox ${statsConfig.showSpaces ? 'checked' : ''}`}
                           >
@@ -247,9 +265,12 @@ function StatusBar({
                           className={`widget-menu-item compact ${statsConfig.showChars ? 'selected' : ''}`}
                           onClick={(): void => onToggleStat('showChars')}
                         >
-                          <span className="widget-title text-xs font-normal text-zinc-300">
-                            Character Count
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Hash size={12} className="text-zinc-500 shrink-0" />
+                            <span className="widget-title text-xs font-normal text-zinc-300">
+                              Character Count
+                            </span>
+                          </div>
                           <div
                             className={`widget-checkbox ${statsConfig.showChars ? 'checked' : ''}`}
                           >
@@ -261,9 +282,12 @@ function StatusBar({
                           className={`widget-menu-item compact ${statsConfig.showReadingTime ? 'selected' : ''}`}
                           onClick={(): void => onToggleStat('showReadingTime')}
                         >
-                          <span className="widget-title text-xs font-normal text-zinc-300">
-                            Reading Time
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Clock size={12} className="text-zinc-500 shrink-0" />
+                            <span className="widget-title text-xs font-normal text-zinc-300">
+                              Reading Time
+                            </span>
+                          </div>
                           <div
                             className={`widget-checkbox ${statsConfig.showReadingTime ? 'checked' : ''}`}
                           >
@@ -275,9 +299,12 @@ function StatusBar({
                           className={`widget-menu-item compact ${statsConfig.showSavedBadge ? 'selected' : ''}`}
                           onClick={(): void => onToggleStat('showSavedBadge')}
                         >
-                          <span className="widget-title text-xs font-normal text-zinc-300">
-                            Floating Saved Badge
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 size={12} className="text-zinc-500 shrink-0" />
+                            <span className="widget-title text-xs font-normal text-zinc-300">
+                              Floating Saved Badge
+                            </span>
+                          </div>
                           <div
                             className={`widget-checkbox ${statsConfig.showSavedBadge ? 'checked' : ''}`}
                           >
@@ -297,40 +324,44 @@ function StatusBar({
         <div className="floating-tool-item">
           <button
             type="button"
-            className={`floating-metrics-topright-trigger ${activeDropdown === 'preferences' ? 'active' : ''}`}
+            className={`floating-metrics-topright-trigger ${activeDropdown === 'dropdown2' ? 'active' : ''}`}
             onClick={(): void =>
-              setActiveDropdown((prev) => (prev === 'preferences' ? null : 'preferences'))
+              setActiveDropdown((prev) => (prev === 'dropdown2' ? null : 'dropdown2'))
             }
             title="Dropdown 2"
           >
             <Sliders size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
           </button>
 
-          {activeDropdown === 'preferences' && (
+          {activeDropdown === 'dropdown2' && (
             <div className="floating-metrics-topright-menu">
               <div className="floating-metrics-topright-list">
                 <div className="options-submenu-group">
                   <button
                     type="button"
-                    className={`options-submenu-trigger ${prefSub1Open ? 'expanded' : ''}`}
-                    onClick={(): void => setPrefSub1Open((p) => !p)}
+                    className={`options-submenu-trigger ${isSub2Open ? 'expanded' : ''}`}
+                    onClick={(): void => setIsSub2Open((p) => !p)}
                   >
                     <div className="flex items-center gap-2">
                       <Sliders size={13} className="text-blue-400 shrink-0" />
-                      <span className="widget-title font-semibold">Dropdown 2</span>
+                      <span className="options-trigger-title">Dropdown 2</span>
                     </div>
-                    <ChevronDown
-                      size={11}
-                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                        prefSub1Open ? 'rotate-180 text-zinc-300' : ''
-                      }`}
-                    />
+                    <div className="flex items-center gap-1.5">
+                      <span className="options-count-badge">Empty</span>
+                      <ChevronDown
+                        size={11}
+                        className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
+                          isSub2Open ? 'rotate-180 text-zinc-300' : ''
+                        }`}
+                      />
+                    </div>
                   </button>
 
-                  {prefSub1Open && (
+                  {isSub2Open && (
                     <div className="options-submenu-content">
-                      <div className="options-empty-content">
-                        <span>No options available</span>
+                      <div className="options-empty-card">
+                        <Inbox size={16} className="text-zinc-600 shrink-0" />
+                        <span className="text-[11px] text-zinc-500">No options configured</span>
                       </div>
                     </div>
                   )}
@@ -344,40 +375,44 @@ function StatusBar({
         <div className="floating-tool-item">
           <button
             type="button"
-            className={`floating-metrics-topright-trigger ${activeDropdown === 'extensions' ? 'active' : ''}`}
+            className={`floating-metrics-topright-trigger ${activeDropdown === 'dropdown3' ? 'active' : ''}`}
             onClick={(): void =>
-              setActiveDropdown((prev) => (prev === 'extensions' ? null : 'extensions'))
+              setActiveDropdown((prev) => (prev === 'dropdown3' ? null : 'dropdown3'))
             }
             title="Dropdown 3"
           >
             <Layers size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
           </button>
 
-          {activeDropdown === 'extensions' && (
+          {activeDropdown === 'dropdown3' && (
             <div className="floating-metrics-topright-menu">
               <div className="floating-metrics-topright-list">
                 <div className="options-submenu-group">
                   <button
                     type="button"
-                    className={`options-submenu-trigger ${extSub1Open ? 'expanded' : ''}`}
-                    onClick={(): void => setExtSub1Open((p) => !p)}
+                    className={`options-submenu-trigger ${isSub3Open ? 'expanded' : ''}`}
+                    onClick={(): void => setIsSub3Open((p) => !p)}
                   >
                     <div className="flex items-center gap-2">
                       <Layers size={13} className="text-purple-400 shrink-0" />
-                      <span className="widget-title font-semibold">Dropdown 3</span>
+                      <span className="options-trigger-title">Dropdown 3</span>
                     </div>
-                    <ChevronDown
-                      size={11}
-                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                        extSub1Open ? 'rotate-180 text-zinc-300' : ''
-                      }`}
-                    />
+                    <div className="flex items-center gap-1.5">
+                      <span className="options-count-badge">Empty</span>
+                      <ChevronDown
+                        size={11}
+                        className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
+                          isSub3Open ? 'rotate-180 text-zinc-300' : ''
+                        }`}
+                      />
+                    </div>
                   </button>
 
-                  {extSub1Open && (
+                  {isSub3Open && (
                     <div className="options-submenu-content">
-                      <div className="options-empty-content">
-                        <span>No options available</span>
+                      <div className="options-empty-card">
+                        <Inbox size={16} className="text-zinc-600 shrink-0" />
+                        <span className="text-[11px] text-zinc-500">No options configured</span>
                       </div>
                     </div>
                   )}
