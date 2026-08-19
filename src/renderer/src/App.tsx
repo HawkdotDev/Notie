@@ -929,6 +929,8 @@ export default function App(): React.JSX.Element {
                   showIcon={showIcon}
                   onToggleCover={(): void => setShowCover((prev) => !prev)}
                   onToggleIcon={(): void => setShowIcon((prev) => !prev)}
+                  showRightSidebar={showRightSidebar}
+                  onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
                 />
               </div>
             ) : (

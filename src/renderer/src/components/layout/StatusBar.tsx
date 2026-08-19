@@ -6,9 +6,9 @@ import {
   Check,
   BarChart2,
   Sliders,
-  Layers,
   ImageIcon,
-  Smile
+  Smile,
+  ListTree
 } from 'lucide-react'
 import { StatusStatsConfig } from '../../types'
 
@@ -24,6 +24,8 @@ interface StatusBarProps {
   showIcon?: boolean
   onToggleCover?: () => void
   onToggleIcon?: () => void
+  showRightSidebar?: boolean
+  onToggleRightSidebar?: () => void
 }
 
 function StatusBar({
@@ -45,13 +47,14 @@ function StatusBar({
   showCover = true,
   showIcon = true,
   onToggleCover,
-  onToggleIcon
+  onToggleIcon,
+  showRightSidebar = false,
+  onToggleRightSidebar
 }: StatusBarProps): React.JSX.Element | null {
-  const [activeDropdown, setActiveDropdown] = useState<'opt1' | 'opt2' | 'opt3' | null>(null)
+  const [activeDropdown, setActiveDropdown] = useState<'opt1' | 'opt2' | null>(null)
   const [metricsSubOpen, setMetricsSubOpen] = useState(true)
   const [iconCoverSubOpen, setIconCoverSubOpen] = useState(true)
   const [sub2Open, setSub2Open] = useState(true)
-  const [sub3Open, setSub3Open] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Toast animation state for "Saved" notification
@@ -444,49 +447,20 @@ function StatusBar({
           )}
         </div>
 
-        {/* Option 3: Empty Dropdown 2 */}
+        {/* Button 3: Toggle Document Outline */}
         <div className="floating-tool-item">
           <button
             type="button"
-            className={`floating-metrics-topright-trigger ${activeDropdown === 'opt3' ? 'active' : ''}`}
-            onClick={(): void => setActiveDropdown((prev) => (prev === 'opt3' ? null : 'opt3'))}
-            title="Dropdown 3"
+            className={`floating-metrics-topright-trigger ${showRightSidebar ? 'active' : ''}`}
+            onClick={onToggleRightSidebar}
+            title={showRightSidebar ? 'Close Outline' : 'Open Outline'}
           >
-            <Layers size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
+            <ListTree
+              size={13}
+              strokeWidth={1.75}
+              className={showRightSidebar ? 'text-zinc-200 shrink-0' : 'text-zinc-400 shrink-0'}
+            />
           </button>
-
-          {activeDropdown === 'opt3' && (
-            <div className="floating-metrics-topright-menu">
-              <div className="options-card-section">
-                <div className="options-submenu-group">
-                  <button
-                    type="button"
-                    className={`options-submenu-trigger ${sub3Open ? 'expanded' : ''}`}
-                    onClick={(): void => setSub3Open((p) => !p)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Layers size={13} className="text-purple-400 shrink-0" />
-                      <span className="widget-title font-semibold">Dropdown 3</span>
-                    </div>
-                    <ChevronDown
-                      size={11}
-                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                        sub3Open ? 'rotate-180 text-zinc-300' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {sub3Open && (
-                    <div className="options-submenu-content">
-                      <div className="options-empty-content">
-                        <span>No options available</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </>
