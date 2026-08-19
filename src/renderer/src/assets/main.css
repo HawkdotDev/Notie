@@ -2761,11 +2761,49 @@ code.inline-code {
   gap: 4px;
 }
 
+/* Submenu / Accordion Dropdown Rows inside Floating Menus */
+.options-submenu-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.options-submenu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  width: 100%;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.options-submenu-trigger:hover,
+.options-submenu-trigger.expanded {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.options-submenu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 0 2px 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+  margin-left: 8px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
 .options-empty-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 4px;
+  padding: 8px 4px;
   font-size: 11px;
   color: var(--text-muted);
   font-style: italic;
