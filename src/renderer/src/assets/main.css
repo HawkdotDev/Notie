@@ -1759,10 +1759,34 @@ svg.theme-svg,
   color: #bfbfc7;
 }
 
+.editor-container {
+  font-family: var(--editor-font-family, var(--font-sans));
+}
+
+.editor-wrapper,
+.block-editor-container,
+.codex-editor,
+.codex-editor__redactor,
+.ce-block,
+.ce-block__content,
+.ce-paragraph,
+.cdx-list,
+.cdx-list__item,
+.cdx-quote,
+.cdx-quote__text,
+.document-title-input {
+  font-family: var(--editor-font-family, inherit);
+}
+
 .ce-paragraph {
   color: #a5a5ad;
-  font-size: 15px;
+  font-size: var(--editor-font-size, 15px);
   line-height: 1.65;
+}
+
+.cdx-list__item,
+.cdx-quote__text {
+  font-size: var(--editor-font-size, 15px);
 }
 
 .ce-paragraph b,
@@ -2191,6 +2215,34 @@ code.inline-code {
   cursor: pointer;
 }
 
+.right-sidebar-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.right-sidebar-header-actions button {
+  font-size: 13px;
+}
+
+.outline-dock-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #a1a1aa);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.outline-dock-btn:hover {
+  color: var(--text-primary, #e4e4e7);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .right-sidebar-content {
   flex: 1;
   overflow-y: auto;
@@ -2336,6 +2388,12 @@ code.inline-code {
   flex-direction: column;
   gap: 6px;
   animation: floatWidgetIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.view-dropdown-menu {
+  left: 0;
+  right: auto;
+  width: 260px;
 }
 
 .widgets-dropdown-header {
@@ -2866,6 +2924,63 @@ code.inline-code {
   font-size: 11px;
   color: var(--text-muted);
   font-style: italic;
+}
+
+/* Typography & Export Submenu Styles */
+.typography-option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 2px;
+}
+
+.typography-option-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 0 4px;
+}
+
+.typography-font-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.typography-size-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  margin-top: 2px;
+}
+
+.typography-size-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.typography-size-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.typography-size-value {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-active);
+  font-weight: 500;
 }
 
 .status-pill-item.mono {

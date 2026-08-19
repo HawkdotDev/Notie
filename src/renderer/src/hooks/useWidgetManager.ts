@@ -25,6 +25,7 @@ export function useWidgetManager(
     stats: false,
     terminal: false,
     snippets: false,
+    outline: false,
     ...initialWidgetState
   })
 
@@ -33,6 +34,7 @@ export function useWidgetManager(
     stats: 101,
     terminal: 102,
     snippets: 103,
+    outline: 104,
     ...initialZIndexes
   })
 
@@ -51,6 +53,12 @@ export function useWidgetManager(
       height: 220
     },
     snippets: { x: 320, y: 140, width: 300, height: 340 },
+    outline: {
+      x: Math.max(260, typeof window !== 'undefined' ? window.innerWidth - 300 : 800),
+      y: 85,
+      width: 260,
+      height: 380
+    },
     ...initialPositions
   })
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react'
-import { PanelLeftOpen, Smile, Image as ImageIcon } from 'lucide-react'
+import { PanelLeftOpen, Smile, Image as ImageIcon, AppWindow } from 'lucide-react'
 import BlockEditor from './components/BlockEditor'
 import EmojiPicker from './components/EmojiPicker'
 import BannerPicker from './components/BannerPicker'
@@ -10,6 +10,7 @@ import SubHeader from './components/layout/SubHeader'
 import Sidebar from './components/layout/Sidebar'
 import TabBar from './components/layout/TabBar'
 import FloatingWidgetsOverlay from './components/layout/FloatingWidgetsOverlay'
+import OutlineWidget from './components/layout/OutlineWidget'
 import StatusBar from './components/layout/StatusBar'
 
 const GraphView = lazy(() => import('./components/GraphView'))
@@ -19,6 +20,7 @@ import { normalizePath, getRelativePath, getPathKey } from './utils/pathUtils'
 import { stripFrontmatter } from './utils/metadataUtils'
 import { metadataEngine } from './utils/metadataEngine'
 import { manipulateSvgTheme } from './utils/themeSvgUtils'
+import { markdownToHtml } from './utils/markdownConverter'
 
 import { usePersistentState } from './hooks/usePersistentState'
 import { useSidebarResize } from './hooks/useSidebarResize'
@@ -48,7 +50,16 @@ export default function App(): React.JSX.Element {
   const [showBannerPicker, setShowBannerPicker] = useState<boolean>(false)
   const [showCover, setShowCover] = useState<boolean>(true)
   const [showIcon, setShowIcon] = useState<boolean>(true)
+  const [showFileName, setShowFileName] = useState<boolean>(true)
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false)
+
+  const [editorFontFamily, setEditorFontFamily] = useState<string>(
+    () => localStorage.getItem('notie_editor_font_family') || "'Inter', sans-serif"
+  )
+  const [editorFontSize, setEditorFontSize] = useState<number>(() => {
+    const saved = localStorage.getItem('notie_editor_font_size')
+    return saved ? parseInt(saved, 10) : 15
+  })
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => savedState.viewMode ?? 'editor')
   const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(
@@ -78,6 +89,7 @@ export default function App(): React.JSX.Element {
   // Floating Widgets Manager custom hook
   const {
     widgetState,
+    setWidgetState,
     widgetZIndexes,
     widgetPositions,
     bringWidgetToFront,
@@ -495,6 +507,91 @@ export default function App(): React.JSX.Element {
     [workspacePath, handleFileSelect]
   )
 
+  const handleFontFamilyChange = useCallback((font: string) => {
+    setEditorFontFamily(font)
+    try {
+      localStorage.setItem('notie_editor_font_family', font)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const handleFontSizeChange = useCallback((size: number) => {
+    setEditorFontSize(size)
+    try {
+      localStorage.setItem('notie_editor_font_size', size.toString())
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const handleExportHTML = useCallback(async () => {
+    if (!activeFilePath) return
+    const rawContent = fileContents[activeFilePath] || ''
+    const baseName = activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || 'document'
+    const htmlBody = markdownToHtml(rawContent)
+    const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${baseName}</title>
+  <style>
+    body {
+      font-family: ${editorFontFamily};
+      font-size: ${editorFontSize}px;
+      line-height: 1.65;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 24px;
+      color: #1a1a1a;
+      background: #fafafa;
+    }
+    h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 600; line-height: 1.3; }
+    h1 { font-size: 2em; border-bottom: 1px solid #e5e5e5; padding-bottom: 0.3em; }
+    h2 { font-size: 1.5em; border-bottom: 1px solid #eaeaea; padding-bottom: 0.25em; }
+    h3 { font-size: 1.25em; }
+    p { margin-bottom: 1em; }
+    ul, ol { padding-left: 24px; margin-bottom: 1em; }
+    li { margin-bottom: 0.25em; }
+    code { background: rgba(0, 0, 0, 0.06); padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+    blockquote { border-left: 4px solid #d1d5db; margin: 1.2em 0; padding: 0.5em 1em; color: #4b5563; background: rgba(0, 0, 0, 0.02); }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    img { max-width: 100%; height: auto; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>${baseName}</h1>
+  ${htmlBody}
+</body>
+</html>`
+
+    try {
+      const savePath = await window.api.fs.showSaveDialog(`${baseName}.html`)
+      if (savePath) {
+        await window.api.fs.writeFile(savePath, fullHtml)
+      }
+    } catch (err) {
+      alert(`Export HTML error: ${err}`)
+    }
+  }, [activeFilePath, fileContents, editorFontFamily, editorFontSize])
+
+  const handleExportText = useCallback(async () => {
+    if (!activeFilePath) return
+    const rawContent = fileContents[activeFilePath] || ''
+    const baseName = activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || 'document'
+    const plainText = stripFrontmatter(rawContent)
+    try {
+      const savePath = await window.api.fs.showSaveDialog(`${baseName}.txt`)
+      if (savePath) {
+        await window.api.fs.writeFile(savePath, plainText)
+      }
+    } catch (err) {
+      alert(`Export Text error: ${err}`)
+    }
+  }, [activeFilePath, fileContents])
+
   // Keyboard Shortcuts (Ctrl+S, Ctrl+O, Ctrl+N, Ctrl+W)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
@@ -679,7 +776,15 @@ export default function App(): React.JSX.Element {
               </Suspense>
             ) : activeFilePath ? (
               <div className="editor-writing-viewport">
-                <div className="editor-container">
+                <div
+                  className="editor-container"
+                  style={
+                    {
+                      '--editor-font-family': editorFontFamily,
+                      '--editor-font-size': `${editorFontSize}px`
+                    } as React.CSSProperties
+                  }
+                >
                   {/* 1. NOTION-STYLE FULL-WIDTH COVER BANNER */}
                   {showCover && activeFileBanner && (
                     <div
@@ -866,37 +971,39 @@ export default function App(): React.JSX.Element {
                       )}
                     </div>
 
-                    <input
-                      className="document-title-input"
-                      type="text"
-                      value={
-                        activeFilePath
-                          ? activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || ''
-                          : ''
-                      }
-                      onChange={(e): void => {
-                        const newTitle = e.target.value
-                        if (!activeFilePath || !workspacePath) return
-                        const dir = activeFilePath.substring(0, activeFilePath.lastIndexOf('/'))
-                        const newPath = `${dir}/${newTitle}.md`
-                        if (newPath !== activeFilePath) {
-                          void window.api.fs
-                            .renamePath(activeFilePath, newPath)
-                            .then(() => {
-                              setActiveFilePath(newPath)
-                              setOpenFiles((prev) =>
-                                prev.map((f) =>
-                                  f.path === activeFilePath
-                                    ? { path: newPath, name: `${newTitle}.md` }
-                                    : f
-                                )
-                              )
-                            })
-                            .catch((err) => alert(`Rename error: ${err}`))
+                    {showFileName && (
+                      <input
+                        className="document-title-input"
+                        type="text"
+                        value={
+                          activeFilePath
+                            ? activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || ''
+                            : ''
                         }
-                      }}
-                      placeholder="Untitled"
-                    />
+                        onChange={(e): void => {
+                          const newTitle = e.target.value
+                          if (!activeFilePath || !workspacePath) return
+                          const dir = activeFilePath.substring(0, activeFilePath.lastIndexOf('/'))
+                          const newPath = `${dir}/${newTitle}.md`
+                          if (newPath !== activeFilePath) {
+                            void window.api.fs
+                              .renamePath(activeFilePath, newPath)
+                              .then(() => {
+                                setActiveFilePath(newPath)
+                                setOpenFiles((prev) =>
+                                  prev.map((f) =>
+                                    f.path === activeFilePath
+                                      ? { path: newPath, name: `${newTitle}.md` }
+                                      : f
+                                  )
+                                )
+                              })
+                              .catch((err) => alert(`Rename error: ${err}`))
+                          }
+                        }}
+                        placeholder="Untitled"
+                      />
+                    )}
 
                     <BlockEditor
                       value={fileContents[activeFilePath] || ''}
@@ -922,10 +1029,18 @@ export default function App(): React.JSX.Element {
                   onToggleStat={handleToggleStat}
                   showCover={showCover}
                   showIcon={showIcon}
+                  showFileName={showFileName}
                   onToggleCover={(): void => setShowCover((prev) => !prev)}
                   onToggleIcon={(): void => setShowIcon((prev) => !prev)}
+                  onToggleFileName={(): void => setShowFileName((prev) => !prev)}
                   showRightSidebar={showRightSidebar}
                   onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
+                  editorFontFamily={editorFontFamily}
+                  editorFontSize={editorFontSize}
+                  onFontFamilyChange={handleFontFamilyChange}
+                  onFontSizeChange={handleFontSizeChange}
+                  onExportHTML={handleExportHTML}
+                  onExportText={handleExportText}
                 />
               </div>
             ) : (
@@ -954,6 +1069,11 @@ export default function App(): React.JSX.Element {
                   }))
                 }
               }}
+              onDockOutline={(): void => {
+                // Dock floating outline back to sidebar
+                setWidgetState((prev) => ({ ...prev, outline: false }))
+                setShowRightSidebar(true)
+              }}
             />
 
             {/* ====== RIGHT SIDEBAR PANEL (OUTLINE) ====== */}
@@ -970,57 +1090,31 @@ export default function App(): React.JSX.Element {
                 />
                 <div className="right-sidebar-header">
                   <span className="text-xs font-semibold text-zinc-300">Outline</span>
-                  <button
-                    className="text-zinc-500 hover:text-zinc-200 p-0.5 rounded transition-colors"
-                    onClick={(): void => setShowRightSidebar(false)}
-                    title="Close Right Sidebar"
-                  >
-                    ×
-                  </button>
+                  <div className="right-sidebar-header-actions">
+                    <button
+                      className="text-zinc-500 hover:text-zinc-200 p-0.5 rounded transition-colors"
+                      onClick={(): void => {
+                        // Pop out to floating window
+                        setShowRightSidebar(false)
+                        setWidgetState((prev) => ({ ...prev, outline: true }))
+                        bringWidgetToFront('outline')
+                      }}
+                      title="Pop out to floating window"
+                    >
+                      <AppWindow size={13} strokeWidth={1.75} />
+                    </button>
+                    <button
+                      className="text-zinc-500 hover:text-zinc-200 p-0.5 rounded transition-colors"
+                      onClick={(): void => setShowRightSidebar(false)}
+                      title="Close Right Sidebar"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
                 <div className="right-sidebar-content">
                   {activeFilePath ? (
-                    <div className="flex flex-col gap-1 text-[11px] text-zinc-400 p-2">
-                      {(fileContents[activeFilePath] || '')
-                        .split('\n')
-                        .map((line, idx) => {
-                          const headingMatch = line.match(/^(#{1,6})\s+(.+)/)
-                          if (!headingMatch) return null
-                          const level = headingMatch[1].length
-                          const text = headingMatch[2]
-                          return (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-1.5 py-1 px-2 hover:bg-zinc-800/50 cursor-pointer transition-colors"
-                              style={{ paddingLeft: `${(level - 1) * 10 + 8}px` }}
-                              onClick={(): void => {
-                                const editorElem = document.querySelector('.editor-container')
-                                if (!editorElem) return
-                                const headers = editorElem.querySelectorAll(
-                                  'h1, h2, h3, h4, h5, h6, .ce-header'
-                                )
-                                for (const h of Array.from(headers)) {
-                                  if (h.textContent?.trim().includes(text.trim())) {
-                                    h.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                                    break
-                                  }
-                                }
-                              }}
-                            >
-                              <span className="text-zinc-400 font-mono text-[9px] shrink-0">
-                                H{level}
-                              </span>
-                              <span className="truncate text-zinc-300">{text}</span>
-                            </div>
-                          )
-                        })
-                        .filter(Boolean)}
-                      {!(fileContents[activeFilePath] || '').match(/^#{1,6}\s+/m) && (
-                        <div className="text-zinc-600 text-center py-4 italic text-[11px]">
-                          No headings found
-                        </div>
-                      )}
-                    </div>
+                    <OutlineWidget content={fileContents[activeFilePath] || ''} />
                   ) : (
                     <div className="text-zinc-600 text-center py-8 text-[11px]">No file open</div>
                   )}

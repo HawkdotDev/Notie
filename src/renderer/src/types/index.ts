@@ -47,6 +47,7 @@ export interface WidgetState {
   stats: boolean
   terminal: boolean
   snippets: boolean
+  outline: boolean
 }
 
 export interface WidgetLayout {
@@ -69,6 +70,9 @@ export interface PersistentAppState {
   rightSidebarWidth: number
   showSearchInput: boolean
   showDiffToggle?: boolean
+  showCover?: boolean
+  showIcon?: boolean
+  showFileName?: boolean
   searchQuery: string
   widgetState: WidgetState
   widgetZIndexes: Record<string, number>

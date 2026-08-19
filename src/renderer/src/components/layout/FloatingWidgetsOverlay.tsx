@@ -1,10 +1,11 @@
 import React from 'react'
-import { Sparkles, BarChart2, Terminal, Code2 } from 'lucide-react'
+import { Sparkles, BarChart2, Terminal, Code2, ListTree, PanelRight } from 'lucide-react'
 import FloatingWindow from './FloatingWindow'
 import AssistantPanel from './AssistantPanel'
 import DocumentStatsWidget from './DocumentStatsWidget'
 import QuickTerminalWidget from './QuickTerminalWidget'
 import CodeSnippetsWidget from './CodeSnippetsWidget'
+import OutlineWidget from './OutlineWidget'
 import { WidgetState, WidgetLayout, ViewMode } from '../../types'
 
 interface FloatingWidgetsOverlayProps {
@@ -23,6 +24,7 @@ interface FloatingWidgetsOverlayProps {
     size: { width: number; height: number }
   ) => void
   onInsertSnippet: (snippetText: string) => void
+  onDockOutline?: () => void
 }
 
 function FloatingWidgetsOverlayComponent({
@@ -36,7 +38,8 @@ function FloatingWidgetsOverlayComponent({
   bringWidgetToFront,
   handleToggleWidget,
   handleWidgetLayoutChange,
-  onInsertSnippet
+  onInsertSnippet,
+  onDockOutline
 }: FloatingWidgetsOverlayProps): React.JSX.Element | null {
   if (viewMode === 'graph') return null
 
@@ -145,6 +148,35 @@ function FloatingWidgetsOverlayComponent({
           onLayoutChange={(pos, size): void => handleWidgetLayoutChange('snippets', pos, size)}
         >
           <CodeSnippetsWidget onInsertSnippet={onInsertSnippet} />
+        </FloatingWindow>
+      )}
+
+      {widgetState.outline && (
+        <FloatingWindow
+          id="outline"
+          title="Outline"
+          icon={<ListTree size={13} className="text-zinc-300" />}
+          badge={
+            onDockOutline ? (
+              <button className="outline-dock-btn" onClick={onDockOutline} title="Dock to sidebar">
+                <PanelRight size={12} strokeWidth={1.75} />
+              </button>
+            ) : undefined
+          }
+          initialPos={{
+            x: widgetPositions.outline?.x ?? Math.max(260, window.innerWidth - 300),
+            y: widgetPositions.outline?.y ?? 85
+          }}
+          initialSize={{
+            width: widgetPositions.outline?.width ?? 260,
+            height: widgetPositions.outline?.height ?? 380
+          }}
+          zIndex={widgetZIndexes.outline}
+          onFocus={(): void => bringWidgetToFront('outline')}
+          onClose={(): void => handleToggleWidget('outline')}
+          onLayoutChange={(pos, size): void => handleWidgetLayoutChange('outline', pos, size)}
+        >
+          <OutlineWidget content={activeText} />
         </FloatingWindow>
       )}
     </>

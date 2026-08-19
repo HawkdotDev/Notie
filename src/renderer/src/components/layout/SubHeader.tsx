@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import {
   FileText,
   Network,
-  ListTree,
+  Eye,
   Search,
   Terminal,
   Sparkles,
@@ -10,16 +10,11 @@ import {
   LayoutGrid,
   BarChart2,
   Code2,
-  Check
+  Check,
+  ListTree,
+  PanelLeft
 } from 'lucide-react'
-import { ViewMode } from '../../types'
-
-export interface WidgetState {
-  assistant: boolean
-  stats: boolean
-  terminal: boolean
-  snippets: boolean
-}
+import { ViewMode, WidgetState } from '../../types'
 
 interface SubHeaderProps {
   sidebarCollapsed?: boolean
@@ -42,6 +37,8 @@ interface SubHeaderProps {
 }
 
 function SubHeader({
+  sidebarCollapsed,
+  onToggleSidebar,
   viewMode,
   onToggleViewMode,
   setViewMode,
@@ -62,7 +59,9 @@ function SubHeader({
       return false
     }
   })
+  const [showViewMenu, setShowViewMenu] = useState<boolean>(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const viewMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     try {
@@ -77,14 +76,17 @@ function SubHeader({
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setShowWidgetsMenu(false)
       }
+      if (viewMenuRef.current && !viewMenuRef.current.contains(e.target as Node)) {
+        setShowViewMenu(false)
+      }
     }
-    if (showWidgetsMenu) {
+    if (showWidgetsMenu || showViewMenu) {
       document.addEventListener('mousedown', handleClickOutside)
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [showWidgetsMenu])
+  }, [showWidgetsMenu, showViewMenu])
 
   return (
     <div className="app-actions-bar relative">
@@ -123,15 +125,105 @@ function SubHeader({
           <span>Graph</span>
         </button>
 
-        {/* 3. Document Outline Tab */}
-        <button
-          className={`action-pill-btn ${showRightSidebar ? 'active' : ''}`}
-          onClick={onToggleRightSidebar}
-          title="Toggle Document Outline"
-        >
-          <ListTree size={13} className={showRightSidebar ? 'text-zinc-300' : ''} />
-          <span>Outline</span>
-        </button>
+        {/* 3. Document View Dropdown */}
+        <div className="relative" ref={viewMenuRef}>
+          <button
+            className={`action-pill-btn ${showViewMenu || showRightSidebar ? 'active' : ''}`}
+            onClick={(): void => setShowViewMenu((prev) => !prev)}
+            title="View Options"
+          >
+            <Eye size={13} className={showViewMenu || showRightSidebar ? 'text-zinc-300' : ''} />
+            <span>View</span>
+            <ChevronDown
+              size={11}
+              className={`transition-transform ${showViewMenu ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {showViewMenu && (
+            <div className="widgets-dropdown-menu view-dropdown-menu">
+              <div className="widgets-dropdown-header">
+                <span className="font-semibold text-zinc-300">View Options</span>
+              </div>
+
+              <div className="widgets-dropdown-list">
+                <div
+                  className={`widget-menu-item ${showRightSidebar ? 'selected' : ''}`}
+                  onClick={(): void => {
+                    onToggleRightSidebar()
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <ListTree size={13} className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="widget-title">Document Outline</span>
+                      <span className="widget-desc">Sidebar table of contents</span>
+                    </div>
+                  </div>
+                  <div className={`widget-checkbox ${showRightSidebar ? 'checked' : ''}`}>
+                    {showRightSidebar && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item ${viewMode === 'editor' ? 'selected' : ''}`}
+                  onClick={(): void => {
+                    if (setViewMode) setViewMode('editor')
+                    else if (viewMode === 'graph') onToggleViewMode()
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <FileText size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="widget-title">Document Editor</span>
+                      <span className="widget-desc">Standard markdown editor</span>
+                    </div>
+                  </div>
+                  <div className={`widget-checkbox ${viewMode === 'editor' ? 'checked' : ''}`}>
+                    {viewMode === 'editor' && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item ${viewMode === 'graph' ? 'selected' : ''}`}
+                  onClick={(): void => {
+                    if (setViewMode) setViewMode('graph')
+                    else if (viewMode === 'editor') onToggleViewMode()
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Network size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="widget-title">Knowledge Graph</span>
+                      <span className="widget-desc">Interactive node graph</span>
+                    </div>
+                  </div>
+                  <div className={`widget-checkbox ${viewMode === 'graph' ? 'checked' : ''}`}>
+                    {viewMode === 'graph' && <Check size={11} />}
+                  </div>
+                </div>
+
+                {onToggleSidebar && (
+                  <div
+                    className={`widget-menu-item ${!sidebarCollapsed ? 'selected' : ''}`}
+                    onClick={onToggleSidebar}
+                  >
+                    <div className="flex items-center gap-2">
+                      <PanelLeft size={13} className="text-zinc-300 shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="widget-title">File Explorer</span>
+                        <span className="widget-desc">Sidebar file navigation</span>
+                      </div>
+                    </div>
+                    <div className={`widget-checkbox ${!sidebarCollapsed ? 'checked' : ''}`}>
+                      {!sidebarCollapsed && <Check size={11} />}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* 4. Global Search Tab */}
         {onToggleSearchInput && (
