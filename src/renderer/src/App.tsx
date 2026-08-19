@@ -909,6 +909,18 @@ export default function App(): React.JSX.Element {
               }}
             />
           </div>
+
+          {/* Floating Stats & Autosave Pill inside Writing Area */}
+          {activeFilePath && viewMode !== 'graph' && (
+            <StatusBar
+              activeFilePath={activeFilePath}
+              activeFileContent={activeFilePath ? fileContents[activeFilePath] : undefined}
+              stats={workerStats}
+              cursorPosition={cursorPosition}
+              autoSaveEnabled={autoSaveEnabled}
+              activeUnsaved={activeUnsaved}
+            />
+          )}
         </div>
 
         {/* ====== RIGHT SIDEBAR PANEL ====== */}
@@ -970,21 +982,6 @@ export default function App(): React.JSX.Element {
           </div>
         )}
       </div>
-
-      {/* ====== 5. BOTTOM STATUS BAR ====== */}
-      <StatusBar
-        workspacePath={workspacePath}
-        sidebarWidth={sidebarWidth}
-        sidebarCollapsed={sidebarCollapsed}
-        isResizing={isResizingLeft}
-        activeFilePath={activeFilePath}
-        activeFileContent={activeFilePath ? fileContents[activeFilePath] : undefined}
-        stats={workerStats}
-        cursorPosition={cursorPosition}
-        autoSaveEnabled={autoSaveEnabled}
-        activeUnsaved={activeUnsaved}
-        onToggleRightPanel={(): void => setShowRightSidebar((p) => !p)}
-      />
 
       {/* ====== 6. PREFERENCES & SETTINGS MODAL ====== */}
       <SettingsModal

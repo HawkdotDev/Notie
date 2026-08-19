@@ -2537,105 +2537,74 @@ code.inline-code {
   color: #eab308;
 }
 
-/* ====== POLISHED BOTTOM STATUS BAR (Divided into Sidebar & Main parts) ====== */
-.status-bar {
-  height: 30px;
-  min-height: 30px;
-  background: var(--bg-primary);
-  border-top: none;
+/* ====== FLOATING EDITOR STATUS BAR & AUTOSAVE ====== */
+.floating-editor-statusbar {
+  position: absolute;
+  bottom: 14px;
+  right: 18px;
+  height: 25px;
+  background: rgba(14, 14, 17, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #25252a;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
   display: flex;
   align-items: center;
-  padding: 0;
+  gap: 2px;
+  padding: 0 8px;
   font-size: 11px;
-  color: #8e8e93;
+  color: var(--text-muted);
   user-select: none;
-  z-index: 200;
-  overflow: hidden;
-}
-
-.status-bar-sidebar {
-  height: 100%;
-  background: var(--bg-sidebar);
-  border-top: 1px solid var(--border-color);
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  overflow: hidden;
-  box-sizing: border-box;
+  z-index: 80;
   transition:
-    width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 0.28s ease;
-  will-change: width;
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+  pointer-events: auto;
 }
 
-.status-bar-sidebar.is-resizing {
-  transition: none !important;
+.floating-editor-statusbar:hover {
+  background: rgba(18, 18, 22, 0.96);
+  border-color: #36363e;
 }
 
-.status-bar-sidebar.is-collapsed {
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  border-right-color: transparent !important;
-  border-top-color: transparent !important;
-}
-
-.status-sidebar-content {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 10px;
-  width: 100%;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.status-bar-main {
-  height: 100%;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 10px;
-  min-width: 0;
-  background: var(--bg-primary);
-  border-top: none;
-}
-
-.status-main-left,
-.status-right {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.status-divider {
+.floating-editor-statusbar .status-divider {
   width: 1px;
-  height: 14px;
-  background: #222228;
+  height: 12px;
+  background: #282832;
   margin: 0 4px;
 }
 
-.status-pill-item {
+.floating-editor-statusbar .status-pill-item {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 6px;
+  padding: 2px 4px;
   font-size: 11px;
-  color: #888891;
+  color: #a5a5ad;
   transition: all 0.12s ease;
   white-space: nowrap;
 }
 
-.status-pill-item.hoverable {
+.floating-editor-statusbar .status-pill-item.hoverable {
   cursor: pointer;
 }
 
-.status-pill-item.hoverable:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: #BFBFC7;
+.floating-editor-statusbar .status-pill-item.hoverable:hover {
+  color: #bfbfc7;
+}
+
+.floating-editor-statusbar .status-pill-item.mono {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+.floating-editor-statusbar .status-pill-item.language-pill {
+  color: #bfbfc7;
+  font-weight: 500;
 }
 
 .status-pill-item.mono {
