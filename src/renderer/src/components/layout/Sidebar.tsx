@@ -262,12 +262,12 @@ function Sidebar({
             <div className="first-time-icon-wrapper mb-4">
               <FolderOpen size={32} fill="currentColor" className="text-zinc-400" />
             </div>
-            <h3 className="text-sm font-semibold text-zinc-100 mb-1">No Workspace Open</h3>
+            <h3 className="text-sm font-semibold text-zinc-300 mb-1">No Workspace Open</h3>
             <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
               Open a local folder or workspace project to start exploring files and editing code.
             </p>
             <button
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-all cursor-pointer border border-zinc-700"
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-all cursor-pointer border border-zinc-700"
               onClick={onOpenWorkspace}
             >
               <FolderOpen size={14} />

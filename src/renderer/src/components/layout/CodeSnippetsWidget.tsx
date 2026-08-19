@@ -57,11 +57,11 @@ export default function CodeSnippetsWidget({
             onClick={(): void => handleCopy(s.code, idx)}
           >
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-zinc-200 text-[11px] flex items-center gap-1.5">
+              <span className="font-semibold text-zinc-300 text-[11px] flex items-center gap-1.5">
                 <Code size={11} className="text-zinc-300" />
                 {s.title}
               </span>
-              <button className="text-zinc-500 hover:text-zinc-200 transition-colors p-1">
+              <button className="text-zinc-500 hover:text-zinc-300 transition-colors p-1">
                 {copiedIdx === idx ? (
                   <Check size={12} className="text-emerald-400" />
                 ) : (

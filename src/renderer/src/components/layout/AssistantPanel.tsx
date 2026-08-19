@@ -187,10 +187,10 @@ export default function AssistantPanel({
       <div className="flex items-center justify-between px-3 py-2 border-b border-[#292932] bg-[#141417]">
         <div className="flex items-center gap-3 text-[11px] text-zinc-400">
           <span>
-            <strong className="text-zinc-200">{stats.words}</strong> words
+            <strong className="text-zinc-300">{stats.words}</strong> words
           </span>
           <span>
-            <strong className="text-zinc-200">{stats.readingTime}m</strong> read
+            <strong className="text-zinc-300">{stats.readingTime}m</strong> read
           </span>
           <span className="text-zinc-300 font-medium">Grade {stats.gradeLevel}</span>
         </div>
@@ -198,8 +198,8 @@ export default function AssistantPanel({
           <button
             className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${
               activeTab === 'diagnostics'
-                ? 'bg-zinc-700 text-zinc-200'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-zinc-700 text-zinc-300'
+                : 'text-zinc-400 hover:text-zinc-300'
             }`}
             onClick={(): void => setActiveTab('diagnostics')}
           >
@@ -208,8 +208,8 @@ export default function AssistantPanel({
           <button
             className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${
               activeTab === 'ai-tools'
-                ? 'bg-zinc-700 text-zinc-200'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-zinc-700 text-zinc-300'
+                : 'text-zinc-400 hover:text-zinc-300'
             }`}
             onClick={(): void => setActiveTab('ai-tools')}
           >
@@ -218,8 +218,8 @@ export default function AssistantPanel({
           <button
             className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${
               activeTab === 'ask'
-                ? 'bg-zinc-700 text-zinc-200'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-zinc-700 text-zinc-300'
+                : 'text-zinc-400 hover:text-zinc-300'
             }`}
             onClick={(): void => setActiveTab('ask')}
           >
@@ -248,12 +248,12 @@ export default function AssistantPanel({
                   className="bg-[#1c1c22] border border-[#2e2e3a] p-2.5 space-y-1.5 shadow-sm"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-zinc-200 font-semibold text-[11px]">
+                    <span className="flex items-center gap-1.5 text-zinc-300 font-semibold text-[11px]">
                       <span className="w-1.5 h-1.5 bg-zinc-400" />
                       {issue.label}
                     </span>
                     <button
-                      className="px-2 py-0.5 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 text-[10px] font-medium transition-colors flex items-center gap-1"
+                      className="px-2 py-0.5 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-[10px] font-medium transition-colors flex items-center gap-1"
                       onClick={(): void => handleApplyFix(issue)}
                     >
                       Fix <ArrowRight size={10} />
@@ -284,11 +284,11 @@ export default function AssistantPanel({
               <div className="flex items-center gap-2">
                 <Zap size={14} className="text-amber-400" />
                 <div>
-                  <div className="font-semibold text-zinc-200">Fix Grammar & Flow</div>
+                  <div className="font-semibold text-zinc-300">Fix Grammar & Flow</div>
                   <div className="text-[10px] text-zinc-400">Clean up typos and active voice</div>
                 </div>
               </div>
-              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-200" />
+              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-300" />
             </button>
 
             <button
@@ -298,11 +298,11 @@ export default function AssistantPanel({
               <div className="flex items-center gap-2">
                 <FileText size={14} className="text-blue-400" />
                 <div>
-                  <div className="font-semibold text-zinc-200">Summarize Note</div>
+                  <div className="font-semibold text-zinc-300">Summarize Note</div>
                   <div className="text-[10px] text-zinc-400">Generate executive summary</div>
                 </div>
               </div>
-              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-200" />
+              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-300" />
             </button>
 
             <button
@@ -312,11 +312,11 @@ export default function AssistantPanel({
               <div className="flex items-center gap-2">
                 <BookOpen size={14} className="text-emerald-400" />
                 <div>
-                  <div className="font-semibold text-zinc-200">Extract Key Takeaways</div>
+                  <div className="font-semibold text-zinc-300">Extract Key Takeaways</div>
                   <div className="text-[10px] text-zinc-400">Pull action items and insights</div>
                 </div>
               </div>
-              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-200" />
+              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-300" />
             </button>
 
             <button
@@ -324,13 +324,13 @@ export default function AssistantPanel({
               onClick={(): void => handleAiAction('continue')}
             >
               <div className="flex items-center gap-2">
-                <Sparkles size={14} className="text-zinc-200" />
+                <Sparkles size={14} className="text-zinc-300" />
                 <div>
-                  <div className="font-semibold text-zinc-200">Continue Writing</div>
+                  <div className="font-semibold text-zinc-300">Continue Writing</div>
                   <div className="text-[10px] text-zinc-400">Draft the next logical section</div>
                 </div>
               </div>
-              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-200" />
+              <Wand2 size={12} className="text-zinc-500 group-hover:text-zinc-300" />
             </button>
           </div>
         )}
@@ -342,7 +342,7 @@ export default function AssistantPanel({
               Ask AI Assistant to edit, format, or transform:
             </label>
             <textarea
-              className="w-full h-20 bg-[#141417] border border-[#2e2e3a] p-2 text-zinc-200 placeholder-zinc-500 outline-none focus:border-zinc-500 text-xs resize-none"
+              className="w-full h-20 bg-[#141417] border border-[#2e2e3a] p-2 text-zinc-300 placeholder-zinc-500 outline-none focus:border-zinc-500 text-xs resize-none"
               placeholder="e.g., Make tone formal, convert to table, or translate to French..."
               value={customPrompt}
               onChange={(e): void => setCustomPrompt(e.target.value)}
@@ -350,7 +350,7 @@ export default function AssistantPanel({
             <button
               type="submit"
               disabled={isProcessing || !customPrompt.trim()}
-              className="w-full py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 disabled:opacity-50 text-zinc-200 font-medium flex items-center justify-center gap-1.5 transition-colors"
+              className="w-full py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 disabled:opacity-50 text-zinc-300 font-medium flex items-center justify-center gap-1.5 transition-colors"
             >
               <Send size={12} />
               <span>Ask AI Assistant</span>
@@ -369,7 +369,7 @@ export default function AssistantPanel({
         {/* AI Response Output Box */}
         {aiOutput && !isProcessing && (
           <div className="bg-[#1c1c22] border border-zinc-700 p-2.5 space-y-2">
-            <div className="flex items-center justify-between text-zinc-200 font-semibold text-[11px]">
+            <div className="flex items-center justify-between text-zinc-300 font-semibold text-[11px]">
               <span className="flex items-center gap-1">
                 <Sparkles size={12} /> AI Result
               </span>
@@ -384,7 +384,7 @@ export default function AssistantPanel({
               {aiOutput}
             </div>
             <button
-              className="w-full py-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 text-[10px] font-medium transition-colors"
+              className="w-full py-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-[10px] font-medium transition-colors"
               onClick={(): void => {
                 if (onUpdateContent && content) {
                   onUpdateContent(content + '\n\n' + aiOutput)
@@ -401,7 +401,7 @@ export default function AssistantPanel({
       {issues.length > 0 && activeTab === 'diagnostics' && (
         <div className="p-3 border-t border-[#292932] bg-[#141417]">
           <button
-            className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-medium flex items-center justify-center gap-1.5 transition-all"
+            className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 font-medium flex items-center justify-center gap-1.5 transition-all"
             onClick={handleFixAll}
           >
             <Sparkles size={13} />

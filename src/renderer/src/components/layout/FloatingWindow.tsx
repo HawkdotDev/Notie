@@ -166,7 +166,7 @@ export default function FloatingWindow({
             className="text-zinc-500 cursor-grab shrink-0 hover:text-zinc-300"
           />
           {icon && <span className="flex items-center shrink-0">{icon}</span>}
-          <span className="font-semibold text-xs text-zinc-200 truncate">{title}</span>
+          <span className="font-semibold text-xs text-zinc-300 truncate">{title}</span>
           {badge}
         </div>
 

@@ -43,7 +43,7 @@ export default function DocumentStatsWidget({
         <div className="bg-zinc-900/70 border border-zinc-800/80 p-2.5 flex items-center gap-2">
           <FileText size={14} className="text-zinc-300" />
           <div>
-            <div className="font-bold text-zinc-200">{words}</div>
+            <div className="font-bold text-zinc-300">{words}</div>
             <div className="text-[10px] text-zinc-500">Words</div>
           </div>
         </div>
@@ -51,7 +51,7 @@ export default function DocumentStatsWidget({
         <div className="bg-zinc-900/70 border border-zinc-800/80 p-2.5 flex items-center gap-2">
           <Hash size={14} className="text-emerald-400" />
           <div>
-            <div className="font-bold text-zinc-200">{chars}</div>
+            <div className="font-bold text-zinc-300">{chars}</div>
             <div className="text-[10px] text-zinc-500">Characters</div>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function DocumentStatsWidget({
         <div className="bg-zinc-900/70 border border-zinc-800/80 p-2.5 flex items-center gap-2">
           <AlignLeft size={14} className="text-blue-400" />
           <div>
-            <div className="font-bold text-zinc-200">{lines}</div>
+            <div className="font-bold text-zinc-300">{lines}</div>
             <div className="text-[10px] text-zinc-500">Lines</div>
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function DocumentStatsWidget({
         <div className="bg-zinc-900/70 border border-zinc-800/80 p-2.5 flex items-center gap-2">
           <Clock size={14} className="text-amber-400" />
           <div>
-            <div className="font-bold text-zinc-200">{readingTime} min</div>
+            <div className="font-bold text-zinc-300">{readingTime} min</div>
             <div className="text-[10px] text-zinc-500">Read Time</div>
           </div>
         </div>

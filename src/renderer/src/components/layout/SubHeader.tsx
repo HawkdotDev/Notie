@@ -107,7 +107,7 @@ function SubHeader({
           <FileText
             size={13}
             fill="currentColor"
-            className={viewMode === 'editor' ? 'text-zinc-200' : ''}
+            className={viewMode === 'editor' ? 'text-zinc-300' : ''}
           />
           <span>File</span>
         </button>
@@ -124,7 +124,7 @@ function SubHeader({
           <Network
             size={13}
             fill="currentColor"
-            className={viewMode === 'graph' ? 'text-zinc-200' : ''}
+            className={viewMode === 'graph' ? 'text-zinc-300' : ''}
           />
           <span>Graph</span>
         </button>
@@ -135,7 +135,7 @@ function SubHeader({
           onClick={onToggleRightSidebar}
           title="Toggle Document Outline"
         >
-          <ListTree size={13} className={showRightSidebar ? 'text-zinc-200' : ''} />
+          <ListTree size={13} className={showRightSidebar ? 'text-zinc-300' : ''} />
           <span>Outline</span>
         </button>
 
@@ -146,7 +146,7 @@ function SubHeader({
             onClick={onToggleSearchInput}
             title="Toggle File Search"
           >
-            <Search size={13} className={showSearchInput ? 'text-zinc-200' : ''} />
+            <Search size={13} className={showSearchInput ? 'text-zinc-300' : ''} />
             <span>Search</span>
           </button>
         )}
@@ -160,7 +160,7 @@ function SubHeader({
           <Terminal
             size={13}
             fill="currentColor"
-            className={widgetState.terminal ? 'text-zinc-200' : ''}
+            className={widgetState.terminal ? 'text-zinc-300' : ''}
           />
           <span>Terminal</span>
         </button>
@@ -174,7 +174,7 @@ function SubHeader({
           <Sparkles
             size={13}
             fill="currentColor"
-            className={widgetState.assistant ? 'text-zinc-200' : ''}
+            className={widgetState.assistant ? 'text-zinc-300' : ''}
           />
           <span>Assistant</span>
         </button>
@@ -213,7 +213,7 @@ function SubHeader({
         {showWidgetsMenu && (
           <div className="widgets-dropdown-menu">
             <div className="widgets-dropdown-header">
-              <span className="font-semibold text-zinc-200">Floating Widgets</span>
+              <span className="font-semibold text-zinc-300">Floating Widgets</span>
               <button
                 className="text-[10px] text-zinc-300 bg-zinc-800 px-1.5 py-0.5 border border-zinc-700 hover:bg-zinc-700 cursor-pointer transition-colors"
                 onClick={onToggleAutoSave}

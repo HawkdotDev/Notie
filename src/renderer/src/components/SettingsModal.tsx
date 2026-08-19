@@ -864,11 +864,11 @@ export default function SettingsModal({
 
                 <div className="settings-card">
                   <div className="flex items-center gap-4 pb-4 border-b border-zinc-800/80">
-                    <div className="w-12 h-12 bg-zinc-800 flex items-center justify-center border border-zinc-700 font-bold text-lg text-zinc-200">
+                    <div className="w-12 h-12 bg-zinc-800 flex items-center justify-center border border-zinc-700 font-bold text-lg text-zinc-300">
                       N
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-zinc-200">Notie Markdown IDE</h4>
+                      <h4 className="text-sm font-semibold text-zinc-300">Notie Markdown IDE</h4>
                       <p className="text-xs text-zinc-400">
                         Version 0.1.0 • Hybrid Brutalist &amp; Notion-Style Architecture
                       </p>

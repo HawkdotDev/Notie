@@ -141,7 +141,7 @@ function TopHeader({
                               size={13}
                               fill="currentColor"
                               className={
-                                isActive ? 'text-zinc-200 shrink-0' : 'text-zinc-400 shrink-0'
+                                isActive ? 'text-zinc-300 shrink-0' : 'text-zinc-400 shrink-0'
                               }
                             />
                             <div className="flex-1 min-w-0">
@@ -149,7 +149,7 @@ function TopHeader({
                               <div className="workspace-item-path">{ws.path}</div>
                             </div>
                             {isActive && (
-                              <Check size={13} className="text-zinc-200 shrink-0 mr-1" />
+                              <Check size={13} className="text-zinc-300 shrink-0 mr-1" />
                             )}
                             {onRemoveRecentWorkspace && (
                               <button

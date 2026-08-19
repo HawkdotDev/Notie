@@ -31,7 +31,7 @@ export default function QuickTerminalWidget(): React.JSX.Element {
             <span>Ready</span>
           </span>
           <button
-            className="text-zinc-500 hover:text-zinc-200 p-0.5 transition-colors"
+            className="text-zinc-500 hover:text-zinc-300 p-0.5 transition-colors"
             onClick={(): void => setLogs([])}
             title="Clear Logs"
           >
@@ -46,7 +46,7 @@ export default function QuickTerminalWidget(): React.JSX.Element {
             key={i}
             className={
               log.startsWith('>')
-                ? 'text-zinc-200 font-semibold'
+                ? 'text-zinc-300 font-semibold'
                 : log.includes('ERROR')
                   ? 'text-red-400'
                   : 'text-zinc-400'
@@ -67,11 +67,11 @@ export default function QuickTerminalWidget(): React.JSX.Element {
           value={inputVal}
           onChange={(e): void => setInputVal(e.target.value)}
           placeholder="Run python command or script..."
-          className="flex-1 bg-transparent border-none outline-none text-zinc-200 text-xs font-mono"
+          className="flex-1 bg-transparent border-none outline-none text-zinc-300 text-xs font-mono"
         />
         <button
           type="submit"
-          className="p-1 text-zinc-300 hover:text-zinc-200 transition-colors"
+          className="p-1 text-zinc-300 hover:text-zinc-300 transition-colors"
           title="Run"
         >
           <Play size={12} />
