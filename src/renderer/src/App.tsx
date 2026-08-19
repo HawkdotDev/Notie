@@ -939,6 +939,78 @@ export default function App(): React.JSX.Element {
                 }
               }}
             />
+
+            {/* ====== RIGHT SIDEBAR PANEL (OUTLINE) ====== */}
+            {viewMode !== 'graph' && (
+              <div
+                className={`right-sidebar-panel ${!showRightSidebar ? 'is-collapsed' : ''} ${
+                  isResizingRight ? 'is-resizing' : ''
+                }`}
+                style={{ width: showRightSidebar ? rightSidebarWidth : 0 }}
+              >
+                <div
+                  className="sidebar-resize-handle sidebar-resize-handle-left"
+                  onMouseDown={startRightResize}
+                />
+                <div className="right-sidebar-header">
+                  <span className="text-xs font-semibold text-zinc-300">Outline</span>
+                  <button
+                    className="text-zinc-500 hover:text-zinc-200 p-0.5 rounded transition-colors"
+                    onClick={(): void => setShowRightSidebar(false)}
+                    title="Close Right Sidebar"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="right-sidebar-content">
+                  {activeFilePath ? (
+                    <div className="flex flex-col gap-1 text-[11px] text-zinc-400 p-2">
+                      {(fileContents[activeFilePath] || '')
+                        .split('\n')
+                        .map((line, idx) => {
+                          const headingMatch = line.match(/^(#{1,6})\s+(.+)/)
+                          if (!headingMatch) return null
+                          const level = headingMatch[1].length
+                          const text = headingMatch[2]
+                          return (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-1.5 py-1 px-2 hover:bg-zinc-800/50 cursor-pointer transition-colors"
+                              style={{ paddingLeft: `${(level - 1) * 10 + 8}px` }}
+                              onClick={(): void => {
+                                const editorElem = document.querySelector('.editor-container')
+                                if (!editorElem) return
+                                const headers = editorElem.querySelectorAll(
+                                  'h1, h2, h3, h4, h5, h6, .ce-header'
+                                )
+                                for (const h of Array.from(headers)) {
+                                  if (h.textContent?.trim().includes(text.trim())) {
+                                    h.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                    break
+                                  }
+                                }
+                              }}
+                            >
+                              <span className="text-zinc-400 font-mono text-[9px] shrink-0">
+                                H{level}
+                              </span>
+                              <span className="truncate text-zinc-300">{text}</span>
+                            </div>
+                          )
+                        })
+                        .filter(Boolean)}
+                      {!(fileContents[activeFilePath] || '').match(/^#{1,6}\s+/m) && (
+                        <div className="text-zinc-600 text-center py-4 italic text-[11px]">
+                          No headings found
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-zinc-600 text-center py-8 text-[11px]">No file open</div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Floating Stats & Autosave Pill inside Writing Area */}
@@ -958,65 +1030,6 @@ export default function App(): React.JSX.Element {
             />
           )}
         </div>
-
-        {/* ====== RIGHT SIDEBAR PANEL ====== */}
-        {viewMode !== 'graph' && (
-          <div
-            className={`right-sidebar-panel ${!showRightSidebar ? 'is-collapsed' : ''} ${
-              isResizingRight ? 'is-resizing' : ''
-            }`}
-            style={{ width: showRightSidebar ? rightSidebarWidth : 0 }}
-          >
-            <div
-              className="sidebar-resize-handle sidebar-resize-handle-left"
-              onMouseDown={startRightResize}
-            />
-            <div className="right-sidebar-header">
-              <span className="text-xs font-semibold text-zinc-300">Outline</span>
-              <button
-                className="text-zinc-500 hover:text-zinc-200 p-0.5 rounded transition-colors"
-                onClick={(): void => setShowRightSidebar(false)}
-                title="Close Right Sidebar"
-              >
-                ×
-              </button>
-            </div>
-            <div className="right-sidebar-content">
-              {activeFilePath ? (
-                <div className="flex flex-col gap-1 text-[11px] text-zinc-400 p-2">
-                  {(fileContents[activeFilePath] || '')
-                    .split('\n')
-                    .map((line, idx) => {
-                      const headingMatch = line.match(/^(#{1,6})\s+(.+)/)
-                      if (!headingMatch) return null
-                      const level = headingMatch[1].length
-                      const text = headingMatch[2]
-                      return (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-1.5 py-1 px-2 hover:bg-zinc-800/50 cursor-pointer transition-colors"
-                          style={{ paddingLeft: `${(level - 1) * 10 + 8}px` }}
-                        >
-                          <span className="text-zinc-400 font-mono text-[9px] shrink-0">
-                            H{level}
-                          </span>
-                          <span className="truncate text-zinc-300">{text}</span>
-                        </div>
-                      )
-                    })
-                    .filter(Boolean)}
-                  {!(fileContents[activeFilePath] || '').match(/^#{1,6}\s+/m) && (
-                    <div className="text-zinc-600 text-center py-4 italic text-[11px]">
-                      No headings found
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-zinc-600 text-center py-8 text-[11px]">No file open</div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ====== 6. PREFERENCES & SETTINGS MODAL ====== */}
