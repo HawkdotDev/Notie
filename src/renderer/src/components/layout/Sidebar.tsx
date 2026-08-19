@@ -9,7 +9,8 @@ import {
   ArrowRight,
   Trash2,
   Edit3,
-  PanelLeftClose
+  PanelLeftClose,
+  Code2
 } from 'lucide-react'
 import FileTree from '../FileTree'
 
@@ -37,6 +38,32 @@ interface SidebarProps {
   fileIcons: Record<string, string>
   onMetadataLoaded: (filePath: string, metadata: { icon?: string; banner?: string }) => void
   onStartResize: (e: React.MouseEvent) => void
+}
+
+const getLanguage = (filePath: string | null): { name: string; color: string } => {
+  if (!filePath) return { name: 'Markdown', color: 'text-zinc-400' }
+  const ext = filePath.split('.').pop()?.toLowerCase() || ''
+  switch (ext) {
+    case 'py':
+      return { name: 'Python', color: 'text-zinc-300' }
+    case 'js':
+    case 'jsx':
+      return { name: 'JavaScript', color: 'text-yellow-400' }
+    case 'ts':
+    case 'tsx':
+      return { name: 'TypeScript', color: 'text-blue-400' }
+    case 'html':
+      return { name: 'HTML', color: 'text-orange-400' }
+    case 'css':
+    case 'scss':
+      return { name: 'CSS', color: 'text-sky-400' }
+    case 'json':
+      return { name: 'JSON', color: 'text-amber-400' }
+    case 'md':
+      return { name: 'Markdown', color: 'text-emerald-400' }
+    default:
+      return { name: 'Plain Text', color: 'text-zinc-400' }
+  }
 }
 
 function Sidebar({
@@ -70,6 +97,8 @@ function Sidebar({
     }
   })
   const explorerMenuRef = useRef<HTMLDivElement>(null)
+
+  const lang = getLanguage(activeFilePath)
 
   useEffect(() => {
     try {
@@ -276,6 +305,19 @@ function Sidebar({
           </div>
         )}
       </div>
+
+      {/* Floating File Type Pill in Sidebar Bottom Left Corner */}
+      {workspacePath && activeFilePath && (
+        <div
+          className="sidebar-floating-filetype"
+          title={`File Type: ${lang.name}`}
+        >
+          <div className="status-pill-item">
+            <Code2 size={13} strokeWidth={1.5} className={`${lang.color} shrink-0`} />
+            <span className="font-medium text-[#BFBFC7]">{lang.name}</span>
+          </div>
+        </div>
+      )}
 
       {/* Resize handle */}
       <div className="sidebar-resizer" onMouseDown={onStartResize} />

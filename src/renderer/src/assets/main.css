@@ -2543,7 +2543,8 @@ code.inline-code {
   color: #eab308;
 }
 
-/* ====== FLOATING EDITOR STATUS BAR & AUTOSAVE (15% Larger & Unified) ====== */
+/* ====== FLOATING EDITOR STATUS BAR, AUTOSAVE & SIDEBAR FILE TYPE ====== */
+.sidebar-floating-filetype,
 .floating-editor-statusbar-left,
 .floating-editor-statusbar {
   position: absolute;
@@ -2572,6 +2573,10 @@ code.inline-code {
   pointer-events: auto;
 }
 
+.sidebar-floating-filetype {
+  left: 16px;
+}
+
 .floating-editor-statusbar-left {
   left: 20px;
 }
@@ -2580,12 +2585,14 @@ code.inline-code {
   right: 20px;
 }
 
+.sidebar-floating-filetype:hover,
 .floating-editor-statusbar-left:hover,
 .floating-editor-statusbar:hover {
   background: rgba(18, 18, 22, 0.98);
   border-color: #383842;
 }
 
+.sidebar-floating-filetype .status-divider,
 .floating-editor-statusbar-left .status-divider,
 .floating-editor-statusbar .status-divider {
   width: 1px;
@@ -2594,6 +2601,7 @@ code.inline-code {
   margin: 0 5px;
 }
 
+.sidebar-floating-filetype .status-pill-item,
 .floating-editor-statusbar-left .status-pill-item,
 .floating-editor-statusbar .status-pill-item {
   display: flex;
@@ -2606,22 +2614,26 @@ code.inline-code {
   white-space: nowrap;
 }
 
+.sidebar-floating-filetype .status-pill-item.hoverable,
 .floating-editor-statusbar-left .status-pill-item.hoverable,
 .floating-editor-statusbar .status-pill-item.hoverable {
   cursor: pointer;
 }
 
+.sidebar-floating-filetype .status-pill-item.hoverable:hover,
 .floating-editor-statusbar-left .status-pill-item.hoverable:hover,
 .floating-editor-statusbar .status-pill-item.hoverable:hover {
   color: #bfbfc7;
 }
 
+.sidebar-floating-filetype .status-pill-item.mono,
 .floating-editor-statusbar-left .status-pill-item.mono,
 .floating-editor-statusbar .status-pill-item.mono {
   font-family: var(--font-mono);
   font-size: 12px;
 }
 
+.sidebar-floating-filetype .status-pill-item.language-pill,
 .floating-editor-statusbar-left .status-pill-item.language-pill,
 .floating-editor-statusbar .status-pill-item.language-pill {
   color: #bfbfc7;
