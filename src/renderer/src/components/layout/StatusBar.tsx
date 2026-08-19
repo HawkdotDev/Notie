@@ -54,6 +54,43 @@ function StatusBar({
   const [extSub1Open, setExtSub1Open] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Toast animation state for "Saved" notification
+  const [toastPhase, setToastPhase] = useState<'hidden' | 'visible' | 'fading'>('hidden')
+  const prevUnsavedRef = useRef<boolean>(activeUnsaved)
+  const prevFileRef = useRef<string | null>(activeFilePath)
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const fadeTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    // If the same file was unsaved and now became saved (autosave or manual save)
+    if (
+      prevFileRef.current === activeFilePath &&
+      prevUnsavedRef.current === true &&
+      !activeUnsaved
+    ) {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current)
+
+      setToastPhase('visible')
+
+      toastTimerRef.current = setTimeout(() => {
+        setToastPhase('fading')
+        fadeTimerRef.current = setTimeout(() => {
+          setToastPhase('hidden')
+        }, 350)
+      }, 2200)
+    }
+    prevUnsavedRef.current = activeUnsaved
+    prevFileRef.current = activeFilePath
+  }, [activeUnsaved, activeFilePath])
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current)
+    }
+  }, [])
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -133,10 +170,16 @@ function StatusBar({
 
   return (
     <>
-      {/* 1. Floating Saved Status on the Bottom-Left */}
-      {statsConfig.showSavedBadge && (
+      {/* 1. Floating Saved / Unsaved Status on the Bottom-Left (Toast on save) */}
+      {statsConfig.showSavedBadge && (activeUnsaved || toastPhase !== 'hidden') && (
         <div
-          className="floating-editor-statusbar-left"
+          className={`floating-editor-statusbar-left ${
+            toastPhase === 'visible'
+              ? 'saved-toast'
+              : toastPhase === 'fading'
+                ? 'saved-toast fade-out'
+                : ''
+          }`}
           title={autoSaveEnabled ? 'Autosave active' : 'Autosave disabled'}
         >
           <div className="status-pill-item">
@@ -148,7 +191,7 @@ function StatusBar({
             ) : (
               <>
                 <CheckCircle2 size={13} strokeWidth={1.75} className="text-emerald-400 shrink-0" />
-                <span>Saved</span>
+                <span className="text-emerald-300 font-medium">Saved</span>
               </>
             )}
           </div>

@@ -2621,6 +2621,36 @@ code.inline-code {
   left: 20px;
 }
 
+.floating-editor-statusbar-left.saved-toast {
+  animation: savedToastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.floating-editor-statusbar-left.saved-toast.fade-out {
+  animation: savedToastOut 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes savedToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes savedToastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+}
+
 .floating-editor-statusbar {
   right: 20px;
 }
