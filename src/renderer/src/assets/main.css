@@ -10,12 +10,12 @@
 }
 
 :root {
-  --bg-app-wrapper: #121214;
-  --bg-primary: #18181b;
-  --bg-sidebar: #121214;
-  --bg-active: #242427;
-  --bg-hover: #1f1f22;
-  --border-color: #27272a;
+  --bg-app-wrapper: #101012;
+  --bg-primary: #161619;
+  --bg-sidebar: #101012;
+  --bg-active: #222225;
+  --bg-hover: #1d1d20;
+  --border-color: #252528;
   --text-main: #A5A5AD;
   --text-muted: #74747D;
   --text-active: #BFBFC7;
