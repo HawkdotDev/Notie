@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Check,
   BarChart2,
+  Sliders,
   Layers,
   ImageIcon,
   Smile
@@ -46,12 +47,11 @@ function StatusBar({
   onToggleCover,
   onToggleIcon
 }: StatusBarProps): React.JSX.Element | null {
-  const [activeDropdown, setActiveDropdown] = useState<
-    'metrics' | 'pageHeader' | 'extensions' | null
-  >(null)
-  const [metricsSub1Open, setMetricsSub1Open] = useState(true)
-  const [pageHeaderSubOpen, setPageHeaderSubOpen] = useState(true)
-  const [extSub1Open, setExtSub1Open] = useState(true)
+  const [activeDropdown, setActiveDropdown] = useState<'opt1' | 'opt2' | 'opt3' | null>(null)
+  const [metricsSubOpen, setMetricsSubOpen] = useState(true)
+  const [iconCoverSubOpen, setIconCoverSubOpen] = useState(true)
+  const [sub2Open, setSub2Open] = useState(true)
+  const [sub3Open, setSub3Open] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Toast animation state for "Saved" notification
@@ -215,29 +215,27 @@ function StatusBar({
 
       {/* 3. Floating Tool Dropdowns in Top-Right Corner (One after the other) */}
       <div ref={containerRef} className="floating-editor-tools-topright">
-        {/* Dropdown 1: Metrics Options */}
-        {onToggleStat && (
-          <div className="floating-tool-item">
-            <button
-              type="button"
-              className={`floating-metrics-topright-trigger ${activeDropdown === 'metrics' ? 'active' : ''}`}
-              onClick={(): void =>
-                setActiveDropdown((prev) => (prev === 'metrics' ? null : 'metrics'))
-              }
-              title="Metrics"
-            >
-              <SlidersHorizontal size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
-            </button>
+        {/* Option 1: Dropdown containing Metrics & Icon/Cover sub-dropdowns */}
+        <div className="floating-tool-item">
+          <button
+            type="button"
+            className={`floating-metrics-topright-trigger ${activeDropdown === 'opt1' ? 'active' : ''}`}
+            onClick={(): void => setActiveDropdown((prev) => (prev === 'opt1' ? null : 'opt1'))}
+            title="Metrics & Options"
+          >
+            <SlidersHorizontal size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
+          </button>
 
-            {activeDropdown === 'metrics' && (
-              <div className="floating-metrics-topright-menu">
-                <div className="floating-metrics-topright-list">
-                  {/* The entire metrics option is a dropdown */}
+          {activeDropdown === 'opt1' && (
+            <div className="floating-metrics-topright-menu">
+              <div className="floating-metrics-topright-list">
+                {/* 1. Metrics Sub-dropdown */}
+                {onToggleStat && (
                   <div className="options-submenu-group">
                     <button
                       type="button"
-                      className={`options-submenu-trigger ${metricsSub1Open ? 'expanded' : ''}`}
-                      onClick={(): void => setMetricsSub1Open((p) => !p)}
+                      className={`options-submenu-trigger ${metricsSubOpen ? 'expanded' : ''}`}
+                      onClick={(): void => setMetricsSubOpen((p) => !p)}
                     >
                       <div className="flex items-center gap-2">
                         <BarChart2 size={13} className="text-emerald-400 shrink-0" />
@@ -246,12 +244,12 @@ function StatusBar({
                       <ChevronDown
                         size={11}
                         className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                          metricsSub1Open ? 'rotate-180 text-zinc-300' : ''
+                          metricsSubOpen ? 'rotate-180 text-zinc-300' : ''
                         }`}
                       />
                     </button>
 
-                    {metricsSub1Open && (
+                    {metricsSubOpen && (
                       <div className="options-submenu-content">
                         <div
                           className={`widget-menu-item compact ${statsConfig.showWords ? 'selected' : ''}`}
@@ -339,33 +337,14 @@ function StatusBar({
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+                )}
 
-        {/* Dropdown 2: Page Header (Icon & Cover) */}
-        <div className="floating-tool-item">
-          <button
-            type="button"
-            className={`floating-metrics-topright-trigger ${activeDropdown === 'pageHeader' ? 'active' : ''}`}
-            onClick={(): void =>
-              setActiveDropdown((prev) => (prev === 'pageHeader' ? null : 'pageHeader'))
-            }
-            title="Icon & Cover"
-          >
-            <ImageIcon size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
-          </button>
-
-          {activeDropdown === 'pageHeader' && (
-            <div className="floating-metrics-topright-menu">
-              <div className="floating-metrics-topright-list">
+                {/* 2. Icon & Cover Sub-dropdown (Below Metrics inside Option 1) */}
                 <div className="options-submenu-group">
                   <button
                     type="button"
-                    className={`options-submenu-trigger ${pageHeaderSubOpen ? 'expanded' : ''}`}
-                    onClick={(): void => setPageHeaderSubOpen((p) => !p)}
+                    className={`options-submenu-trigger ${iconCoverSubOpen ? 'expanded' : ''}`}
+                    onClick={(): void => setIconCoverSubOpen((p) => !p)}
                   >
                     <div className="flex items-center gap-2">
                       <ImageIcon size={13} className="text-amber-400 shrink-0" />
@@ -374,12 +353,12 @@ function StatusBar({
                     <ChevronDown
                       size={11}
                       className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                        pageHeaderSubOpen ? 'rotate-180 text-zinc-300' : ''
+                        iconCoverSubOpen ? 'rotate-180 text-zinc-300' : ''
                       }`}
                     />
                   </button>
 
-                  {pageHeaderSubOpen && (
+                  {iconCoverSubOpen && (
                     <div className="options-submenu-content">
                       <div
                         className={`widget-menu-item compact ${showCover ? 'selected' : ''}`}
@@ -418,27 +397,70 @@ function StatusBar({
           )}
         </div>
 
-        {/* Dropdown 3: Empty Dropdown 2 */}
+        {/* Option 2: Empty Dropdown 1 */}
         <div className="floating-tool-item">
           <button
             type="button"
-            className={`floating-metrics-topright-trigger ${activeDropdown === 'extensions' ? 'active' : ''}`}
-            onClick={(): void =>
-              setActiveDropdown((prev) => (prev === 'extensions' ? null : 'extensions'))
-            }
-            title="Dropdown 3"
+            className={`floating-metrics-topright-trigger ${activeDropdown === 'opt2' ? 'active' : ''}`}
+            onClick={(): void => setActiveDropdown((prev) => (prev === 'opt2' ? null : 'opt2'))}
+            title="Dropdown 2"
           >
-            <Layers size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
+            <Sliders size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
           </button>
 
-          {activeDropdown === 'extensions' && (
+          {activeDropdown === 'opt2' && (
             <div className="floating-metrics-topright-menu">
               <div className="floating-metrics-topright-list">
                 <div className="options-submenu-group">
                   <button
                     type="button"
-                    className={`options-submenu-trigger ${extSub1Open ? 'expanded' : ''}`}
-                    onClick={(): void => setExtSub1Open((p) => !p)}
+                    className={`options-submenu-trigger ${sub2Open ? 'expanded' : ''}`}
+                    onClick={(): void => setSub2Open((p) => !p)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sliders size={13} className="text-blue-400 shrink-0" />
+                      <span className="widget-title font-semibold">Dropdown 2</span>
+                    </div>
+                    <ChevronDown
+                      size={11}
+                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
+                        sub2Open ? 'rotate-180 text-zinc-300' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {sub2Open && (
+                    <div className="options-submenu-content">
+                      <div className="options-empty-content">
+                        <span>No options available</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Option 3: Empty Dropdown 2 */}
+        <div className="floating-tool-item">
+          <button
+            type="button"
+            className={`floating-metrics-topright-trigger ${activeDropdown === 'opt3' ? 'active' : ''}`}
+            onClick={(): void => setActiveDropdown((prev) => (prev === 'opt3' ? null : 'opt3'))}
+            title="Dropdown 3"
+          >
+            <Layers size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
+          </button>
+
+          {activeDropdown === 'opt3' && (
+            <div className="floating-metrics-topright-menu">
+              <div className="floating-metrics-topright-list">
+                <div className="options-submenu-group">
+                  <button
+                    type="button"
+                    className={`options-submenu-trigger ${sub3Open ? 'expanded' : ''}`}
+                    onClick={(): void => setSub3Open((p) => !p)}
                   >
                     <div className="flex items-center gap-2">
                       <Layers size={13} className="text-purple-400 shrink-0" />
@@ -447,12 +469,12 @@ function StatusBar({
                     <ChevronDown
                       size={11}
                       className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                        extSub1Open ? 'rotate-180 text-zinc-300' : ''
+                        sub3Open ? 'rotate-180 text-zinc-300' : ''
                       }`}
                     />
                   </button>
 
-                  {extSub1Open && (
+                  {sub3Open && (
                     <div className="options-submenu-content">
                       <div className="options-empty-content">
                         <span>No options available</span>
