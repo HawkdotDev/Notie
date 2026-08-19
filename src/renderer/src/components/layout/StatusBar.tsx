@@ -1,5 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { CheckCircle2, SlidersHorizontal, Check } from 'lucide-react'
+import {
+  CheckCircle2,
+  SlidersHorizontal,
+  ChevronDown,
+  Check,
+  BarChart2,
+  Sliders,
+  Layers
+} from 'lucide-react'
 import { StatusStatsConfig } from '../../types'
 
 interface StatusBarProps {
@@ -30,6 +38,9 @@ function StatusBar({
   onToggleStat
 }: StatusBarProps): React.JSX.Element | null {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false)
+  const [isMetricsDropdownOpen, setIsMetricsDropdownOpen] = useState(true)
+  const [isEmptyDropdown1Open, setIsEmptyDropdown1Open] = useState(false)
+  const [isEmptyDropdown2Open, setIsEmptyDropdown2Open] = useState(false)
   const optionsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -164,81 +175,173 @@ function StatusBar({
           {isOptionsOpen && (
             <div className="floating-metrics-topright-menu">
               <div className="floating-metrics-topright-header">
-                <span className="font-semibold text-zinc-300">Metrics</span>
-                <span className="text-[10px] text-zinc-500 font-mono">Options</span>
+                <span className="font-semibold text-zinc-300">Options</span>
+                <span className="text-[10px] text-zinc-500 font-mono">Editor</span>
               </div>
 
               <div className="floating-metrics-topright-list">
-                <div
-                  className={`widget-menu-item compact ${statsConfig.showWords ? 'selected' : ''}`}
-                  onClick={(): void => onToggleStat('showWords')}
-                >
-                  <span className="widget-title text-xs font-normal text-zinc-300">Word Count</span>
-                  <div className={`widget-checkbox ${statsConfig.showWords ? 'checked' : ''}`}>
-                    {statsConfig.showWords && <Check size={11} />}
-                  </div>
-                </div>
-
-                <div
-                  className={`widget-menu-item compact ${statsConfig.showLines ? 'selected' : ''}`}
-                  onClick={(): void => onToggleStat('showLines')}
-                >
-                  <span className="widget-title text-xs font-normal text-zinc-300">
-                    Line Count (&quot;12 lines&quot;)
-                  </span>
-                  <div className={`widget-checkbox ${statsConfig.showLines ? 'checked' : ''}`}>
-                    {statsConfig.showLines && <Check size={11} />}
-                  </div>
-                </div>
-
-                <div
-                  className={`widget-menu-item compact ${statsConfig.showSpaces ? 'selected' : ''}`}
-                  onClick={(): void => onToggleStat('showSpaces')}
-                >
-                  <span className="widget-title text-xs font-normal text-zinc-300">
-                    Number of Spaces
-                  </span>
-                  <div className={`widget-checkbox ${statsConfig.showSpaces ? 'checked' : ''}`}>
-                    {statsConfig.showSpaces && <Check size={11} />}
-                  </div>
-                </div>
-
-                <div
-                  className={`widget-menu-item compact ${statsConfig.showChars ? 'selected' : ''}`}
-                  onClick={(): void => onToggleStat('showChars')}
-                >
-                  <span className="widget-title text-xs font-normal text-zinc-300">
-                    Character Count
-                  </span>
-                  <div className={`widget-checkbox ${statsConfig.showChars ? 'checked' : ''}`}>
-                    {statsConfig.showChars && <Check size={11} />}
-                  </div>
-                </div>
-
-                <div
-                  className={`widget-menu-item compact ${statsConfig.showReadingTime ? 'selected' : ''}`}
-                  onClick={(): void => onToggleStat('showReadingTime')}
-                >
-                  <span className="widget-title text-xs font-normal text-zinc-300">
-                    Reading Time
-                  </span>
-                  <div
-                    className={`widget-checkbox ${statsConfig.showReadingTime ? 'checked' : ''}`}
+                {/* 1. Metrics Sub-dropdown */}
+                <div className="options-submenu-group">
+                  <button
+                    type="button"
+                    className={`options-submenu-trigger ${isMetricsDropdownOpen ? 'expanded' : ''}`}
+                    onClick={(): void => setIsMetricsDropdownOpen((p) => !p)}
                   >
-                    {statsConfig.showReadingTime && <Check size={11} />}
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <BarChart2 size={13} className="text-emerald-400 shrink-0" />
+                      <span className="widget-title">Metrics</span>
+                    </div>
+                    <ChevronDown
+                      size={11}
+                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
+                        isMetricsDropdownOpen ? 'rotate-180 text-zinc-300' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {isMetricsDropdownOpen && (
+                    <div className="options-submenu-content">
+                      <div
+                        className={`widget-menu-item compact ${statsConfig.showWords ? 'selected' : ''}`}
+                        onClick={(): void => onToggleStat('showWords')}
+                      >
+                        <span className="widget-title text-xs font-normal text-zinc-300">
+                          Word Count
+                        </span>
+                        <div
+                          className={`widget-checkbox ${statsConfig.showWords ? 'checked' : ''}`}
+                        >
+                          {statsConfig.showWords && <Check size={11} />}
+                        </div>
+                      </div>
+
+                      <div
+                        className={`widget-menu-item compact ${statsConfig.showLines ? 'selected' : ''}`}
+                        onClick={(): void => onToggleStat('showLines')}
+                      >
+                        <span className="widget-title text-xs font-normal text-zinc-300">
+                          Line Count (&quot;12 lines&quot;)
+                        </span>
+                        <div
+                          className={`widget-checkbox ${statsConfig.showLines ? 'checked' : ''}`}
+                        >
+                          {statsConfig.showLines && <Check size={11} />}
+                        </div>
+                      </div>
+
+                      <div
+                        className={`widget-menu-item compact ${statsConfig.showSpaces ? 'selected' : ''}`}
+                        onClick={(): void => onToggleStat('showSpaces')}
+                      >
+                        <span className="widget-title text-xs font-normal text-zinc-300">
+                          Number of Spaces
+                        </span>
+                        <div
+                          className={`widget-checkbox ${statsConfig.showSpaces ? 'checked' : ''}`}
+                        >
+                          {statsConfig.showSpaces && <Check size={11} />}
+                        </div>
+                      </div>
+
+                      <div
+                        className={`widget-menu-item compact ${statsConfig.showChars ? 'selected' : ''}`}
+                        onClick={(): void => onToggleStat('showChars')}
+                      >
+                        <span className="widget-title text-xs font-normal text-zinc-300">
+                          Character Count
+                        </span>
+                        <div
+                          className={`widget-checkbox ${statsConfig.showChars ? 'checked' : ''}`}
+                        >
+                          {statsConfig.showChars && <Check size={11} />}
+                        </div>
+                      </div>
+
+                      <div
+                        className={`widget-menu-item compact ${statsConfig.showReadingTime ? 'selected' : ''}`}
+                        onClick={(): void => onToggleStat('showReadingTime')}
+                      >
+                        <span className="widget-title text-xs font-normal text-zinc-300">
+                          Reading Time
+                        </span>
+                        <div
+                          className={`widget-checkbox ${statsConfig.showReadingTime ? 'checked' : ''}`}
+                        >
+                          {statsConfig.showReadingTime && <Check size={11} />}
+                        </div>
+                      </div>
+
+                      <div
+                        className={`widget-menu-item compact ${statsConfig.showSavedBadge ? 'selected' : ''}`}
+                        onClick={(): void => onToggleStat('showSavedBadge')}
+                      >
+                        <span className="widget-title text-xs font-normal text-zinc-300">
+                          Floating Saved Badge
+                        </span>
+                        <div
+                          className={`widget-checkbox ${statsConfig.showSavedBadge ? 'checked' : ''}`}
+                        >
+                          {statsConfig.showSavedBadge && <Check size={11} />}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div
-                  className={`widget-menu-item compact ${statsConfig.showSavedBadge ? 'selected' : ''}`}
-                  onClick={(): void => onToggleStat('showSavedBadge')}
-                >
-                  <span className="widget-title text-xs font-normal text-zinc-300">
-                    Floating Saved Badge
-                  </span>
-                  <div className={`widget-checkbox ${statsConfig.showSavedBadge ? 'checked' : ''}`}>
-                    {statsConfig.showSavedBadge && <Check size={11} />}
-                  </div>
+                {/* 2. Empty Sub-dropdown 1 */}
+                <div className="options-submenu-group">
+                  <button
+                    type="button"
+                    className={`options-submenu-trigger ${isEmptyDropdown1Open ? 'expanded' : ''}`}
+                    onClick={(): void => setIsEmptyDropdown1Open((p) => !p)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sliders size={13} className="text-blue-400 shrink-0" />
+                      <span className="widget-title">Editor Preferences</span>
+                    </div>
+                    <ChevronDown
+                      size={11}
+                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
+                        isEmptyDropdown1Open ? 'rotate-180 text-zinc-300' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {isEmptyDropdown1Open && (
+                    <div className="options-submenu-content">
+                      <div className="options-empty-content">
+                        <span>No preferences available</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Empty Sub-dropdown 2 */}
+                <div className="options-submenu-group">
+                  <button
+                    type="button"
+                    className={`options-submenu-trigger ${isEmptyDropdown2Open ? 'expanded' : ''}`}
+                    onClick={(): void => setIsEmptyDropdown2Open((p) => !p)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Layers size={13} className="text-purple-400 shrink-0" />
+                      <span className="widget-title">Extensions</span>
+                    </div>
+                    <ChevronDown
+                      size={11}
+                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
+                        isEmptyDropdown2Open ? 'rotate-180 text-zinc-300' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {isEmptyDropdown2Open && (
+                    <div className="options-submenu-content">
+                      <div className="options-empty-content">
+                        <span>No extensions configured</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
