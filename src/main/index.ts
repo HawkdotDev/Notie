@@ -133,7 +133,16 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('fs:readFile', async (_, filePath: string) => {
-    return await fs.readFile(filePath, 'utf-8')
+    try {
+      return await fs.readFile(filePath, 'utf-8')
+    } catch (error: unknown) {
+      const err = error as NodeJS.ErrnoException
+      if (err?.code === 'ENOENT') {
+        return ''
+      }
+      console.error(`Failed to read file ${filePath}:`, error)
+      throw error
+    }
   })
 
   ipcMain.handle('fs:writeFile', async (_, filePath: string, content: string) => {
