@@ -1934,33 +1934,74 @@ body {
 }
 
 .sidebar-search-container {
-  padding: 0 10px 6px;
+  padding: 6px 8px 4px;
   position: relative;
+}
+
+.sidebar-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .sidebar-search-input {
   width: 100%;
   background: #18181c;
-  border: 1px solid #2d2d34;
+  border: 1px solid #27272e;
+  border-radius: 6px;
   color: var(--text-main);
   font-size: 12px;
-  padding: 6px 10px 6px 30px;
+  padding: 5px 28px 5px 28px;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: all 0.15s ease;
   box-sizing: border-box;
 }
 
 .sidebar-search-input:focus {
-  border-color: #71717a;
+  border-color: #52525b;
+  background: #1c1c22;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-search-icon {
   position: absolute;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
+  left: 9px;
+  color: #71717a;
   pointer-events: none;
+}
+
+.sidebar-search-clear-btn {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: #71717a;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.1s ease;
+}
+
+.sidebar-search-clear-btn:hover {
+  color: #e4e4e7;
+}
+
+.sidebar-search-badge {
+  position: absolute;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #52525b;
+  background: #202026;
+  border: 1px solid #2e2e36;
+  border-radius: 3px;
+  padding: 1px 4px;
+  pointer-events: none;
+  line-height: 1.2;
 }
 
 .sidebar-section-header {
@@ -1992,7 +2033,25 @@ body {
 
 /* File Tree Container & Rows */
 .file-tree-container {
-  padding: 4px 8px;
+  padding: 4px 6px;
+}
+
+.sidebar-tree-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.sidebar-tree-wrapper::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-tree-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.sidebar-tree-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .tree-node {
@@ -2002,9 +2061,9 @@ body {
 /* Tree hierarchy guide lines for nested subfolders */
 .tree-node-children {
   position: relative;
-  margin-left: 14px;
-  border-left: 1px dashed rgba(255, 255, 255, 0.09);
-  padding-left: 4px;
+  margin-left: 13px;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  padding-left: 3px;
 }
 
 .tree-create-form {
@@ -2016,34 +2075,30 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 5px 8px;
-  border-radius: 0 8px 8px 0;
+  border-radius: 6px;
   cursor: pointer;
-  color: #888891;
+  color: #94949e;
   font-size: 12.5px;
-  margin: 1.5px 0;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: 1px 0;
+  transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
 
 .tree-node-item:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  color: #bfbfc7;
-  transform: translateX(2px);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #f4f4f5;
 }
 
-/* Open folder pill card highlight */
+/* Open folder highlight */
 .tree-node-item.expanded-folder {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #bfbfc7;
+  color: #d4d4d8;
   font-weight: 500;
 }
 
 .tree-node-item.active {
-  background: rgba(255, 255, 255, 0.08);
-  color: #bfbfc7;
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
   font-weight: 500;
-  border-left: 2.5px solid #71717a;
-  padding-left: 6.5px;
 }
 
 /* Left side: icon + label */

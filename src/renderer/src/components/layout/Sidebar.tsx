@@ -25,6 +25,7 @@ interface SidebarProps {
   onRenameWorkspace?: () => void
   onToggleSidebar?: () => void
   showSearchInput: boolean
+  onToggleSearchInput?: () => void
   searchQuery: string
   onSearchChange: (query: string) => void
   fileIcons: Record<string, string>
@@ -54,6 +55,7 @@ function Sidebar({
   onRenameWorkspace,
   onToggleSidebar,
   showSearchInput,
+  onToggleSearchInput,
   searchQuery,
   onSearchChange,
   fileIcons,
@@ -87,6 +89,8 @@ function Sidebar({
           onRenameWorkspace={onRenameWorkspace}
           onCreateFileAtRoot={onCreateFileAtRoot}
           onToggleSidebar={onToggleSidebar}
+          showSearchInput={showSearchInput}
+          onToggleSearchInput={onToggleSearchInput}
         />
 
         {/* Main Body Area: Plugins, Tree, or Empty State */}
@@ -97,6 +101,7 @@ function Sidebar({
           showSearchInput={showSearchInput}
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
+          onCloseSearch={onToggleSearchInput}
           onFileSelect={onFileSelect}
           fileIcons={fileIcons}
           onMetadataLoaded={onMetadataLoaded}

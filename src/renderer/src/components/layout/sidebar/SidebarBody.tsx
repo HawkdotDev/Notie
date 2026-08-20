@@ -13,6 +13,7 @@ interface SidebarBodyProps {
   showSearchInput: boolean
   searchQuery: string
   onSearchChange: (query: string) => void
+  onCloseSearch?: () => void
   onFileSelect: (filePath: string) => void
   fileIcons: Record<string, string>
   onMetadataLoaded: (filePath: string, metadata: { icon?: string; banner?: string }) => void
@@ -28,6 +29,7 @@ function SidebarBody({
   showSearchInput,
   searchQuery,
   onSearchChange,
+  onCloseSearch,
   onFileSelect,
   fileIcons,
   onMetadataLoaded,
@@ -51,7 +53,11 @@ function SidebarBody({
       <div className="flex flex-col flex-1 h-full min-h-0 overflow-hidden">
         {/* Collapsible/Expandable Search Input */}
         {(showSearchInput || searchQuery) && (
-          <SidebarSearch searchQuery={searchQuery} onSearchChange={onSearchChange} />
+          <SidebarSearch
+            searchQuery={searchQuery}
+            onSearchChange={onSearchChange}
+            onClose={onCloseSearch}
+          />
         )}
 
         {/* Tree Navigation */}

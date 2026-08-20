@@ -865,6 +865,7 @@ export default function App(): React.JSX.Element {
           onRenameWorkspace={handleRenameWorkspace}
           onToggleSidebar={(): void => setSidebarCollapsed((p) => !p)}
           showSearchInput={showSearchInput}
+          onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           fileIcons={fileIcons}

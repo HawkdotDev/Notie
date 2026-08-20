@@ -1,5 +1,5 @@
 import React from 'react'
-import { SidebarClose } from 'lucide-react'
+import { SidebarClose, Plus, Search } from 'lucide-react'
 import WorkspaceSelector from './WorkspaceSelector'
 
 interface SidebarHeaderProps {
@@ -16,6 +16,8 @@ interface SidebarHeaderProps {
   onRenameWorkspace?: () => void
   onCreateFileAtRoot: () => void
   onToggleSidebar?: () => void
+  showSearchInput?: boolean
+  onToggleSearchInput?: () => void
 }
 
 function SidebarHeader({
@@ -31,7 +33,9 @@ function SidebarHeader({
   onRemoveRecentWorkspace,
   onRenameWorkspace,
   onCreateFileAtRoot,
-  onToggleSidebar
+  onToggleSidebar,
+  showSearchInput = false,
+  onToggleSearchInput
 }: SidebarHeaderProps): React.JSX.Element {
   return (
     <div className="sidebar-top-actions">
@@ -55,8 +59,32 @@ function SidebarHeader({
         />
       )}
 
-      {/* Right Action Button: Sidebar Toggle */}
-      <div className="sidebar-header-buttons">
+      {/* Action Buttons: New File, Search, Sidebar Toggle */}
+      <div className="sidebar-header-buttons flex items-center gap-1">
+        {workspacePath && activeView === 'explorer' && (
+          <>
+            <button
+              type="button"
+              className="sidebar-action-btn"
+              onClick={onCreateFileAtRoot}
+              title="New Note (Ctrl+N)"
+            >
+              <Plus size={14} strokeWidth={1.75} />
+            </button>
+
+            {onToggleSearchInput && (
+              <button
+                type="button"
+                className={`sidebar-action-btn ${showSearchInput ? 'active' : ''}`}
+                onClick={onToggleSearchInput}
+                title={showSearchInput ? 'Hide Search Filter' : 'Filter Files'}
+              >
+                <Search size={13} strokeWidth={1.75} />
+              </button>
+            )}
+          </>
+        )}
+
         {onToggleSidebar && (
           <button
             type="button"
