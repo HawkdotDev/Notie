@@ -264,3 +264,50 @@ export function ProfessionalFileIcon({
       )
   }
 }
+
+export function WorkspaceIcon({
+  name,
+  icon,
+  size = 18,
+  className = ''
+}: {
+  name: string
+  icon?: string
+  size?: number
+  className?: string
+}): React.JSX.Element {
+  if (icon && icon.trim()) {
+    return (
+      <div
+        className={`workspace-unique-badge flex items-center justify-center select-none ${className}`}
+        style={{
+          width: `${size}px`,
+          height: `${size}px`,
+          minWidth: `${size}px`,
+          minHeight: `${size}px`,
+          fontSize: `${Math.max(11, Math.round(size * 0.7))}px`
+        }}
+        title={`Workspace: ${name || 'Workspace'}`}
+      >
+        <span>{icon}</span>
+      </div>
+    )
+  }
+
+  const initial = (name && name.trim() ? name.trim()[0] : 'W').toUpperCase()
+  return (
+    <div
+      className={`workspace-unique-badge flex items-center justify-center font-bold select-none ${className}`}
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        minWidth: `${size}px`,
+        minHeight: `${size}px`,
+        fontSize: `${Math.max(9, Math.round(size * 0.52))}px`
+      }}
+      title={`Workspace: ${name || 'Workspace'}`}
+    >
+      <span>{initial}</span>
+    </div>
+  )
+}

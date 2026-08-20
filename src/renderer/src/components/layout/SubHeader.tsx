@@ -13,7 +13,11 @@ import {
   Code2,
   Check,
   ListTree,
-  Layers
+  Layers,
+  Share2,
+  Copy,
+  Users,
+  Download
 } from 'lucide-react'
 import { ViewMode, WidgetState } from '../../types'
 
@@ -40,6 +44,10 @@ interface SubHeaderProps {
   onTogglePluginsView?: () => void
   onSwitchToFiles?: () => void
   enabledPluginsCount?: number
+  onExportHTML?: () => void
+  onExportText?: () => void
+  onExportMarkdown?: () => void
+  onCopyLink?: () => void
 }
 
 function SubHeader({
@@ -61,7 +69,11 @@ function SubHeader({
   sidebarCollapsed = false,
   onTogglePluginsView,
   onSwitchToFiles,
-  enabledPluginsCount = 0
+  enabledPluginsCount = 0,
+  onExportHTML,
+  onExportText,
+  onExportMarkdown,
+  onCopyLink
 }: SubHeaderProps): React.JSX.Element {
   const [showWidgetsMenu, setShowWidgetsMenu] = useState<boolean>(() => {
     try {
@@ -71,8 +83,12 @@ function SubHeader({
     }
   })
   const [showViewMenu, setShowViewMenu] = useState<boolean>(false)
+  const [showShareMenu, setShowShareMenu] = useState<boolean>(false)
+  const [copyFeedback, setCopyFeedback] = useState<boolean>(false)
+
   const menuRef = useRef<HTMLDivElement>(null)
   const viewMenuRef = useRef<HTMLDivElement>(null)
+  const shareMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     try {
@@ -90,14 +106,17 @@ function SubHeader({
       if (viewMenuRef.current && !viewMenuRef.current.contains(e.target as Node)) {
         setShowViewMenu(false)
       }
+      if (shareMenuRef.current && !shareMenuRef.current.contains(e.target as Node)) {
+        setShowShareMenu(false)
+      }
     }
-    if (showWidgetsMenu || showViewMenu) {
+    if (showWidgetsMenu || showViewMenu || showShareMenu) {
       document.addEventListener('mousedown', handleClickOutside)
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [showWidgetsMenu, showViewMenu])
+  }, [showWidgetsMenu, showViewMenu, showShareMenu])
 
   return (
     <div className="app-actions-bar relative">
@@ -239,22 +258,241 @@ function SubHeader({
           </button>
         )}
 
-        {/* 6. AI Assistant Tab */}
-        <button
-          className={`action-pill-btn ${widgetState.assistant ? 'active' : ''}`}
-          onClick={(): void => onToggleWidget('assistant')}
-          title="Toggle Writing Assistant"
-        >
-          <Sparkles
-            size={13}
-            fill="currentColor"
-            className={widgetState.assistant ? 'text-zinc-300' : ''}
-          />
-          <span>Assistant</span>
-        </button>
+        {/* 6. Widgets Menu Tab */}
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            className={`action-pill-btn ${showWidgetsMenu ? 'active' : ''}`}
+            onClick={(e): void => {
+              e.stopPropagation()
+              setShowWidgetsMenu((prev) => !prev)
+            }}
+            title="Toggle Floating Widgets"
+          >
+            <LayoutGrid
+              size={13}
+              fill="currentColor"
+              className={showWidgetsMenu ? 'text-zinc-200' : 'text-zinc-300'}
+            />
+            <span>Widgets</span>
+            {activeUnsaved && <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />}
+            <ChevronDown
+              size={11}
+              className={`transition-transform duration-150 ${showWidgetsMenu ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {/* WIDGETS FLOATING DROPDOWN MENU */}
+          {showWidgetsMenu && (
+            <div className="widgets-dropdown-menu view-dropdown-menu">
+              <div className="widgets-dropdown-header">
+                <span className="font-semibold text-zinc-300">Floating Widgets</span>
+                <button
+                  className="text-[10px] text-zinc-300 bg-zinc-800 px-1.5 py-0.5 border border-zinc-700 hover:bg-zinc-700 cursor-pointer transition-colors"
+                  onClick={onToggleAutoSave}
+                  title="Click to toggle Autosave"
+                >
+                  Autosave: {autoSaveEnabled ? 'ON' : 'OFF'}
+                </button>
+              </div>
+
+              <div className="widgets-dropdown-list">
+                <div
+                  className={`widget-menu-item ${widgetState.assistant ? 'selected' : ''}`}
+                  onClick={(): void => onToggleWidget('assistant')}
+                >
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="widget-title">Writing Assistant</span>
+                      <span className="widget-desc">Grammarly style error fixes</span>
+                    </div>
+                  </div>
+                  <div className={`widget-checkbox ${widgetState.assistant ? 'checked' : ''}`}>
+                    {widgetState.assistant && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item ${widgetState.stats ? 'selected' : ''}`}
+                  onClick={(): void => onToggleWidget('stats')}
+                >
+                  <div className="flex items-center gap-2">
+                    <BarChart2 size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="widget-title">Document Stats</span>
+                      <span className="widget-desc">Word count, TOC outline</span>
+                    </div>
+                  </div>
+                  <div className={`widget-checkbox ${widgetState.stats ? 'checked' : ''}`}>
+                    {widgetState.stats && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item ${widgetState.terminal ? 'selected' : ''}`}
+                  onClick={(): void => onToggleWidget('terminal')}
+                >
+                  <div className="flex items-center gap-2">
+                    <Terminal size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="widget-title">Quick Terminal</span>
+                      <span className="widget-desc">Python & console output</span>
+                    </div>
+                  </div>
+                  <div className={`widget-checkbox ${widgetState.terminal ? 'checked' : ''}`}>
+                    {widgetState.terminal && <Check size={11} />}
+                  </div>
+                </div>
+
+                <div
+                  className={`widget-menu-item ${widgetState.snippets ? 'selected' : ''}`}
+                  onClick={(): void => onToggleWidget('snippets')}
+                >
+                  <div className="flex items-center gap-2">
+                    <Code2 size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="widget-title">Code Snippets</span>
+                      <span className="widget-desc">Quick insert templates</span>
+                    </div>
+                  </div>
+                  <div className={`widget-checkbox ${widgetState.snippets ? 'checked' : ''}`}>
+                    {widgetState.snippets && <Check size={11} />}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="actions-bar-right relative" ref={menuRef}>
+      <div className="actions-bar-right flex items-center gap-2">
+        {/* Share & Export Dropdown Button beside Autosave */}
+        <div className="relative" ref={shareMenuRef}>
+          <button
+            type="button"
+            className={`action-pill-btn ${showShareMenu ? 'active' : ''}`}
+            onClick={(e): void => {
+              e.stopPropagation()
+              setShowShareMenu((prev) => !prev)
+            }}
+            title="Share & Export Document"
+          >
+            <Share2 size={12} strokeWidth={1.75} className="shrink-0 text-zinc-300" />
+            <span>Share</span>
+            <ChevronDown
+              size={11}
+              className={`transition-transform duration-150 ${showShareMenu ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {showShareMenu && (
+            <div className="share-dropdown-menu">
+              {/* Collaboration Section */}
+              <div className="share-dropdown-section">
+                <span className="share-section-title">Collaboration</span>
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    if (onCopyLink) {
+                      onCopyLink()
+                    } else {
+                      navigator.clipboard.writeText(window.location.href)
+                    }
+                    setCopyFeedback(true)
+                    setTimeout(() => setCopyFeedback(false), 1500)
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    {copyFeedback ? (
+                      <Check size={13} className="text-emerald-400 shrink-0" />
+                    ) : (
+                      <Copy size={13} className="text-zinc-400 shrink-0" />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="share-item-title">
+                        {copyFeedback ? 'Copied to Clipboard!' : 'Copy Reference Link'}
+                      </span>
+                      <span className="share-item-desc">Wikilink or internal document link</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    setShowShareMenu(false)
+                    alert('Invite collaborators feature coming soon!')
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Users size={13} className="text-zinc-400 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="share-item-title">Invite Collaborators</span>
+                      <span className="share-item-desc">Add team members to this workspace</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="share-dropdown-divider" />
+
+              {/* Export Section */}
+              <div className="share-dropdown-section">
+                <span className="share-section-title">Export Document</span>
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    setShowShareMenu(false)
+                    onExportHTML?.()
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Code2 size={13} className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="share-item-title">Export as HTML</span>
+                      <span className="share-item-desc">Formatted standalone HTML file</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    setShowShareMenu(false)
+                    onExportText?.()
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <FileText size={13} className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="share-item-title">Export as Plain Text</span>
+                      <span className="share-item-desc">Clean .txt file without formatting</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    setShowShareMenu(false)
+                    onExportMarkdown?.()
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Download size={13} className="text-zinc-300 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="share-item-title">Export as Markdown</span>
+                      <span className="share-item-desc">Raw Markdown syntax file</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Autosave Toggle */}
         <div
           className="header-toggle-group cursor-pointer"
           onClick={onToggleAutoSave}
@@ -265,102 +503,6 @@ function SubHeader({
             <div className="toggle-knob" />
           </div>
         </div>
-
-        <div
-          className={`mode-select-pill ${showWidgetsMenu ? 'active' : ''}`}
-          onClick={(): void => setShowWidgetsMenu((prev) => !prev)}
-          title={`Toggle Floating Widgets (Autosave: ${autoSaveEnabled ? 'ON' : 'OFF'})`}
-        >
-          <LayoutGrid size={13} fill="currentColor" className="text-zinc-300" />
-          <span>Widgets</span>
-          {activeUnsaved && <span className="w-1.5 h-1.5 bg-amber-400" />}
-          <ChevronDown
-            size={12}
-            className={`transition-transform ${showWidgetsMenu ? 'rotate-180' : ''}`}
-          />
-        </div>
-
-        {/* WIDGETS FLOATING DROPDOWN MENU */}
-        {showWidgetsMenu && (
-          <div className="widgets-dropdown-menu">
-            <div className="widgets-dropdown-header">
-              <span className="font-semibold text-zinc-300">Floating Widgets</span>
-              <button
-                className="text-[10px] text-zinc-300 bg-zinc-800 px-1.5 py-0.5 border border-zinc-700 hover:bg-zinc-700 cursor-pointer transition-colors"
-                onClick={onToggleAutoSave}
-                title="Click to toggle Autosave"
-              >
-                Autosave: {autoSaveEnabled ? 'ON' : 'OFF'}
-              </button>
-            </div>
-
-            <div className="widgets-dropdown-list">
-              <div
-                className={`widget-menu-item ${widgetState.assistant ? 'selected' : ''}`}
-                onClick={(): void => onToggleWidget('assistant')}
-              >
-                <div className="flex items-center gap-2">
-                  <Sparkles size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="widget-title">Writing Assistant</span>
-                    <span className="widget-desc">Grammarly style error fixes</span>
-                  </div>
-                </div>
-                <div className={`widget-checkbox ${widgetState.assistant ? 'checked' : ''}`}>
-                  {widgetState.assistant && <Check size={11} />}
-                </div>
-              </div>
-
-              <div
-                className={`widget-menu-item ${widgetState.stats ? 'selected' : ''}`}
-                onClick={(): void => onToggleWidget('stats')}
-              >
-                <div className="flex items-center gap-2">
-                  <BarChart2 size={13} fill="currentColor" className="text-emerald-400 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="widget-title">Document Stats</span>
-                    <span className="widget-desc">Word count, TOC outline</span>
-                  </div>
-                </div>
-                <div className={`widget-checkbox ${widgetState.stats ? 'checked' : ''}`}>
-                  {widgetState.stats && <Check size={11} />}
-                </div>
-              </div>
-
-              <div
-                className={`widget-menu-item ${widgetState.terminal ? 'selected' : ''}`}
-                onClick={(): void => onToggleWidget('terminal')}
-              >
-                <div className="flex items-center gap-2">
-                  <Terminal size={13} fill="currentColor" className="text-blue-400 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="widget-title">Quick Terminal</span>
-                    <span className="widget-desc">Python & console output</span>
-                  </div>
-                </div>
-                <div className={`widget-checkbox ${widgetState.terminal ? 'checked' : ''}`}>
-                  {widgetState.terminal && <Check size={11} />}
-                </div>
-              </div>
-
-              <div
-                className={`widget-menu-item ${widgetState.snippets ? 'selected' : ''}`}
-                onClick={(): void => onToggleWidget('snippets')}
-              >
-                <div className="flex items-center gap-2">
-                  <Code2 size={13} fill="currentColor" className="text-amber-400 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="widget-title">Code Snippets</span>
-                    <span className="widget-desc">Quick insert templates</span>
-                  </div>
-                </div>
-                <div className={`widget-checkbox ${widgetState.snippets ? 'checked' : ''}`}>
-                  {widgetState.snippets && <Check size={11} />}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

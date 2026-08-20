@@ -1,26 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import {
-  Folder,
-  ChevronDown,
-  Check,
-  FolderPlus,
-  XCircle,
-  Trash2,
-  Edit3,
-  Minus,
-  Square,
-  X,
-  Bell,
-  Settings,
-  Share2,
-  Download,
-  Code2,
-  FileText,
-  Copy,
-  Users
-} from 'lucide-react'
-import { ProfessionalFileIcon } from '../../utils/fileIconUtils'
-import { getPathKey } from '../../utils/pathUtils'
+import { Minus, Square, X, Bell, Settings } from 'lucide-react'
 import iconSvg from '../../assets/icon.svg'
 
 interface TopHeaderProps {
@@ -28,58 +7,32 @@ interface TopHeaderProps {
   workspaceName: string
   activeFilePath: string | null
   fileIcons?: Record<string, string>
-  recentWorkspaces?: { path: string; name: string }[]
-  onSwitchWorkspace?: (path: string, name?: string) => void
   onOpenWorkspace?: () => void
-  onRenameWorkspace?: () => void
-  onCloseWorkspace?: () => void
-  onRemoveRecentWorkspace?: (path: string) => void
   onOpenSettings?: () => void
-  onExportHTML?: () => void
-  onExportText?: () => void
-  onExportMarkdown?: () => void
-  onCopyLink?: () => void
 }
 
 function TopHeader({
   workspacePath,
   workspaceName,
   activeFilePath,
-  fileIcons,
-  recentWorkspaces = [],
-  onSwitchWorkspace,
   onOpenWorkspace,
-  onRenameWorkspace,
-  onCloseWorkspace,
-  onRemoveRecentWorkspace,
-  onOpenSettings,
-  onExportHTML,
-  onExportText,
-  onExportMarkdown,
-  onCopyLink
+  onOpenSettings
 }: TopHeaderProps): React.JSX.Element {
-  const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false)
-  const [showShareMenu, setShowShareMenu] = useState(false)
-  const [copyFeedback, setCopyFeedback] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const shareMenuRef = useRef<HTMLDivElement>(null)
+  const [showAccountMenu, setShowAccountMenu] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowWorkspaceDropdown(false)
-      }
-      if (shareMenuRef.current && !shareMenuRef.current.contains(e.target as Node)) {
-        setShowShareMenu(false)
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setShowAccountMenu(false)
       }
     }
     const handleKeyDown = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
-        setShowWorkspaceDropdown(false)
-        setShowShareMenu(false)
+        setShowAccountMenu(false)
       }
     }
-    if (showWorkspaceDropdown || showShareMenu) {
+    if (showAccountMenu) {
       document.addEventListener('mousedown', handleClickOutside)
       document.addEventListener('keydown', handleKeyDown)
     }
@@ -87,7 +40,7 @@ function TopHeader({
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [showWorkspaceDropdown, showShareMenu])
+  }, [showAccountMenu])
 
   const relativeParts = useMemo(() => {
     if (!activeFilePath) return []
@@ -95,159 +48,41 @@ function TopHeader({
     return rel ? rel.split(/[\\/]/) : []
   }, [activeFilePath, workspacePath])
 
-  const customIcon = useMemo(() => {
-    if (!activeFilePath || !fileIcons || !workspacePath) return undefined
-    const rel = activeFilePath
-      .toLowerCase()
-      .replace(workspacePath.toLowerCase(), '')
-      .replace(/^[\\/]/, '')
-    return fileIcons[rel]
-  }, [activeFilePath, fileIcons, workspacePath])
-
   const currentDisplayName =
-    workspaceName || (workspacePath ? workspacePath.split(/[\\/]/).pop() : 'Select Workspace')
+    workspaceName ||
+    (workspacePath ? workspacePath.split(/[\\/]/).filter(Boolean).pop() : '') ||
+    'Select Workspace'
 
   return (
-    <div className="app-top-header" onDoubleClick={(): void => window.api.window.maximize()}>
-      <div className="top-header-left">
-        <div className="flex items-center gap-2 select-none shrink-0">
-          <img src={iconSvg} className="w-4 h-4 object-contain" alt="Notie Logo" />
-          <span className="app-title-logo">Notie</span>
+    <div
+      className="app-top-header select-none"
+      onDoubleClick={(): void => window.api?.window?.maximize?.()}
+    >
+      {/* Left Application Brand Logo & Navigation Breadcrumbs */}
+      <div className="top-header-left flex items-center gap-2">
+        {/* Brand App Monogram Badge */}
+        <div
+          className="header-brand-logo flex items-center gap-2 cursor-pointer"
+          onClick={onOpenWorkspace}
+          title="Notie Workspace - Click to open folder"
+        >
+          <img src={iconSvg} alt="Notie Logo" className="w-4 h-4 object-contain" />
+          <span className="font-semibold text-xs text-zinc-300 tracking-tight">Notie</span>
         </div>
 
         {/* Vertical Pipe Separator */}
         {(activeFilePath || workspacePath) && <div className="header-pipe-separator" />}
 
-        {/* Styled Minimal Breadcrumb Path Navigation */}
+        {/* Styled Minimal Text-Only Breadcrumb Path Navigation */}
         {(activeFilePath || workspacePath) && (
           <div className="nav-breadcrumbs">
-            {/* First Folder in Breadcrumbs (Workspace Root with Dropdown) */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                type="button"
-                className={`breadcrumb-item workspace-root ${showWorkspaceDropdown ? 'active' : ''}`}
-                onClick={(): void => setShowWorkspaceDropdown((prev) => !prev)}
-                title={`Workspace: ${currentDisplayName} (Click to change folder)`}
-              >
-                <Folder size={11} className="text-zinc-400 shrink-0" />
-                <span className="max-w-35 truncate">{currentDisplayName}</span>
-                <ChevronDown
-                  size={9}
-                  className={`text-zinc-500 shrink-0 transition-transform duration-150 ${showWorkspaceDropdown ? 'rotate-180 text-zinc-300' : ''}`}
-                />
-              </button>
-
-              {/* Workspace Switcher Dropdown Popover */}
-              {showWorkspaceDropdown && (
-                <div className="workspace-dropdown-popover breadcrumb-dropdown-popover">
-                  <div className="dropdown-section-title">WORKSPACES</div>
-
-                  {recentWorkspaces.length > 0 ? (
-                    <div className="dropdown-workspace-list">
-                      {recentWorkspaces.map((ws) => {
-                        const isActive =
-                          workspacePath && getPathKey(ws.path) === getPathKey(workspacePath)
-                        return (
-                          <div
-                            key={ws.path}
-                            className={`dropdown-workspace-item group ${isActive ? 'active' : ''}`}
-                            onClick={(): void => {
-                              if (onSwitchWorkspace) {
-                                onSwitchWorkspace(ws.path, ws.name)
-                              }
-                              setShowWorkspaceDropdown(false)
-                            }}
-                          >
-                            <Folder
-                              size={13}
-                              fill="currentColor"
-                              className={
-                                isActive ? 'text-zinc-300 shrink-0' : 'text-zinc-400 shrink-0'
-                              }
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="workspace-item-name">{ws.name}</div>
-                              <div className="workspace-item-path">{ws.path}</div>
-                            </div>
-                            {isActive && (
-                              <Check size={13} className="text-zinc-300 shrink-0 mr-1" />
-                            )}
-                            {onRemoveRecentWorkspace && (
-                              <button
-                                type="button"
-                                className="trash-btn opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-rose-400 rounded transition-all shrink-0"
-                                onClick={(e): void => {
-                                  e.stopPropagation()
-                                  onRemoveRecentWorkspace(ws.path)
-                                }}
-                                title="Remove from recent workspaces"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <div className="px-2 py-1.5 text-[11px] text-zinc-500 italic">
-                      No recent workspaces
-                    </div>
-                  )}
-
-                  <div className="dropdown-divider" />
-
-                  {onOpenWorkspace && (
-                    <button
-                      type="button"
-                      className="dropdown-action-item"
-                      onClick={(): void => {
-                        onOpenWorkspace()
-                        setShowWorkspaceDropdown(false)
-                      }}
-                    >
-                      <FolderPlus
-                        size={13}
-                        fill="currentColor"
-                        className="text-zinc-300 shrink-0"
-                      />
-                      <span>Open Workspace Folder...</span>
-                    </button>
-                  )}
-
-                  {workspacePath && (
-                    <button
-                      type="button"
-                      className="dropdown-action-item"
-                      onClick={(): void => {
-                        if (onRenameWorkspace) {
-                          onRenameWorkspace()
-                        } else {
-                          window.dispatchEvent(new CustomEvent('rename-root-folder'))
-                        }
-                        setShowWorkspaceDropdown(false)
-                      }}
-                    >
-                      <Edit3 size={13} className="text-zinc-300 shrink-0" />
-                      <span>Rename Workspace...</span>
-                    </button>
-                  )}
-
-                  {workspacePath && onCloseWorkspace && (
-                    <button
-                      type="button"
-                      className="dropdown-action-item danger"
-                      onClick={(): void => {
-                        onCloseWorkspace()
-                        setShowWorkspaceDropdown(false)
-                      }}
-                    >
-                      <XCircle size={13} fill="currentColor" className="text-rose-400 shrink-0" />
-                      <span>Close Workspace</span>
-                    </button>
-                  )}
-                </div>
-              )}
+            {/* First Folder in Breadcrumbs (Workspace Root) */}
+            <div
+              className="breadcrumb-item workspace-root"
+              title={`Workspace: ${currentDisplayName}`}
+              onClick={onOpenWorkspace}
+            >
+              <span className="max-w-35 truncate">{currentDisplayName}</span>
             </div>
 
             {relativeParts.map((part, idx) => {
@@ -259,12 +94,6 @@ function TopHeader({
                     className={`breadcrumb-item ${isLast ? 'active-file' : 'directory'}`}
                     title={part}
                   >
-                    {isLast &&
-                      (customIcon ? (
-                        <span className="text-[11px] mr-0.5">{customIcon}</span>
-                      ) : (
-                        <ProfessionalFileIcon fileName={part} className="scale-75 opacity-90" />
-                      ))}
                     <span className="truncate max-w-44">{part}</span>
                   </div>
                 </React.Fragment>
@@ -276,129 +105,9 @@ function TopHeader({
 
       {/* Right Header Action Icons & Window Controls */}
       <div className="top-header-right flex items-center gap-2">
-        {/* Share & Export Dropdown */}
-        <div className="relative no-drag" ref={shareMenuRef}>
-          <button
-            className={`btn-share ${showShareMenu ? 'active' : ''}`}
-            onClick={(): void => setShowShareMenu((prev) => !prev)}
-            title="Share & Export Document"
-          >
-            <Share2 size={12} strokeWidth={1.75} className="shrink-0" />
-            <span>Share</span>
-            <ChevronDown
-              size={11}
-              className={`transition-transform duration-150 ${showShareMenu ? 'rotate-180' : ''}`}
-            />
-          </button>
-
-          {showShareMenu && (
-            <div className="share-dropdown-menu">
-              {/* Collaboration Section */}
-              <div className="share-dropdown-section">
-                <span className="share-section-title">Collaboration</span>
-                <div
-                  className="share-dropdown-item"
-                  onClick={(): void => {
-                    if (onCopyLink) {
-                      onCopyLink()
-                    } else {
-                      navigator.clipboard.writeText(window.location.href)
-                    }
-                    setCopyFeedback(true)
-                    setTimeout(() => setCopyFeedback(false), 1500)
-                  }}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {copyFeedback ? (
-                      <Check size={13} className="text-emerald-400 shrink-0" />
-                    ) : (
-                      <Copy size={13} className="text-zinc-400 shrink-0" />
-                    )}
-                    <div className="flex flex-col">
-                      <span className="share-item-title">
-                        {copyFeedback ? 'Copied to Clipboard!' : 'Copy Reference Link'}
-                      </span>
-                      <span className="share-item-desc">Wikilink or internal document link</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="share-dropdown-item"
-                  onClick={(): void => {
-                    setShowShareMenu(false)
-                    alert('Invite collaborators feature coming soon!')
-                  }}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Users size={13} className="text-zinc-400 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="share-item-title">Invite Collaborators</span>
-                      <span className="share-item-desc">Add team members to this workspace</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="share-dropdown-divider" />
-
-              {/* Export Section */}
-              <div className="share-dropdown-section">
-                <span className="share-section-title">Export Document</span>
-                <div
-                  className="share-dropdown-item"
-                  onClick={(): void => {
-                    setShowShareMenu(false)
-                    onExportHTML?.()
-                  }}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Code2 size={13} className="text-emerald-400 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="share-item-title">Export as HTML</span>
-                      <span className="share-item-desc">Formatted standalone HTML file</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="share-dropdown-item"
-                  onClick={(): void => {
-                    setShowShareMenu(false)
-                    onExportText?.()
-                  }}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <FileText size={13} className="text-blue-400 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="share-item-title">Export as Plain Text</span>
-                      <span className="share-item-desc">Clean .txt file without formatting</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="share-dropdown-item"
-                  onClick={(): void => {
-                    setShowShareMenu(false)
-                    onExportMarkdown?.()
-                  }}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Download size={13} className="text-violet-400 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="share-item-title">Export as Markdown</span>
-                      <span className="share-item-desc">Raw .md document file</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Notifications Icon Button */}
         <button
+          type="button"
           className="header-action-btn relative"
           onClick={(): void => alert('Notifications: All workspace systems operational.')}
           title="Notifications"
@@ -409,6 +118,7 @@ function TopHeader({
 
         {/* Settings Icon Button */}
         <button
+          type="button"
           className="header-action-btn"
           onClick={(): void => (onOpenSettings ? onOpenSettings() : alert('Settings Menu'))}
           title="Settings"
@@ -416,14 +126,60 @@ function TopHeader({
           <Settings size={13} />
         </button>
 
-        {/* User Profile Avatar */}
-        <button
-          className="header-user-avatar"
-          onClick={(): void => alert('User Profile: Notie Account')}
-          title="Profile (Notie User)"
-        >
-          <span>DN</span>
-        </button>
+        {/* User Profile Avatar with Account & Settings Dropdown */}
+        <div className="relative" ref={accountMenuRef}>
+          <button
+            type="button"
+            className={`header-user-avatar ${showAccountMenu ? 'active' : ''}`}
+            onClick={(): void => setShowAccountMenu((prev) => !prev)}
+            title="Account & Settings (Notie User)"
+          >
+            <span>DN</span>
+          </button>
+
+          {showAccountMenu && (
+            <div className="notion-dropdown-popover header-account-popover">
+              <div className="notion-popover-header">
+                <img src={iconSvg} alt="Avatar" className="notion-popover-avatar" />
+                <div className="notion-popover-user-info">
+                  <span className="notion-popover-name">Notie User</span>
+                  <span className="notion-popover-sub">dwaipayan.codes@gmail.com</span>
+                </div>
+              </div>
+
+              <div className="notion-menu-divider" />
+
+              <div className="notion-popover-section">
+                <button
+                  type="button"
+                  className="notion-menu-item"
+                  onClick={(): void => {
+                    setShowAccountMenu(false)
+                    onOpenSettings?.()
+                  }}
+                >
+                  <Settings size={14} className="text-zinc-300 shrink-0" />
+                  <span>Settings & Preferences</span>
+                </button>
+              </div>
+
+              <div className="notion-menu-divider" />
+
+              <div className="notion-popover-footer">
+                <button
+                  type="button"
+                  className="notion-logout-btn"
+                  onClick={(): void => {
+                    setShowAccountMenu(false)
+                    alert('Signed out of Notie workspace account.')
+                  }}
+                >
+                  Log out
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Vertical Divider */}
         <div className="h-3 w-px bg-zinc-700/60 mx-0.5" />
@@ -431,22 +187,25 @@ function TopHeader({
         {/* Window Controls (Minimize, Maximize, Close) */}
         <div className="window-controls">
           <button
+            type="button"
             className="window-control-btn"
-            onClick={(): void => window.api.window.minimize()}
+            onClick={(): void => window.api?.window?.minimize?.()}
             title="Minimize Window"
           >
             <Minus size={13} />
           </button>
           <button
+            type="button"
             className="window-control-btn"
-            onClick={(): void => window.api.window.maximize()}
+            onClick={(): void => window.api?.window?.maximize?.()}
             title="Maximize / Restore Window"
           >
             <Square size={11} />
           </button>
           <button
+            type="button"
             className="window-control-btn close-btn"
-            onClick={(): void => window.api.window.close()}
+            onClick={(): void => window.api?.window?.close?.()}
             title="Close Application"
           >
             <X size={13} />

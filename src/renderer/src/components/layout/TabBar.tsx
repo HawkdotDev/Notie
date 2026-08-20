@@ -1,5 +1,5 @@
 import React from 'react'
-import { X } from 'lucide-react'
+import { X, Plus } from 'lucide-react'
 import { OpenFileInfo } from '../../types'
 import { ProfessionalFileIcon } from '../../utils/fileIconUtils'
 import { getPathKey, normalizePath } from '../../utils/pathUtils'
@@ -22,7 +22,8 @@ function TabBarComponent({
   workspacePath,
   unsavedFiles,
   onTabSelect,
-  onTabClose
+  onTabClose,
+  onCreateFileAtRoot
 }: TabBarProps): React.JSX.Element | null {
   if (openFiles.length === 0) return null
 
@@ -47,16 +48,17 @@ function TabBarComponent({
             key={file.path}
             className={`header-tab ${isActive ? 'active' : ''} ${isUnsaved ? 'unsaved' : ''}`}
             onClick={(): void => onTabSelect(file.path)}
+            title={file.path}
           >
             <span className="header-tab-icon">
               {customIcon ? (
-                <span className="text-[11px]">{customIcon}</span>
+                <span className="text-[12px]">{customIcon}</span>
               ) : (
-                <ProfessionalFileIcon fileName={file.name} className="scale-[0.85]" />
+                <ProfessionalFileIcon fileName={file.name} className="scale-[0.9]" />
               )}
             </span>
             <span className="header-tab-name">{file.name}</span>
-            {isUnsaved && <span className="header-tab-unsaved-dot" title="Unsaved changes" />}
+            {isUnsaved ? <span className="header-tab-unsaved-dot" title="Unsaved changes" /> : null}
             <button
               type="button"
               className="header-tab-close"
@@ -71,6 +73,16 @@ function TabBarComponent({
           </div>
         )
       })}
+      {onCreateFileAtRoot && (
+        <button
+          type="button"
+          className="header-tab-add-btn"
+          onClick={onCreateFileAtRoot}
+          title="New File Tab"
+        >
+          <Plus size={13} strokeWidth={1.75} />
+        </button>
+      )}
     </div>
   )
 }

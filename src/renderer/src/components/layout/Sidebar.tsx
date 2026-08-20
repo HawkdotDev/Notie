@@ -1,19 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
   Folder,
-  FolderOpen,
-  Search,
-  MoreHorizontal,
+  ChevronDown,
+  Check,
   FolderPlus,
   Plus,
-  ArrowRight,
   Trash2,
   Edit3,
   SidebarClose,
-  Code2
+  Search,
+  XCircle,
+  Smile
 } from 'lucide-react'
 import FileTree from '../FileTree'
 import PluginsWidget from './PluginsWidget'
+import EmojiPicker from '../EmojiPicker'
+import { getPathKey } from '../../utils/pathUtils'
+import { WorkspaceIcon } from '../../utils/fileIconUtils'
 
 export type SidebarViewMode = 'explorer' | 'plugins'
 
@@ -24,6 +27,8 @@ interface SidebarProps {
   isResizing?: boolean
   workspacePath: string | null
   workspaceName?: string
+  workspaceIcons?: Record<string, string>
+  onSetWorkspaceIcon?: (workspacePath: string, icon: string | null) => void
   recentWorkspaces?: { path: string; name: string }[]
   activeFilePath: string | null
   openFiles?: { path: string; name: string }[]
@@ -34,6 +39,7 @@ interface SidebarProps {
   onCloseWorkspace?: () => void
   onSwitchWorkspace?: (path: string, name?: string) => void
   onRemoveRecentWorkspace?: (path: string) => void
+  onRenameWorkspace?: () => void
   onToggleSidebar?: () => void
   showSearchInput: boolean
   onToggleSearchInput: () => void
@@ -44,32 +50,7 @@ interface SidebarProps {
   onStartResize: (e: React.MouseEvent) => void
   enabledPlugins?: Record<string, boolean>
   onTogglePlugin?: (pluginId: string) => void
-}
-
-const getLanguage = (filePath: string | null): { name: string; color: string } => {
-  if (!filePath) return { name: 'Markdown', color: 'text-zinc-400' }
-  const ext = filePath.split('.').pop()?.toLowerCase() || ''
-  switch (ext) {
-    case 'py':
-      return { name: 'Python', color: 'text-zinc-300' }
-    case 'js':
-    case 'jsx':
-      return { name: 'JavaScript', color: 'text-yellow-400' }
-    case 'ts':
-    case 'tsx':
-      return { name: 'TypeScript', color: 'text-blue-400' }
-    case 'html':
-      return { name: 'HTML', color: 'text-orange-400' }
-    case 'css':
-    case 'scss':
-      return { name: 'CSS', color: 'text-sky-400' }
-    case 'json':
-      return { name: 'JSON', color: 'text-amber-400' }
-    case 'md':
-      return { name: 'Markdown', color: 'text-emerald-400' }
-    default:
-      return { name: 'Plain Text', color: 'text-zinc-400' }
-  }
+  onOpenSettings?: () => void
 }
 
 function Sidebar({
@@ -78,15 +59,18 @@ function Sidebar({
   sidebarWidth,
   isResizing = false,
   workspacePath,
+  workspaceName,
+  workspaceIcons = {},
+  onSetWorkspaceIcon,
   recentWorkspaces = [],
   activeFilePath,
-  openFiles,
-  unsavedFiles,
   onFileSelect,
   onCreateFileAtRoot,
   onOpenWorkspace,
+  onCloseWorkspace,
   onSwitchWorkspace,
   onRemoveRecentWorkspace,
+  onRenameWorkspace,
   onToggleSidebar,
   showSearchInput,
   searchQuery,
@@ -97,107 +81,245 @@ function Sidebar({
   enabledPlugins = {},
   onTogglePlugin
 }: SidebarProps): React.JSX.Element {
-  const [showExplorerMenu, setShowExplorerMenu] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('notie_explorer_menu') === 'true'
-    } catch {
-      return false
-    }
-  })
-  const explorerMenuRef = useRef<HTMLDivElement>(null)
+  const [showWorkspaceMenu, setShowWorkspaceMenu] = useState<boolean>(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false)
+  const workspaceMenuRef = useRef<HTMLDivElement>(null)
 
-  const lang = getLanguage(activeFilePath)
+  const currentDisplayName =
+    workspaceName ||
+    (workspacePath ? workspacePath.split(/[\\/]/).filter(Boolean).pop() : '') ||
+    'Select Workspace'
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('notie_explorer_menu', String(showExplorerMenu))
-    } catch {
-      // ignore
-    }
-  }, [showExplorerMenu])
+  const currentIcon = workspacePath
+    ? workspaceIcons[getPathKey(workspacePath)] || workspaceIcons[workspacePath]
+    : undefined
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
-      if (explorerMenuRef.current && !explorerMenuRef.current.contains(e.target as Node)) {
-        setShowExplorerMenu(false)
+      if (workspaceMenuRef.current && !workspaceMenuRef.current.contains(e.target as Node)) {
+        setShowWorkspaceMenu(false)
+        setShowEmojiPicker(false)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return (): void => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  const hasRecentWorkspaces = recentWorkspaces.length > 0
-
-  const getHeaderTitle = (): string => {
-    return activeView === 'plugins' ? 'Extensions' : 'Explorer'
-  }
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        setShowWorkspaceMenu(false)
+        setShowEmojiPicker(false)
+      }
+    }
+    if (showWorkspaceMenu || showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
+    }
+    return (): void => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showWorkspaceMenu, showEmojiPicker])
 
   return (
     <div
       className={`sidebar ${sidebarCollapsed ? 'is-collapsed' : ''} ${isResizing ? 'is-resizing' : ''}`}
       style={{
         width: sidebarCollapsed ? '0px' : `${sidebarWidth}px`,
-        minWidth: sidebarCollapsed ? '0px' : '160px',
+        minWidth: sidebarCollapsed ? '0px' : '240px',
         maxWidth: sidebarCollapsed ? '0px' : '450px'
       }}
     >
-      <div className="sidebar-content flex flex-col h-full overflow-hidden w-full min-w-0">
-        {/* Top Action Row: Title + Action Buttons */}
+      <div className="sidebar-content flex flex-col h-full w-full min-w-0 relative">
+        {/* Top Action Row: Workspace Dropdown / Extensions Title + Collapse Button + Divider */}
         <div className="sidebar-top-actions">
-          <div className="sidebar-header-title">
-            <span>{getHeaderTitle()}</span>
-          </div>
+          {activeView === 'plugins' ? (
+            <div className="sidebar-header-title">
+              <span>Extensions</span>
+            </div>
+          ) : (
+            <div className="relative flex-1 min-w-0 mr-1" ref={workspaceMenuRef}>
+              <button
+                type="button"
+                className={`sidebar-workspace-trigger ${showWorkspaceMenu ? 'active' : ''}`}
+                onClick={(): void => setShowWorkspaceMenu((prev) => !prev)}
+                title={`Workspace: ${currentDisplayName} (Click to switch or manage)`}
+              >
+                <WorkspaceIcon name={currentDisplayName} icon={currentIcon} size={20} />
+                <span className="sidebar-workspace-name truncate">{currentDisplayName}</span>
+                <ChevronDown
+                  size={12}
+                  className={`sidebar-workspace-chevron shrink-0 transition-transform duration-150 ${
+                    showWorkspaceMenu ? 'rotate-180 text-zinc-200' : 'text-zinc-500'
+                  }`}
+                />
+              </button>
 
-          <div className="sidebar-header-buttons">
-            {activeView === 'explorer' && workspacePath && (
-              <div className="relative flex items-center" ref={explorerMenuRef}>
-                <button
-                  type="button"
-                  className={`sidebar-action-btn ${showExplorerMenu ? 'active' : ''}`}
-                  onClick={(): void => setShowExplorerMenu((prev) => !prev)}
-                  title="More Options"
-                >
-                  <MoreHorizontal size={14} strokeWidth={1.75} />
-                </button>
+              {/* Workspace Switcher Popover */}
+              {showWorkspaceMenu && (
+                <div className="notion-dropdown-popover sidebar-workspace-popover">
+                  <div className="dropdown-section-title">WORKSPACES</div>
 
-                {showExplorerMenu && (
-                  <div className="explorer-options-popover">
+                  {recentWorkspaces.length > 0 ? (
+                    <div className="dropdown-workspace-list">
+                      {recentWorkspaces.map((ws) => {
+                        const isActive =
+                          workspacePath && getPathKey(ws.path) === getPathKey(workspacePath)
+                        const wsIcon =
+                          workspaceIcons[getPathKey(ws.path)] || workspaceIcons[ws.path]
+                        return (
+                          <div
+                            key={ws.path}
+                            className={`notion-workspace-row ${isActive ? 'active' : ''}`}
+                            onClick={(): void => {
+                              if (onSwitchWorkspace) {
+                                onSwitchWorkspace(ws.path, ws.name)
+                              }
+                              setShowWorkspaceMenu(false)
+                            }}
+                          >
+                            <WorkspaceIcon name={ws.name} icon={wsIcon} size={18} />
+                            <div className="flex-1 min-w-0">
+                              <div className="notion-row-name truncate text-xs">{ws.name}</div>
+                              <div className="text-[10px] text-zinc-500 truncate">{ws.path}</div>
+                            </div>
+                            {isActive && (
+                              <Check size={14} className="text-zinc-200 shrink-0 ml-auto" />
+                            )}
+                            {onRemoveRecentWorkspace && (
+                              <button
+                                type="button"
+                                className="p-1 text-zinc-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                                onClick={(e): void => {
+                                  e.stopPropagation()
+                                  onRemoveRecentWorkspace(ws.path)
+                                }}
+                                title="Remove from recent"
+                              >
+                                <Trash2 size={11} />
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="px-2 py-1.5 text-[11px] text-zinc-500 italic">
+                      No recent workspaces
+                    </div>
+                  )}
+
+                  <div className="notion-menu-divider" />
+
+                  {/* Actions List */}
+                  <div className="notion-popover-section">
+                    {workspacePath && onSetWorkspaceIcon && (
+                      <button
+                        type="button"
+                        className="notion-menu-item"
+                        onClick={(): void => setShowEmojiPicker(true)}
+                      >
+                        <Smile size={14} className="text-zinc-300 shrink-0" />
+                        <span>
+                          {currentIcon ? 'Change Workspace Icon...' : 'Add Workspace Icon...'}
+                        </span>
+                      </button>
+                    )}
+
                     <button
-                      className="context-menu-item"
+                      type="button"
+                      className="notion-menu-item"
                       onClick={(): void => {
                         onCreateFileAtRoot()
-                        setShowExplorerMenu(false)
+                        setShowWorkspaceMenu(false)
                       }}
                     >
-                      <Plus size={13} strokeWidth={1.5} />
+                      <Plus size={14} className="text-zinc-300 shrink-0" />
                       <span>New File</span>
                     </button>
+
                     <button
-                      className="context-menu-item"
+                      type="button"
+                      className="notion-menu-item"
                       onClick={(): void => {
                         window.dispatchEvent(new CustomEvent('create-root-folder'))
-                        setShowExplorerMenu(false)
+                        setShowWorkspaceMenu(false)
                       }}
                     >
-                      <FolderPlus size={13} strokeWidth={1.5} fill="currentColor" />
+                      <FolderPlus size={14} className="text-zinc-300 shrink-0" />
                       <span>New Folder</span>
                     </button>
-                    <div className="context-menu-divider" />
+
                     <button
-                      className="context-menu-item"
+                      type="button"
+                      className="notion-menu-item"
                       onClick={(): void => {
-                        window.dispatchEvent(new CustomEvent('rename-root-folder'))
-                        setShowExplorerMenu(false)
+                        onOpenWorkspace()
+                        setShowWorkspaceMenu(false)
                       }}
                     >
-                      <Edit3 size={13} strokeWidth={1.5} />
-                      <span>Rename</span>
+                      <Folder size={14} className="text-zinc-300 shrink-0" />
+                      <span className="text-zinc-200 font-medium">Open Workspace Folder...</span>
                     </button>
-                  </div>
-                )}
-              </div>
-            )}
 
+                    {workspacePath && (
+                      <button
+                        type="button"
+                        className="notion-menu-item"
+                        onClick={(): void => {
+                          if (onRenameWorkspace) {
+                            onRenameWorkspace()
+                          } else {
+                            window.dispatchEvent(new CustomEvent('rename-root-folder'))
+                          }
+                          setShowWorkspaceMenu(false)
+                        }}
+                      >
+                        <Edit3 size={14} className="text-zinc-300 shrink-0" />
+                        <span>Rename Workspace...</span>
+                      </button>
+                    )}
+
+                    {workspacePath && onCloseWorkspace && (
+                      <button
+                        type="button"
+                        className="notion-menu-item text-rose-400 hover:text-rose-300"
+                        onClick={(): void => {
+                          onCloseWorkspace()
+                          setShowWorkspaceMenu(false)
+                        }}
+                      >
+                        <XCircle size={14} className="text-rose-400 shrink-0" />
+                        <span>Close Workspace</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Emoji Picker Popover for Workspace Icon */}
+              {showEmojiPicker && workspacePath && onSetWorkspaceIcon && (
+                <div className="absolute top-10 left-0 z-1100">
+                  <EmojiPicker
+                    onSelect={(emoji): void => {
+                      onSetWorkspaceIcon(workspacePath, emoji)
+                      setShowEmojiPicker(false)
+                      setShowWorkspaceMenu(false)
+                    }}
+                    onClose={(): void => setShowEmojiPicker(false)}
+                    onRemove={
+                      currentIcon
+                        ? (): void => {
+                            onSetWorkspaceIcon(workspacePath, null)
+                            setShowEmojiPicker(false)
+                            setShowWorkspaceMenu(false)
+                          }
+                        : undefined
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Right Action Button: Sidebar Toggle */}
+          <div className="sidebar-header-buttons">
             {onToggleSidebar && (
               <button
                 type="button"
@@ -222,114 +344,59 @@ function Sidebar({
             />
           </div>
         ) : workspacePath ? (
-          <div className="flex flex-col flex-1 h-full min-h-0">
+          <div className="flex flex-col flex-1 h-full min-h-0 overflow-hidden">
             {/* Collapsible/Expandable Search Input */}
             {(showSearchInput || searchQuery) && (
-              <div className="sidebar-search-container">
+              <div className="sidebar-search-container shrink-0">
                 <Search size={13} className="sidebar-search-icon" />
                 <input
-                  className="sidebar-search-input"
                   type="text"
-                  placeholder="Search files..."
+                  placeholder="Filter files (name, ext)..."
                   value={searchQuery}
                   onChange={(e): void => onSearchChange(e.target.value)}
+                  className="sidebar-search-input"
                   autoFocus
                 />
               </div>
             )}
 
-            {/* File Tree */}
-            <div className="flex-1 overflow-y-auto">
+            {/* Tree Navigation */}
+            <div className="sidebar-tree-wrapper flex-1 overflow-y-auto min-h-0">
               <FileTree
                 rootPath={workspacePath}
                 activeFilePath={activeFilePath}
-                openFiles={openFiles}
-                unsavedFiles={unsavedFiles}
                 onFileSelect={onFileSelect}
+                searchQuery={searchQuery}
                 fileIcons={fileIcons}
                 onMetadataLoaded={onMetadataLoaded}
-                searchQuery={searchQuery}
               />
             </div>
           </div>
-        ) : hasRecentWorkspaces ? (
-          /* No Folder Open, but Recent Workspaces Exist */
-          <div className="recent-workspaces-panel">
-            <div className="recent-workspaces-header">RECENT WORKSPACES</div>
-            <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1">
-              {recentWorkspaces.map((ws) => (
-                <div
-                  key={ws.path}
-                  className="recent-workspace-card group"
-                  onClick={(): void => {
-                    if (onSwitchWorkspace) {
-                      onSwitchWorkspace(ws.path, ws.name)
-                    }
-                  }}
-                >
-                  <div className="recent-workspace-card-icon">
-                    <Folder size={14} fill="currentColor" />
-                  </div>
-                  <div className="recent-workspace-card-info">
-                    <div className="recent-workspace-card-name">{ws.name}</div>
-                    <div className="recent-workspace-card-path">{ws.path}</div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      className="trash-btn opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-rose-400 rounded transition-all"
-                      onClick={(e): void => {
-                        e.stopPropagation()
-                        if (onRemoveRecentWorkspace) {
-                          onRemoveRecentWorkspace(ws.path)
-                        }
-                      }}
-                      title="Remove from recent workspaces"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                    <ArrowRight size={13} className="recent-workspace-card-arrow" />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button className="sidebar-open-folder-btn" onClick={onOpenWorkspace}>
-              <FolderOpen size={14} fill="currentColor" />
-              <span>Open Folder...</span>
-            </button>
-          </div>
         ) : (
-          /* Opening for First Time (No Recent Workspaces) */
-          <div className="flex flex-col items-center justify-center p-6 text-center h-full">
-            <div className="first-time-icon-wrapper mb-4">
-              <FolderOpen size={32} fill="currentColor" className="text-zinc-400" />
+          <div className="sidebar-empty flex-1 flex flex-col items-center justify-center p-4 text-center">
+            <div className="sidebar-empty-icon mb-3">
+              <Folder size={28} className="text-zinc-600" />
             </div>
-            <h3 className="text-sm font-semibold text-zinc-300 mb-1">No Workspace Open</h3>
-            <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
-              Open a local folder or workspace project to start exploring files and editing code.
+            <p className="sidebar-empty-text text-xs text-zinc-400 mb-4">
+              No workspace folder open
             </p>
             <button
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-all cursor-pointer border border-zinc-700"
+              type="button"
+              className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium rounded transition-colors flex items-center gap-1.5 cursor-pointer"
               onClick={onOpenWorkspace}
             >
-              <FolderOpen size={14} />
+              <FolderPlus size={13} />
               <span>Open Folder</span>
             </button>
           </div>
         )}
       </div>
 
-      {/* Floating File Type Pill in Sidebar Bottom Left Corner */}
-      {workspacePath && activeFilePath && (
-        <div className="sidebar-floating-filetype" title={`File Type: ${lang.name}`}>
-          <div className="status-pill-item">
-            <Code2 size={13} strokeWidth={1.5} className={`${lang.color} shrink-0`} />
-            <span className="font-medium text-[#BFBFC7]">{lang.name}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Resize handle */}
-      <div className="sidebar-resizer" onMouseDown={onStartResize} />
+      {/* Resize handle bar */}
+      <div
+        className={`sidebar-resizer ${isResizing ? 'is-active' : ''}`}
+        onMouseDown={onStartResize}
+      />
     </div>
   )
 }

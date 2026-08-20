@@ -215,6 +215,36 @@ export default function App(): React.JSX.Element {
     })
   }, [])
 
+  // Workspace Icons custom emoji mapping
+  const [workspaceIcons, setWorkspaceIcons] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem('notie_workspace_icons')
+      return saved ? JSON.parse(saved) : {}
+    } catch {
+      return {}
+    }
+  })
+
+  const handleSetWorkspaceIcon = useCallback((wsPath: string, icon: string | null) => {
+    setWorkspaceIcons((prev) => {
+      const next = { ...prev }
+      const key = getPathKey(wsPath)
+      if (!icon) {
+        delete next[key]
+        delete next[wsPath]
+      } else {
+        next[key] = icon
+        next[wsPath] = icon
+      }
+      try {
+        localStorage.setItem('notie_workspace_icons', JSON.stringify(next))
+      } catch {
+        // ignore
+      }
+      return next
+    })
+  }, [])
+
   // Granular Status Bar Stats Metrics Configuration
   const [statsConfig, setStatsConfig] = useState<StatusStatsConfig>(() => {
     try {
@@ -766,17 +796,8 @@ export default function App(): React.JSX.Element {
         workspaceName={workspaceName}
         activeFilePath={activeFilePath}
         fileIcons={fileIcons}
-        recentWorkspaces={recentWorkspaces}
-        onSwitchWorkspace={handleSwitchWorkspace}
         onOpenWorkspace={handleOpenWorkspace}
-        onRenameWorkspace={handleRenameWorkspace}
-        onCloseWorkspace={handleCloseWorkspace}
-        onRemoveRecentWorkspace={handleRemoveRecentWorkspace}
         onOpenSettings={(): void => setShowSettingsModal(true)}
-        onExportHTML={handleExportHTML}
-        onExportText={handleExportText}
-        onExportMarkdown={handleExportMarkdown}
-        onCopyLink={handleCopyLink}
       />
 
       {/* ====== 2. SUB-HEADER QUICK ACTIONS BAR ====== */}
@@ -803,6 +824,10 @@ export default function App(): React.JSX.Element {
         onTogglePluginsView={handleTogglePluginsView}
         onSwitchToFiles={handleSwitchToFiles}
         enabledPluginsCount={Object.values(enabledPlugins).filter(Boolean).length}
+        onExportHTML={handleExportHTML}
+        onExportText={handleExportText}
+        onExportMarkdown={handleExportMarkdown}
+        onCopyLink={handleCopyLink}
       />
 
       {/* ====== 3. MAIN APP CONTENT CONTAINER ====== */}
@@ -827,6 +852,8 @@ export default function App(): React.JSX.Element {
           isResizing={isResizingLeft}
           workspacePath={workspacePath}
           workspaceName={workspaceName}
+          workspaceIcons={workspaceIcons}
+          onSetWorkspaceIcon={handleSetWorkspaceIcon}
           recentWorkspaces={recentWorkspaces}
           activeFilePath={activeFilePath}
           openFiles={openFiles}
@@ -837,6 +864,7 @@ export default function App(): React.JSX.Element {
           onCloseWorkspace={handleCloseWorkspace}
           onSwitchWorkspace={handleSwitchWorkspace}
           onRemoveRecentWorkspace={handleRemoveRecentWorkspace}
+          onRenameWorkspace={handleRenameWorkspace}
           onToggleSidebar={(): void => setSidebarCollapsed((p) => !p)}
           showSearchInput={showSearchInput}
           onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
