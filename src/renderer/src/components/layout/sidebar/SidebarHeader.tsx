@@ -1,5 +1,5 @@
 import React from 'react'
-import { SidebarClose } from 'lucide-react'
+import { ChevronsLeft } from 'lucide-react'
 import WorkspaceSelector from './WorkspaceSelector'
 
 interface SidebarHeaderProps {
@@ -64,7 +64,7 @@ function SidebarHeader({
             onClick={onToggleSidebar}
             title="Collapse sidebar"
           >
-            <SidebarClose size={14} strokeWidth={1.75} />
+            <ChevronsLeft size={14} strokeWidth={1.75} />
           </button>
         )}
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react'
-import { SidebarOpen, Smile, Image, AppWindow, ListTree, X } from 'lucide-react'
+import { ChevronsRight, Smile, Image, AppWindow, ListTree, X } from 'lucide-react'
 import BlockEditor from './components/BlockEditor'
 import EmojiPicker from './components/EmojiPicker'
 import BannerPicker from './components/BannerPicker'
@@ -840,7 +840,7 @@ export default function App(): React.JSX.Element {
             onClick={(): void => setSidebarCollapsed(false)}
             title="Expand Explorer Sidebar"
           >
-            <SidebarOpen size={14} strokeWidth={1.75} />
+            <ChevronsRight size={14} strokeWidth={1.75} />
           </button>
         )}
 

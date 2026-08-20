@@ -316,7 +316,11 @@ function FileTree({
     [handleDrop, rootPath]
   )
 
-  const renderNode = (node: FileNode, parentPath: string): React.JSX.Element | null => {
+  const renderNode = (
+    node: FileNode,
+    parentPath: string,
+    depth: number = 0
+  ): React.JSX.Element | null => {
     const nodeKey = getPathKey(node.path)
     const isSelected = activeFilePath && getPathKey(activeFilePath) === nodeKey
 
@@ -335,6 +339,7 @@ function FileTree({
         <div key={nodeKey} className="tree-node">
           <div
             className={`tree-node-item group ${isNodeExpanded ? 'expanded-folder' : ''}`}
+            style={{ paddingLeft: `${8 + depth * 14}px` }}
             onClick={(e): void => {
               void toggleExpand(e, node.path)
             }}
@@ -349,9 +354,9 @@ function FileTree({
             <span className="tree-node-left">
               <span className="tree-node-chevron shrink-0">
                 {isNodeExpanded ? (
-                  <ChevronDown size={12} strokeWidth={2} />
+                  <ChevronDown size={11} strokeWidth={2.2} />
                 ) : (
-                  <ChevronRight size={12} strokeWidth={2} />
+                  <ChevronRight size={11} strokeWidth={2.2} />
                 )}
               </span>
               {isNodeExpanded ? (
@@ -410,6 +415,7 @@ function FileTree({
                 <form
                   onSubmit={(e): Promise<void> => handleCreateSubmit(e, node.path)}
                   className="tree-create-form"
+                  style={{ paddingLeft: `${8 + (depth + 1) * 14}px` }}
                 >
                   <input
                     autoFocus
@@ -425,7 +431,7 @@ function FileTree({
                   />
                 </form>
               )}
-              {children.map((child) => renderNode(child, node.path))}
+              {children.map((child) => renderNode(child, node.path, depth + 1))}
             </div>
           )}
         </div>
@@ -459,6 +465,7 @@ function FileTree({
       <div key={nodeKey} className="tree-node">
         <div
           className={fileClasses}
+          style={{ paddingLeft: `${8 + depth * 14}px` }}
           onClick={(): void => onFileSelect(node.path)}
           onContextMenu={(e): void => handleContextMenu(e, node.path, false, parentPath)}
           draggable={true}
@@ -534,7 +541,7 @@ function FileTree({
           />
         </form>
       )}
-      {(contents[rootKey] || []).map((node) => renderNode(node, rootPath))}
+      {(contents[rootKey] || []).map((node) => renderNode(node, rootPath, 0))}
 
       {contextMenu && (
         <div

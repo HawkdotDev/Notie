@@ -154,7 +154,7 @@ export function ProfessionalFileIcon({
     case 'mdx':
     case 'markdown':
       return (
-        <FileText size={13} fill="currentColor" className={`text-zinc-300 shrink-0 ${className}`} />
+        <FileText size={14} strokeWidth={1.5} className={`text-zinc-400 shrink-0 ${className}`} />
       )
     case 'txt':
     case 'log':
@@ -162,7 +162,7 @@ export function ProfessionalFileIcon({
     case 'doc':
     case 'docx':
       return (
-        <FileText size={13} fill="currentColor" className={`text-zinc-400 shrink-0 ${className}`} />
+        <FileText size={14} strokeWidth={1.5} className={`text-zinc-400 shrink-0 ${className}`} />
       )
 
     // Systems Languages
@@ -260,7 +260,7 @@ export function ProfessionalFileIcon({
     // Default Minimal Solid Document Icon Fallback
     default:
       return (
-        <FileText size={13} fill="currentColor" className={`text-zinc-400 shrink-0 ${className}`} />
+        <FileText size={14} strokeWidth={1.5} className={`text-zinc-400 shrink-0 ${className}`} />
       )
   }
 }
