@@ -104,6 +104,7 @@ export interface MarkdownBlockData {
     | 'heading3'
     | 'paragraph'
     | 'list'
+    | 'checklist'
     | 'quote'
     | 'delimiter'
     | 'image'
@@ -113,7 +114,7 @@ export interface MarkdownBlockData {
     text?: string
     level?: number
     style?: 'unordered' | 'ordered'
-    items?: string[]
+    items?: string[] | { text: string; checked: boolean }[]
     file?: { url?: string }
     url?: string
     source?: string
@@ -139,6 +140,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
   const blocks: MarkdownBlockData[] = []
 
   let currentList: { style: 'unordered' | 'ordered'; items: string[] } | null = null
+  let currentChecklist: { items: { text: string; checked: boolean }[] } | null = null
   let currentParagraphLines: string[] = []
 
   const flushParagraph = (): void => {
@@ -165,6 +167,18 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     }
   }
 
+  const flushChecklist = (): void => {
+    if (currentChecklist && currentChecklist.items.length > 0) {
+      blocks.push({
+        type: 'checklist',
+        data: {
+          items: currentChecklist.items
+        }
+      })
+      currentChecklist = null
+    }
+  }
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
     const trimmed = line.trim()
@@ -172,6 +186,23 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     if (!trimmed) {
       flushParagraph()
       flushList()
+      flushChecklist()
+      continue
+    }
+
+    // 0. Checklist item (- [ ] or - [x] or * [ ] or * [x])
+    const checklistMatch = trimmed.match(/^[-*]\s+\[([ xX])\]\s+(.*)$/)
+    if (checklistMatch) {
+      flushParagraph()
+      flushList()
+      if (!currentChecklist) {
+        currentChecklist = { items: [] }
+      }
+      const isChecked = checklistMatch[1].toLowerCase() === 'x'
+      currentChecklist.items.push({
+        text: markdownToHtml(checklistMatch[2]),
+        checked: isChecked
+      })
       continue
     }
 
@@ -180,6 +211,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     if (imgMatch) {
       flushParagraph()
       flushList()
+      flushChecklist()
       blocks.push({
         type: 'image',
         data: { file: { url: imgMatch[2] }, caption: imgMatch[1] }
@@ -192,6 +224,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     if (videoMatch) {
       flushParagraph()
       flushList()
+      flushChecklist()
       blocks.push({
         type: 'video',
         data: { url: videoMatch[1] }
@@ -204,6 +237,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     if (iframeMatch) {
       flushParagraph()
       flushList()
+      flushChecklist()
       blocks.push({
         type: 'embed',
         data: { embed: iframeMatch[1], source: iframeMatch[1] }
@@ -215,6 +249,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     if (trimmed.startsWith('# ')) {
       flushParagraph()
       flushList()
+      flushChecklist()
       blocks.push({
         type: 'heading1',
         data: { text: markdownToHtml(trimmed.replace(/^#\s+/, '')), level: 1 }
@@ -224,6 +259,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     if (trimmed.startsWith('## ')) {
       flushParagraph()
       flushList()
+      flushChecklist()
       blocks.push({
         type: 'heading2',
         data: { text: markdownToHtml(trimmed.replace(/^##\s+/, '')), level: 2 }
@@ -233,6 +269,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     if (trimmed.startsWith('### ')) {
       flushParagraph()
       flushList()
+      flushChecklist()
       blocks.push({
         type: 'heading3',
         data: { text: markdownToHtml(trimmed.replace(/^###\s+/, '')), level: 3 }
@@ -244,6 +281,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     if (trimmed === '---' || trimmed === '***') {
       flushParagraph()
       flushList()
+      flushChecklist()
       blocks.push({ type: 'delimiter', data: {} })
       continue
     }
@@ -252,6 +290,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     if (trimmed.startsWith('>')) {
       flushParagraph()
       flushList()
+      flushChecklist()
       const quoteText = trimmed.replace(/^>\s*/, '')
       blocks.push({
         type: 'quote',
@@ -264,6 +303,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     const unorderedMatch = trimmed.match(/^[-*]\s+(.*)$/)
     if (unorderedMatch) {
       flushParagraph()
+      flushChecklist()
       if (!currentList || currentList.style !== 'unordered') {
         flushList()
         currentList = { style: 'unordered', items: [] }
@@ -276,6 +316,7 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
     const orderedMatch = trimmed.match(/^\d+\.\s+(.*)$/)
     if (orderedMatch) {
       flushParagraph()
+      flushChecklist()
       if (!currentList || currentList.style !== 'ordered') {
         flushList()
         currentList = { style: 'ordered', items: [] }
@@ -286,11 +327,13 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
 
     // 7. Regular paragraph line
     flushList()
+    flushChecklist()
     currentParagraphLines.push(line)
   }
 
   flushParagraph()
   flushList()
+  flushChecklist()
 
   if (blocks.length === 0) {
     blocks.push({ type: 'paragraph', data: { text: '' } })
