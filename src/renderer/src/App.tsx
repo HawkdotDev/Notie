@@ -856,8 +856,6 @@ export default function App(): React.JSX.Element {
           onSetWorkspaceIcon={handleSetWorkspaceIcon}
           recentWorkspaces={recentWorkspaces}
           activeFilePath={activeFilePath}
-          openFiles={openFiles}
-          unsavedFiles={unsavedFiles}
           onFileSelect={handleFileSelect}
           onCreateFileAtRoot={handleCreateFileAtRoot}
           onOpenWorkspace={handleOpenWorkspace}
@@ -867,7 +865,6 @@ export default function App(): React.JSX.Element {
           onRenameWorkspace={handleRenameWorkspace}
           onToggleSidebar={(): void => setSidebarCollapsed((p) => !p)}
           showSearchInput={showSearchInput}
-          onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           fileIcons={fileIcons}
