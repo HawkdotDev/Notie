@@ -11,7 +11,13 @@ import {
   Square,
   X,
   Bell,
-  Settings
+  Settings,
+  Share2,
+  Download,
+  Code2,
+  FileText,
+  Copy,
+  Users
 } from 'lucide-react'
 import { ProfessionalFileIcon } from '../../utils/fileIconUtils'
 import { getPathKey } from '../../utils/pathUtils'
@@ -29,6 +35,10 @@ interface TopHeaderProps {
   onCloseWorkspace?: () => void
   onRemoveRecentWorkspace?: (path: string) => void
   onOpenSettings?: () => void
+  onExportHTML?: () => void
+  onExportText?: () => void
+  onExportMarkdown?: () => void
+  onCopyLink?: () => void
 }
 
 function TopHeader({
@@ -42,23 +52,34 @@ function TopHeader({
   onRenameWorkspace,
   onCloseWorkspace,
   onRemoveRecentWorkspace,
-  onOpenSettings
+  onOpenSettings,
+  onExportHTML,
+  onExportText,
+  onExportMarkdown,
+  onCopyLink
 }: TopHeaderProps): React.JSX.Element {
   const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
+  const [copyFeedback, setCopyFeedback] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const shareMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowWorkspaceDropdown(false)
       }
+      if (shareMenuRef.current && !shareMenuRef.current.contains(e.target as Node)) {
+        setShowShareMenu(false)
+      }
     }
     const handleKeyDown = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         setShowWorkspaceDropdown(false)
+        setShowShareMenu(false)
       }
     }
-    if (showWorkspaceDropdown) {
+    if (showWorkspaceDropdown || showShareMenu) {
       document.addEventListener('mousedown', handleClickOutside)
       document.addEventListener('keydown', handleKeyDown)
     }
@@ -66,7 +87,7 @@ function TopHeader({
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [showWorkspaceDropdown])
+  }, [showWorkspaceDropdown, showShareMenu])
 
   const relativeParts = useMemo(() => {
     if (!activeFilePath) return []
@@ -255,6 +276,127 @@ function TopHeader({
 
       {/* Right Header Action Icons & Window Controls */}
       <div className="top-header-right flex items-center gap-2">
+        {/* Share & Export Dropdown */}
+        <div className="relative no-drag" ref={shareMenuRef}>
+          <button
+            className={`btn-share ${showShareMenu ? 'active' : ''}`}
+            onClick={(): void => setShowShareMenu((prev) => !prev)}
+            title="Share & Export Document"
+          >
+            <Share2 size={12} strokeWidth={1.75} className="shrink-0" />
+            <span>Share</span>
+            <ChevronDown
+              size={11}
+              className={`transition-transform duration-150 ${showShareMenu ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {showShareMenu && (
+            <div className="share-dropdown-menu">
+              {/* Collaboration Section */}
+              <div className="share-dropdown-section">
+                <span className="share-section-title">Collaboration</span>
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    if (onCopyLink) {
+                      onCopyLink()
+                    } else {
+                      navigator.clipboard.writeText(window.location.href)
+                    }
+                    setCopyFeedback(true)
+                    setTimeout(() => setCopyFeedback(false), 1500)
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    {copyFeedback ? (
+                      <Check size={13} className="text-emerald-400 shrink-0" />
+                    ) : (
+                      <Copy size={13} className="text-zinc-400 shrink-0" />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="share-item-title">
+                        {copyFeedback ? 'Copied to Clipboard!' : 'Copy Reference Link'}
+                      </span>
+                      <span className="share-item-desc">Wikilink or internal document link</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    setShowShareMenu(false)
+                    alert('Invite collaborators feature coming soon!')
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Users size={13} className="text-zinc-400 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="share-item-title">Invite Collaborators</span>
+                      <span className="share-item-desc">Add team members to this workspace</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="share-dropdown-divider" />
+
+              {/* Export Section */}
+              <div className="share-dropdown-section">
+                <span className="share-section-title">Export Document</span>
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    setShowShareMenu(false)
+                    onExportHTML?.()
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Code2 size={13} className="text-emerald-400 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="share-item-title">Export as HTML</span>
+                      <span className="share-item-desc">Formatted standalone HTML file</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    setShowShareMenu(false)
+                    onExportText?.()
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <FileText size={13} className="text-blue-400 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="share-item-title">Export as Plain Text</span>
+                      <span className="share-item-desc">Clean .txt file without formatting</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="share-dropdown-item"
+                  onClick={(): void => {
+                    setShowShareMenu(false)
+                    onExportMarkdown?.()
+                  }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Download size={13} className="text-violet-400 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="share-item-title">Export as Markdown</span>
+                      <span className="share-item-desc">Raw .md document file</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Notifications Icon Button */}
         <button
           className="header-action-btn relative"

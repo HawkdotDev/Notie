@@ -4,6 +4,7 @@ import {
   Network,
   Eye,
   Search,
+  Blocks,
   Terminal,
   Sparkles,
   ChevronDown,
@@ -12,13 +13,11 @@ import {
   Code2,
   Check,
   ListTree,
-  PanelLeft
+  Layers
 } from 'lucide-react'
 import { ViewMode, WidgetState } from '../../types'
 
 interface SubHeaderProps {
-  sidebarCollapsed?: boolean
-  onToggleSidebar?: () => void
   onSaveActiveFile?: () => void
   viewMode: ViewMode
   onToggleViewMode: () => void
@@ -34,11 +33,16 @@ interface SubHeaderProps {
   onToggleRightSidebar: () => void
   showSearchInput?: boolean
   onToggleSearchInput?: () => void
+  showTabs?: boolean
+  onToggleTabs?: () => void
+  sidebarView?: 'explorer' | 'plugins'
+  sidebarCollapsed?: boolean
+  onTogglePluginsView?: () => void
+  onSwitchToFiles?: () => void
+  enabledPluginsCount?: number
 }
 
 function SubHeader({
-  sidebarCollapsed,
-  onToggleSidebar,
   viewMode,
   onToggleViewMode,
   setViewMode,
@@ -50,7 +54,14 @@ function SubHeader({
   showRightSidebar,
   onToggleRightSidebar,
   showSearchInput,
-  onToggleSearchInput
+  onToggleSearchInput,
+  showTabs = true,
+  onToggleTabs,
+  sidebarView = 'explorer',
+  sidebarCollapsed = false,
+  onTogglePluginsView,
+  onSwitchToFiles,
+  enabledPluginsCount = 0
 }: SubHeaderProps): React.JSX.Element {
   const [showWidgetsMenu, setShowWidgetsMenu] = useState<boolean>(() => {
     try {
@@ -93,17 +104,22 @@ function SubHeader({
       <div className="actions-bar-left">
         {/* 1. File Editor Tab */}
         <button
-          className={`action-pill-btn ${viewMode === 'editor' ? 'active' : ''}`}
+          className={`action-pill-btn ${viewMode === 'editor' && (sidebarView === 'explorer' || sidebarCollapsed) ? 'active' : ''}`}
           onClick={(): void => {
+            if (onSwitchToFiles) onSwitchToFiles()
             if (setViewMode) setViewMode('editor')
             else if (viewMode === 'graph') onToggleViewMode()
           }}
-          title="Document Editor View"
+          title="Document Editor & File View"
         >
           <FileText
             size={13}
             fill="currentColor"
-            className={viewMode === 'editor' ? 'text-zinc-300' : ''}
+            className={
+              viewMode === 'editor' && (sidebarView === 'explorer' || sidebarCollapsed)
+                ? 'text-zinc-300'
+                : ''
+            }
           />
           <span>File</span>
         </button>
@@ -128,30 +144,52 @@ function SubHeader({
         {/* 3. Document View Dropdown */}
         <div className="relative" ref={viewMenuRef}>
           <button
-            className={`action-pill-btn ${showViewMenu || showRightSidebar ? 'active' : ''}`}
-            onClick={(): void => setShowViewMenu((prev) => !prev)}
-            title="View Options"
+            type="button"
+            className={`action-pill-btn ${showViewMenu ? 'active' : ''}`}
+            onClick={(e): void => {
+              e.stopPropagation()
+              setShowViewMenu((prev) => !prev)
+            }}
+            title="View Options & Typography"
           >
-            <Eye size={13} className={showViewMenu || showRightSidebar ? 'text-zinc-300' : ''} />
+            <Eye size={13} className={showViewMenu ? 'text-zinc-200' : ''} />
             <span>View</span>
             <ChevronDown
               size={11}
-              className={`transition-transform ${showViewMenu ? 'rotate-180' : ''}`}
+              className={`transition-transform duration-150 ${showViewMenu ? 'rotate-180' : ''}`}
             />
           </button>
 
           {showViewMenu && (
             <div className="widgets-dropdown-menu view-dropdown-menu">
               <div className="widgets-dropdown-header">
-                <span className="font-semibold text-zinc-300">View Options</span>
+                <span className="font-semibold text-zinc-300">View & Layout</span>
               </div>
 
               <div className="widgets-dropdown-list">
+                {/* 1. Toggle Tabs */}
+                {onToggleTabs && (
+                  <div
+                    className={`widget-menu-item ${showTabs ? 'selected' : ''}`}
+                    onClick={onToggleTabs}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Layers size={13} className="text-zinc-300 shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="widget-title">Editor Tabs</span>
+                        <span className="widget-desc">Show open document tabs</span>
+                      </div>
+                    </div>
+                    <div className={`widget-checkbox ${showTabs ? 'checked' : ''}`}>
+                      {showTabs && <Check size={11} />}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Toggle Document Outline */}
                 <div
                   className={`widget-menu-item ${showRightSidebar ? 'selected' : ''}`}
-                  onClick={(): void => {
-                    onToggleRightSidebar()
-                  }}
+                  onClick={onToggleRightSidebar}
                 >
                   <div className="flex items-center gap-2">
                     <ListTree size={13} className="text-zinc-300 shrink-0" />
@@ -164,62 +202,6 @@ function SubHeader({
                     {showRightSidebar && <Check size={11} />}
                   </div>
                 </div>
-
-                <div
-                  className={`widget-menu-item ${viewMode === 'editor' ? 'selected' : ''}`}
-                  onClick={(): void => {
-                    if (setViewMode) setViewMode('editor')
-                    else if (viewMode === 'graph') onToggleViewMode()
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <FileText size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="widget-title">Document Editor</span>
-                      <span className="widget-desc">Standard markdown editor</span>
-                    </div>
-                  </div>
-                  <div className={`widget-checkbox ${viewMode === 'editor' ? 'checked' : ''}`}>
-                    {viewMode === 'editor' && <Check size={11} />}
-                  </div>
-                </div>
-
-                <div
-                  className={`widget-menu-item ${viewMode === 'graph' ? 'selected' : ''}`}
-                  onClick={(): void => {
-                    if (setViewMode) setViewMode('graph')
-                    else if (viewMode === 'editor') onToggleViewMode()
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <Network size={13} fill="currentColor" className="text-zinc-300 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="widget-title">Knowledge Graph</span>
-                      <span className="widget-desc">Interactive node graph</span>
-                    </div>
-                  </div>
-                  <div className={`widget-checkbox ${viewMode === 'graph' ? 'checked' : ''}`}>
-                    {viewMode === 'graph' && <Check size={11} />}
-                  </div>
-                </div>
-
-                {onToggleSidebar && (
-                  <div
-                    className={`widget-menu-item ${!sidebarCollapsed ? 'selected' : ''}`}
-                    onClick={onToggleSidebar}
-                  >
-                    <div className="flex items-center gap-2">
-                      <PanelLeft size={13} className="text-zinc-300 shrink-0" />
-                      <div className="flex flex-col">
-                        <span className="widget-title">File Explorer</span>
-                        <span className="widget-desc">Sidebar file navigation</span>
-                      </div>
-                    </div>
-                    <div className={`widget-checkbox ${!sidebarCollapsed ? 'checked' : ''}`}>
-                      {!sidebarCollapsed && <Check size={11} />}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -237,19 +219,25 @@ function SubHeader({
           </button>
         )}
 
-        {/* 5. Terminal Tab */}
-        <button
-          className={`action-pill-btn ${widgetState.terminal ? 'active' : ''}`}
-          onClick={(): void => onToggleWidget('terminal')}
-          title="Toggle Quick Terminal"
-        >
-          <Terminal
-            size={13}
-            fill="currentColor"
-            className={widgetState.terminal ? 'text-zinc-300' : ''}
-          />
-          <span>Terminal</span>
-        </button>
+        {/* 5. Plugins Button */}
+        {onTogglePluginsView && (
+          <button
+            className={`action-pill-btn ${sidebarView === 'plugins' && !sidebarCollapsed ? 'active' : ''}`}
+            onClick={onTogglePluginsView}
+            title="Toggle Plugins & Extensions (replaces File View)"
+          >
+            <Blocks
+              size={13}
+              className={sidebarView === 'plugins' && !sidebarCollapsed ? 'text-zinc-200' : ''}
+            />
+            <span>Plugins</span>
+            {enabledPluginsCount !== undefined && enabledPluginsCount > 0 && (
+              <span className="text-[10px] px-1 py-0.2 bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono">
+                {enabledPluginsCount}
+              </span>
+            )}
+          </button>
+        )}
 
         {/* 6. AI Assistant Tab */}
         <button
@@ -277,13 +265,6 @@ function SubHeader({
             <div className="toggle-knob" />
           </div>
         </div>
-
-        <button
-          className="btn-invite"
-          onClick={(): void => alert('Invite collaborators feature coming soon!')}
-        >
-          Invite
-        </button>
 
         <div
           className={`mode-select-pill ${showWidgetsMenu ? 'active' : ''}`}

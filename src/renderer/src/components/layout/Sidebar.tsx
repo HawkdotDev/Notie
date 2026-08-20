@@ -9,12 +9,16 @@ import {
   ArrowRight,
   Trash2,
   Edit3,
-  PanelLeftClose,
+  SidebarClose,
   Code2
 } from 'lucide-react'
 import FileTree from '../FileTree'
+import PluginsWidget from './PluginsWidget'
+
+export type SidebarViewMode = 'explorer' | 'plugins'
 
 interface SidebarProps {
+  activeView?: SidebarViewMode
   sidebarCollapsed: boolean
   sidebarWidth: number
   isResizing?: boolean
@@ -38,6 +42,8 @@ interface SidebarProps {
   fileIcons: Record<string, string>
   onMetadataLoaded: (filePath: string, metadata: { icon?: string; banner?: string }) => void
   onStartResize: (e: React.MouseEvent) => void
+  enabledPlugins?: Record<string, boolean>
+  onTogglePlugin?: (pluginId: string) => void
 }
 
 const getLanguage = (filePath: string | null): { name: string; color: string } => {
@@ -67,6 +73,7 @@ const getLanguage = (filePath: string | null): { name: string; color: string } =
 }
 
 function Sidebar({
+  activeView = 'explorer',
   sidebarCollapsed,
   sidebarWidth,
   isResizing = false,
@@ -82,12 +89,13 @@ function Sidebar({
   onRemoveRecentWorkspace,
   onToggleSidebar,
   showSearchInput,
-  onToggleSearchInput,
   searchQuery,
   onSearchChange,
   fileIcons,
   onMetadataLoaded,
-  onStartResize
+  onStartResize,
+  enabledPlugins = {},
+  onTogglePlugin
 }: SidebarProps): React.JSX.Element {
   const [showExplorerMenu, setShowExplorerMenu] = useState<boolean>(() => {
     try {
@@ -120,6 +128,10 @@ function Sidebar({
 
   const hasRecentWorkspaces = recentWorkspaces.length > 0
 
+  const getHeaderTitle = (): string => {
+    return activeView === 'plugins' ? 'Extensions' : 'Explorer'
+  }
+
   return (
     <div
       className={`sidebar ${sidebarCollapsed ? 'is-collapsed' : ''} ${isResizing ? 'is-resizing' : ''}`}
@@ -130,22 +142,22 @@ function Sidebar({
       }}
     >
       <div className="sidebar-content flex flex-col h-full overflow-hidden w-full min-w-0">
-        {/* Top Action Row: Explorer Title + Action Buttons */}
+        {/* Top Action Row: Title + Action Buttons */}
         <div className="sidebar-top-actions">
           <div className="sidebar-header-title">
-            <span>Explorer</span>
+            <span>{getHeaderTitle()}</span>
           </div>
 
           <div className="sidebar-header-buttons">
-            {workspacePath && (
-              <div className="relative" ref={explorerMenuRef}>
+            {activeView === 'explorer' && workspacePath && (
+              <div className="relative flex items-center" ref={explorerMenuRef}>
                 <button
                   type="button"
                   className={`sidebar-action-btn ${showExplorerMenu ? 'active' : ''}`}
                   onClick={(): void => setShowExplorerMenu((prev) => !prev)}
                   title="More Options"
                 >
-                  <MoreHorizontal size={13} strokeWidth={1.5} />
+                  <MoreHorizontal size={14} strokeWidth={1.75} />
                 </button>
 
                 {showExplorerMenu && (
@@ -157,7 +169,7 @@ function Sidebar({
                         setShowExplorerMenu(false)
                       }}
                     >
-                      <Plus size={12} strokeWidth={1.5} />
+                      <Plus size={13} strokeWidth={1.5} />
                       <span>New File</span>
                     </button>
                     <button
@@ -167,7 +179,7 @@ function Sidebar({
                         setShowExplorerMenu(false)
                       }}
                     >
-                      <FolderPlus size={12} strokeWidth={1.5} fill="currentColor" />
+                      <FolderPlus size={13} strokeWidth={1.5} fill="currentColor" />
                       <span>New Folder</span>
                     </button>
                     <div className="context-menu-divider" />
@@ -178,7 +190,7 @@ function Sidebar({
                         setShowExplorerMenu(false)
                       }}
                     >
-                      <Edit3 size={12} strokeWidth={1.5} />
+                      <Edit3 size={13} strokeWidth={1.5} />
                       <span>Rename</span>
                     </button>
                   </div>
@@ -186,30 +198,30 @@ function Sidebar({
               </div>
             )}
 
-            <button
-              type="button"
-              className={`sidebar-action-btn ${showSearchInput ? 'active' : ''}`}
-              onClick={onToggleSearchInput}
-              title="Search Files"
-            >
-              <Search size={13} strokeWidth={1.5} />
-            </button>
-
             {onToggleSidebar && (
               <button
                 type="button"
-                className="sidebar-action-btn"
+                className="sidebar-toggle-btn"
                 onClick={onToggleSidebar}
                 title="Collapse Sidebar"
               >
-                <PanelLeftClose size={13} strokeWidth={1.5} />
+                <SidebarClose size={14} strokeWidth={1.75} />
               </button>
             )}
           </div>
+
+          <div className="sidebar-header-divider" />
         </div>
 
         {/* Main Sidebar Body Area */}
-        {workspacePath ? (
+        {activeView === 'plugins' ? (
+          <div className="flex-1 overflow-hidden h-full">
+            <PluginsWidget
+              enabledPlugins={enabledPlugins}
+              onTogglePlugin={onTogglePlugin || ((): void => {})}
+            />
+          </div>
+        ) : workspacePath ? (
           <div className="flex flex-col flex-1 h-full min-h-0">
             {/* Collapsible/Expandable Search Input */}
             {(showSearchInput || searchQuery) && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react'
-import { PanelLeftOpen, Smile, Image as ImageIcon, AppWindow } from 'lucide-react'
+import { SidebarOpen, Smile, Image, AppWindow, ListTree, X } from 'lucide-react'
 import BlockEditor from './components/BlockEditor'
 import EmojiPicker from './components/EmojiPicker'
 import BannerPicker from './components/BannerPicker'
@@ -72,10 +72,85 @@ export default function App(): React.JSX.Element {
   const [showRightSidebar, setShowRightSidebar] = useState<boolean>(
     () => savedState.showRightSidebar ?? false
   )
+  const [showTabs, setShowTabs] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('notie_show_tabs')
+      return saved !== null ? saved === 'true' : true
+    } catch {
+      return true
+    }
+  })
   const [showSearchInput, setShowSearchInput] = useState<boolean>(
     () => savedState.showSearchInput ?? false
   )
   const [searchQuery, setSearchQuery] = useState<string>(() => savedState.searchQuery ?? '')
+  const [sidebarView, setSidebarView] = useState<'explorer' | 'plugins'>(() => {
+    try {
+      const saved = localStorage.getItem('notie_sidebar_view')
+      return (saved as 'explorer' | 'plugins') || 'explorer'
+    } catch {
+      return 'explorer'
+    }
+  })
+  const [enabledPlugins, setEnabledPlugins] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('notie_enabled_plugins')
+      if (saved) return JSON.parse(saved)
+    } catch {
+      // ignore
+    }
+    return {
+      'katex-math': true,
+      'daily-notes': true,
+      'mermaid-pro': true
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('notie_show_tabs', String(showTabs))
+    } catch {
+      // ignore
+    }
+  }, [showTabs])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('notie_sidebar_view', sidebarView)
+    } catch {
+      // ignore
+    }
+  }, [sidebarView])
+
+  const handleTogglePlugin = useCallback((pluginId: string) => {
+    setEnabledPlugins((prev) => {
+      const updated = { ...prev, [pluginId]: !prev[pluginId] }
+      try {
+        localStorage.setItem('notie_enabled_plugins', JSON.stringify(updated))
+      } catch {
+        // ignore
+      }
+      return updated
+    })
+  }, [])
+
+  const handleTogglePluginsView = useCallback(() => {
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false)
+      setSidebarView('plugins')
+    } else if (sidebarView === 'plugins') {
+      setSidebarView('explorer')
+    } else {
+      setSidebarView('plugins')
+    }
+  }, [sidebarCollapsed, sidebarView])
+
+  const handleSwitchToFiles = useCallback(() => {
+    setSidebarView('explorer')
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false)
+    }
+  }, [sidebarCollapsed])
 
   const {
     sidebarWidth,
@@ -592,6 +667,26 @@ export default function App(): React.JSX.Element {
     }
   }, [activeFilePath, fileContents])
 
+  const handleExportMarkdown = useCallback(async () => {
+    if (!activeFilePath) return
+    const rawContent = fileContents[activeFilePath] || ''
+    const baseName = activeFilePath.split(/[\\/]/).pop() || 'document.md'
+    try {
+      const savePath = await window.api.fs.showSaveDialog(baseName)
+      if (savePath) {
+        await window.api.fs.writeFile(savePath, rawContent)
+      }
+    } catch (err) {
+      alert(`Export Markdown error: ${err}`)
+    }
+  }, [activeFilePath, fileContents])
+
+  const handleCopyLink = useCallback(() => {
+    if (!activeFilePath) return
+    const baseName = activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || 'document'
+    navigator.clipboard.writeText(`[[${baseName}]]`)
+  }, [activeFilePath])
+
   // Keyboard Shortcuts (Ctrl+S, Ctrl+O, Ctrl+N, Ctrl+W)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
@@ -678,12 +773,14 @@ export default function App(): React.JSX.Element {
         onCloseWorkspace={handleCloseWorkspace}
         onRemoveRecentWorkspace={handleRemoveRecentWorkspace}
         onOpenSettings={(): void => setShowSettingsModal(true)}
+        onExportHTML={handleExportHTML}
+        onExportText={handleExportText}
+        onExportMarkdown={handleExportMarkdown}
+        onCopyLink={handleCopyLink}
       />
 
       {/* ====== 2. SUB-HEADER QUICK ACTIONS BAR ====== */}
       <SubHeader
-        sidebarCollapsed={sidebarCollapsed}
-        onToggleSidebar={(): void => setSidebarCollapsed((p) => !p)}
         onSaveActiveFile={handleSaveActiveFile}
         viewMode={viewMode}
         onToggleViewMode={(): void => setViewMode((m) => (m === 'graph' ? 'editor' : 'graph'))}
@@ -699,6 +796,13 @@ export default function App(): React.JSX.Element {
         onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
         showSearchInput={showSearchInput}
         onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
+        showTabs={showTabs}
+        onToggleTabs={(): void => setShowTabs((p) => !p)}
+        sidebarView={sidebarView}
+        sidebarCollapsed={sidebarCollapsed}
+        onTogglePluginsView={handleTogglePluginsView}
+        onSwitchToFiles={handleSwitchToFiles}
+        enabledPluginsCount={Object.values(enabledPlugins).filter(Boolean).length}
       />
 
       {/* ====== 3. MAIN APP CONTENT CONTAINER ====== */}
@@ -711,12 +815,13 @@ export default function App(): React.JSX.Element {
             onClick={(): void => setSidebarCollapsed(false)}
             title="Expand Explorer Sidebar"
           >
-            <PanelLeftOpen size={13} strokeWidth={1.5} />
+            <SidebarOpen size={14} strokeWidth={1.75} />
           </button>
         )}
 
         {/* Sidebar Panel */}
         <Sidebar
+          activeView={sidebarView}
           sidebarCollapsed={sidebarCollapsed}
           sidebarWidth={sidebarWidth}
           isResizing={isResizingLeft}
@@ -740,11 +845,13 @@ export default function App(): React.JSX.Element {
           fileIcons={fileIcons}
           onMetadataLoaded={handleMetadataLoaded}
           onStartResize={startLeftResize}
+          enabledPlugins={enabledPlugins}
+          onTogglePlugin={handleTogglePlugin}
         />
 
         {/* Editor Workspace & Split Area */}
         <div className={`editor-workspace ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-          {viewMode !== 'graph' && (
+          {viewMode !== 'graph' && showTabs && (
             <div className="editor-top-nav">
               <TabBar
                 openFiles={openFiles}
@@ -805,7 +912,7 @@ export default function App(): React.JSX.Element {
                           className="notion-cover-btn"
                           onClick={(): void => setShowBannerPicker((prev) => !prev)}
                         >
-                          <ImageIcon size={12} strokeWidth={1.5} className="shrink-0 opacity-80" />
+                          <Image size={12} strokeWidth={1.75} className="shrink-0 opacity-80" />
                           <span>Change cover</span>
                         </button>
                         <button
@@ -850,11 +957,7 @@ export default function App(): React.JSX.Element {
                               className="notion-ghost-btn"
                               onClick={(): void => setShowBannerPicker(true)}
                             >
-                              <ImageIcon
-                                size={13}
-                                strokeWidth={1.5}
-                                className="shrink-0 opacity-70"
-                              />
+                              <Image size={13} strokeWidth={1.75} className="shrink-0 opacity-70" />
                               <span>Add cover</span>
                             </button>
                           )}
@@ -1033,14 +1136,6 @@ export default function App(): React.JSX.Element {
                   onToggleCover={(): void => setShowCover((prev) => !prev)}
                   onToggleIcon={(): void => setShowIcon((prev) => !prev)}
                   onToggleFileName={(): void => setShowFileName((prev) => !prev)}
-                  showRightSidebar={showRightSidebar}
-                  onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
-                  editorFontFamily={editorFontFamily}
-                  editorFontSize={editorFontSize}
-                  onFontFamilyChange={handleFontFamilyChange}
-                  onFontSizeChange={handleFontSizeChange}
-                  onExportHTML={handleExportHTML}
-                  onExportText={handleExportText}
                 />
               </div>
             ) : (
@@ -1089,10 +1184,13 @@ export default function App(): React.JSX.Element {
                   onMouseDown={startRightResize}
                 />
                 <div className="right-sidebar-header">
-                  <span className="text-xs font-semibold text-zinc-300">Outline</span>
+                  <div className="flex items-center gap-2">
+                    <ListTree size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
+                    <span className="text-xs font-medium text-zinc-200">Outline</span>
+                  </div>
                   <div className="right-sidebar-header-actions">
                     <button
-                      className="text-zinc-500 hover:text-zinc-200 p-0.5 rounded transition-colors"
+                      className="right-sidebar-btn"
                       onClick={(): void => {
                         // Pop out to floating window
                         setShowRightSidebar(false)
@@ -1104,11 +1202,11 @@ export default function App(): React.JSX.Element {
                       <AppWindow size={13} strokeWidth={1.75} />
                     </button>
                     <button
-                      className="text-zinc-500 hover:text-zinc-200 p-0.5 rounded transition-colors"
+                      className="right-sidebar-btn"
                       onClick={(): void => setShowRightSidebar(false)}
-                      title="Close Right Sidebar"
+                      title="Close Outline"
                     >
-                      ×
+                      <X size={13} strokeWidth={1.75} />
                     </button>
                   </div>
                 </div>
@@ -1131,6 +1229,12 @@ export default function App(): React.JSX.Element {
         onClose={(): void => setShowSettingsModal(false)}
         currentAutoSave={autoSaveEnabled}
         onToggleAutoSave={(): void => setAutoSaveEnabled((p) => !p)}
+        editorFontFamily={editorFontFamily}
+        editorFontSize={editorFontSize}
+        onFontFamilyChange={handleFontFamilyChange}
+        onFontSizeChange={handleFontSizeChange}
+        enabledPlugins={enabledPlugins}
+        onTogglePlugin={handleTogglePlugin}
       />
     </div>
   )

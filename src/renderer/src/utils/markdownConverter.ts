@@ -49,10 +49,13 @@ export function markdownToHtml(text: string): string {
   // 3. Convert strikethrough ~~text~~ -> <s>text</s>
   processed = processed.replace(/~~(.*?)~~/g, '<s>$1</s>')
 
-  // 4. Convert inline code `text` -> <code class="inline-code">text</code>
+  // 4. Convert underline <u>text</u> or <ins>text</ins>
+  processed = processed.replace(/<ins[^>]*>(.*?)<\/ins>/gi, '<u>$1</u>')
+
+  // 5. Convert inline code `text` -> <code class="inline-code">text</code>
   processed = processed.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
 
-  // 5. Convert Wikilinks [[Target|Label]] or [[Target]]
+  // 6. Convert Wikilinks [[Target|Label]] or [[Target]]
   processed = parseWikilinksToHTML(processed)
 
   return processed
@@ -77,14 +80,18 @@ export function htmlToMarkdown(htmlText: string): string {
   text = text.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
   text = text.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
 
-  // 4. Convert <s> and <strike> -> ~~text~~
+  // 4. Convert <s> and <strike> and <del> -> ~~text~~
   text = text.replace(/<s[^>]*>(.*?)<\/s>/gi, '~~$1~~')
   text = text.replace(/<strike[^>]*>(.*?)<\/strike>/gi, '~~$1~~')
+  text = text.replace(/<del[^>]*>(.*?)<\/del>/gi, '~~$1~~')
 
-  // 5. Convert <code> -> `text`
+  // 5. Convert <u> and <ins> -> <u>text</u>
+  text = text.replace(/<ins[^>]*>(.*?)<\/ins>/gi, '<u>$1</u>')
+
+  // 6. Convert <code> -> `text`
   text = text.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
 
-  // 6. Convert <br> -> \n
+  // 7. Convert <br> -> \n
   text = text.replace(/<br\s*\/?>/gi, '\n')
 
   return text
@@ -100,12 +107,18 @@ export interface MarkdownBlockData {
     | 'quote'
     | 'delimiter'
     | 'image'
+    | 'video'
+    | 'embed'
   data: {
     text?: string
     level?: number
     style?: 'unordered' | 'ordered'
     items?: string[]
     file?: { url?: string }
+    url?: string
+    source?: string
+    embed?: string
+    service?: string
     caption?: string
   }
 }
@@ -170,6 +183,30 @@ export function parseMarkdownToBlocks(text: string): MarkdownBlockData[] {
       blocks.push({
         type: 'image',
         data: { file: { url: imgMatch[2] }, caption: imgMatch[1] }
+      })
+      continue
+    }
+
+    // 1b. Video
+    const videoMatch = trimmed.match(/<video[^>]*src=["']([^"']+)["'][^>]*>/i)
+    if (videoMatch) {
+      flushParagraph()
+      flushList()
+      blocks.push({
+        type: 'video',
+        data: { url: videoMatch[1] }
+      })
+      continue
+    }
+
+    // 1c. Embed / Iframe
+    const iframeMatch = trimmed.match(/<iframe[^>]*src=["']([^"']+)["'][^>]*>/i)
+    if (iframeMatch) {
+      flushParagraph()
+      flushList()
+      blocks.push({
+        type: 'embed',
+        data: { embed: iframeMatch[1], source: iframeMatch[1] }
       })
       continue
     }

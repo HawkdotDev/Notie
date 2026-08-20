@@ -10,8 +10,10 @@ import {
   Keyboard,
   Info,
   Check,
-  RotateCcw
+  RotateCcw,
+  Blocks
 } from 'lucide-react'
+import PluginsWidget from './layout/PluginsWidget'
 
 interface UserSettings {
   // General
@@ -78,6 +80,16 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
 
 const SETTINGS_STORAGE_KEY = 'notie_user_preferences_v1'
 
+const FONT_OPTIONS = [
+  { label: 'Inter (Modern Sans)', value: "'Inter', sans-serif" },
+  { label: 'System Default', value: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+  { label: 'Georgia (Classic Serif)', value: "'Georgia', serif" },
+  { label: 'Merriweather (Editorial Serif)', value: "'Merriweather', serif" },
+  { label: 'Lora (Literary Serif)', value: "'Lora', serif" },
+  { label: 'JetBrains Mono (Code Monospace)', value: "'JetBrains Mono', monospace" },
+  { label: 'Fira Code (Ligatures Monospace)', value: "'Fira Code', monospace" }
+]
+
 function getStoredSettings(): UserSettings {
   try {
     const raw = localStorage.getItem(SETTINGS_STORAGE_KEY)
@@ -96,9 +108,24 @@ interface SettingsModalProps {
   onSettingsChange?: (settings: UserSettings) => void
   currentAutoSave?: boolean
   onToggleAutoSave?: () => void
+  editorFontFamily?: string
+  editorFontSize?: number
+  onFontFamilyChange?: (font: string) => void
+  onFontSizeChange?: (size: number) => void
+  initialTab?: SettingsTab
+  enabledPlugins?: Record<string, boolean>
+  onTogglePlugin?: (pluginId: string) => void
 }
 
-type SettingsTab = 'general' | 'editor' | 'appearance' | 'files' | 'ai' | 'shortcuts' | 'about'
+type SettingsTab =
+  | 'general'
+  | 'editor'
+  | 'appearance'
+  | 'files'
+  | 'plugins'
+  | 'ai'
+  | 'shortcuts'
+  | 'about'
 
 interface ShortcutItem {
   keyCombo: string
@@ -126,10 +153,25 @@ export default function SettingsModal({
   onClose,
   onSettingsChange,
   currentAutoSave,
-  onToggleAutoSave
+  onToggleAutoSave,
+  editorFontFamily = "'Inter', sans-serif",
+  editorFontSize = 15,
+  onFontFamilyChange,
+  onFontSizeChange,
+  initialTab,
+  enabledPlugins = {},
+  onTogglePlugin
 }: SettingsModalProps): React.JSX.Element | null {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('general')
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab || 'general')
+  const [prevInitialTab, setPrevInitialTab] = useState<SettingsTab | undefined>(initialTab)
   const [searchQuery, setSearchQuery] = useState<string>('')
+
+  if (initialTab !== prevInitialTab) {
+    setPrevInitialTab(initialTab)
+    if (initialTab) {
+      setActiveTab(initialTab)
+    }
+  }
   const [settings, setSettings] = useState<UserSettings>(() => {
     const stored = getStoredSettings()
     if (currentAutoSave !== undefined) {
@@ -293,6 +335,20 @@ export default function SettingsModal({
 
             <button
               type="button"
+              className={`settings-nav-item ${activeTab === 'plugins' ? 'active' : ''}`}
+              onClick={(): void => setActiveTab('plugins')}
+            >
+              <Blocks size={13} className="text-zinc-400" />
+              <span>Plugins & Extensions</span>
+              {Object.values(enabledPlugins).filter(Boolean).length > 0 && (
+                <span className="text-[10px] ml-auto px-1.5 py-0.2 bg-zinc-800 text-zinc-300 font-mono border border-zinc-700">
+                  {Object.values(enabledPlugins).filter(Boolean).length}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
               className={`settings-nav-item ${activeTab === 'ai' ? 'active' : ''}`}
               onClick={(): void => setActiveTab('ai')}
             >
@@ -444,14 +500,27 @@ export default function SettingsModal({
                     </div>
                     <select
                       className="settings-select"
-                      value={settings.fontFamily}
-                      onChange={(e): void =>
-                        updateSetting('fontFamily', e.target.value as 'sans' | 'mono' | 'serif')
-                      }
+                      value={editorFontFamily}
+                      onChange={(e): void => {
+                        const val = e.target.value
+                        onFontFamilyChange?.(val)
+                        const category = val.includes('monospace')
+                          ? 'mono'
+                          : val.includes('serif') && !val.includes('sans-serif')
+                            ? 'serif'
+                            : 'sans'
+                        updateSetting('fontFamily', category as 'sans' | 'mono' | 'serif')
+                      }}
                     >
-                      <option value="sans">Modern Sans (Inter / System)</option>
-                      <option value="mono">Code Monospace (JetBrains Mono)</option>
-                      <option value="serif">Literary Serif (Georgia / Merriweather)</option>
+                      {FONT_OPTIONS.map((font) => (
+                        <option
+                          key={font.value}
+                          value={font.value}
+                          style={{ fontFamily: font.value }}
+                        >
+                          {font.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -460,22 +529,44 @@ export default function SettingsModal({
                     <div className="settings-row-text">
                       <label className="settings-row-label">Font Size</label>
                       <span className="settings-row-desc">
-                        Base font size for document paragraphs ({settings.fontSize}px)
+                        Base font size for document editor ({editorFontSize}px)
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <input
                         type="range"
-                        min={12}
-                        max={20}
+                        min={10}
+                        max={24}
                         step={1}
                         className="settings-range"
-                        value={settings.fontSize}
-                        onChange={(e): void => updateSetting('fontSize', Number(e.target.value))}
+                        value={editorFontSize}
+                        onChange={(e): void => {
+                          const size = Number(e.target.value)
+                          onFontSizeChange?.(size)
+                          updateSetting('fontSize', size)
+                        }}
                       />
                       <span className="text-xs font-mono text-zinc-300 w-8 text-right">
-                        {settings.fontSize}px
+                        {editorFontSize}px
                       </span>
+                    </div>
+                  </div>
+
+                  {/* Typography Live Preview */}
+                  <div className="border-t border-zinc-800/60 pt-3 px-1">
+                    <span className="text-[11px] uppercase tracking-wider text-zinc-400 font-semibold mb-1 block">
+                      Live Typography Preview
+                    </span>
+                    <div
+                      className="p-3 bg-zinc-950/70 border border-zinc-800/80 rounded-none text-zinc-200"
+                      style={{
+                        fontFamily: editorFontFamily,
+                        fontSize: `${editorFontSize}px`,
+                        lineHeight: 1.6
+                      }}
+                    >
+                      The quick brown fox jumps over the lazy dog. 1234567890 — [[Wikilinks]] and
+                      #headings render smoothly.
                     </div>
                   </div>
 
@@ -703,7 +794,27 @@ export default function SettingsModal({
               </div>
             )}
 
-            {/* 5. AI & ANALYSIS TAB */}
+            {/* 5. PLUGINS & EXTENSIONS TAB */}
+            {activeTab === 'plugins' && (
+              <div className="settings-section h-130 flex flex-col">
+                <div className="settings-section-header shrink-0">
+                  <h3>Extensions & Community Plugins</h3>
+                  <p>
+                    Extend Notie with LaTeX formulas, daily notes, diagrams, code execution, and
+                    tools
+                  </p>
+                </div>
+
+                <div className="flex-1 overflow-hidden border border-zinc-800/80 bg-zinc-950/40">
+                  <PluginsWidget
+                    enabledPlugins={enabledPlugins}
+                    onTogglePlugin={onTogglePlugin || ((): void => {})}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 6. AI & ANALYSIS TAB */}
             {activeTab === 'ai' && (
               <div className="settings-section">
                 <div className="settings-section-header">

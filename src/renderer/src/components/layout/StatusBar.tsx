@@ -5,26 +5,11 @@ import {
   ChevronDown,
   Check,
   BarChart2,
-  Sliders,
-  ImageIcon,
+  Image,
   Smile,
-  ListTree,
-  Type,
-  Minus,
-  Plus,
-  Download,
-  FileText,
-  Code2
+  FileText
 } from 'lucide-react'
 import { StatusStatsConfig } from '../../types'
-
-const FONT_OPTIONS = [
-  { label: 'Inter', value: "'Inter', sans-serif" },
-  { label: 'System Default', value: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
-  { label: 'Georgia', value: "'Georgia', serif" },
-  { label: 'Merriweather', value: "'Merriweather', serif" },
-  { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace" }
-]
 
 interface StatusBarProps {
   activeFilePath: string | null
@@ -40,14 +25,6 @@ interface StatusBarProps {
   onToggleCover?: () => void
   onToggleIcon?: () => void
   onToggleFileName?: () => void
-  showRightSidebar?: boolean
-  onToggleRightSidebar?: () => void
-  editorFontFamily?: string
-  editorFontSize?: number
-  onFontFamilyChange?: (font: string) => void
-  onFontSizeChange?: (size: number) => void
-  onExportHTML?: () => void
-  onExportText?: () => void
 }
 
 function StatusBar({
@@ -71,21 +48,11 @@ function StatusBar({
   showFileName = true,
   onToggleCover,
   onToggleIcon,
-  onToggleFileName,
-  showRightSidebar = false,
-  onToggleRightSidebar,
-  editorFontFamily = "'Inter', sans-serif",
-  editorFontSize = 15,
-  onFontFamilyChange,
-  onFontSizeChange,
-  onExportHTML,
-  onExportText
+  onToggleFileName
 }: StatusBarProps): React.JSX.Element | null {
-  const [activeDropdown, setActiveDropdown] = useState<'opt1' | 'opt2' | null>(null)
+  const [activeDropdown, setActiveDropdown] = useState<'opt1' | null>(null)
   const [metricsSubOpen, setMetricsSubOpen] = useState(true)
   const [iconCoverSubOpen, setIconCoverSubOpen] = useState(true)
-  const [typographySubOpen, setTypographySubOpen] = useState(true)
-  const [exportSubOpen, setExportSubOpen] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Toast animation state for "Saved" notification
@@ -383,7 +350,7 @@ function StatusBar({
                     onClick={(): void => setIconCoverSubOpen((p) => !p)}
                   >
                     <div className="flex items-center gap-2">
-                      <ImageIcon size={13} className="text-amber-400 shrink-0" />
+                      <Image size={13} strokeWidth={1.75} className="text-amber-400 shrink-0" />
                       <span className="widget-title font-semibold">Icon & Cover</span>
                     </div>
                     <ChevronDown
@@ -401,7 +368,7 @@ function StatusBar({
                         onClick={onToggleCover}
                       >
                         <div className="flex items-center gap-2">
-                          <ImageIcon size={12} className="text-zinc-400 shrink-0" />
+                          <Image size={12} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
                           <span className="widget-title text-xs font-normal text-zinc-300">
                             Cover Banner
                           </span>
@@ -431,167 +398,13 @@ function StatusBar({
                         onClick={onToggleFileName}
                       >
                         <div className="flex items-center gap-2">
-                          <Type size={12} className="text-zinc-400 shrink-0" />
+                          <FileText size={12} className="text-zinc-400 shrink-0" />
                           <span className="widget-title text-xs font-normal text-zinc-300">
                             File Name
                           </span>
                         </div>
                         <div className={`widget-checkbox ${showFileName ? 'checked' : ''}`}>
                           {showFileName && <Check size={11} />}
-                        </div>
-                      </div>
-
-                      {onToggleRightSidebar && (
-                        <div
-                          className={`widget-menu-item compact ${showRightSidebar ? 'selected' : ''}`}
-                          onClick={onToggleRightSidebar}
-                        >
-                          <div className="flex items-center gap-2">
-                            <ListTree size={12} className="text-zinc-400 shrink-0" />
-                            <span className="widget-title text-xs font-normal text-zinc-300">
-                              Outline
-                            </span>
-                          </div>
-                          <div className={`widget-checkbox ${showRightSidebar ? 'checked' : ''}`}>
-                            {showRightSidebar && <Check size={11} />}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Option 2: Typography & Export Dropdown */}
-        <div className="floating-tool-item">
-          <button
-            type="button"
-            className={`floating-metrics-topright-trigger ${activeDropdown === 'opt2' ? 'active' : ''}`}
-            onClick={(): void => setActiveDropdown((prev) => (prev === 'opt2' ? null : 'opt2'))}
-            title="Typography & Export"
-          >
-            <Sliders size={13} strokeWidth={1.75} className="text-zinc-400 shrink-0" />
-          </button>
-
-          {activeDropdown === 'opt2' && (
-            <div className="floating-metrics-topright-menu">
-              {/* 1. Typography Card */}
-              <div className="options-card-section">
-                <div className="options-submenu-group">
-                  <button
-                    type="button"
-                    className={`options-submenu-trigger ${typographySubOpen ? 'expanded' : ''}`}
-                    onClick={(): void => setTypographySubOpen((p) => !p)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Type size={13} className="text-blue-400 shrink-0" />
-                      <span className="widget-title font-semibold">Typography</span>
-                    </div>
-                    <ChevronDown
-                      size={11}
-                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                        typographySubOpen ? 'rotate-180 text-zinc-300' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {typographySubOpen && (
-                    <div className="options-submenu-content">
-                      {/* Font Family Selector */}
-                      <div className="typography-option-group">
-                        <span className="typography-option-label">Font</span>
-                        <div className="typography-font-list">
-                          {FONT_OPTIONS.map((font) => (
-                            <div
-                              key={font.label}
-                              className={`widget-menu-item compact ${editorFontFamily === font.value ? 'selected' : ''}`}
-                              onClick={(): void => onFontFamilyChange?.(font.value)}
-                            >
-                              <span
-                                className="widget-title text-xs font-normal text-zinc-300"
-                                style={{ fontFamily: font.value }}
-                              >
-                                {font.label}
-                              </span>
-                              <div
-                                className={`widget-checkbox ${editorFontFamily === font.value ? 'checked' : ''}`}
-                              >
-                                {editorFontFamily === font.value && <Check size={11} />}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Font Size Stepper */}
-                      <div className="typography-option-group">
-                        <span className="typography-option-label">Size</span>
-                        <div className="typography-size-stepper">
-                          <button
-                            className="typography-size-btn"
-                            onClick={(): void =>
-                              onFontSizeChange?.(Math.max(10, editorFontSize - 1))
-                            }
-                            title="Decrease font size"
-                          >
-                            <Minus size={12} />
-                          </button>
-                          <span className="typography-size-value">{editorFontSize}px</span>
-                          <button
-                            className="typography-size-btn"
-                            onClick={(): void =>
-                              onFontSizeChange?.(Math.min(24, editorFontSize + 1))
-                            }
-                            title="Increase font size"
-                          >
-                            <Plus size={12} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 2. Export Card */}
-              <div className="options-card-section">
-                <div className="options-submenu-group">
-                  <button
-                    type="button"
-                    className={`options-submenu-trigger ${exportSubOpen ? 'expanded' : ''}`}
-                    onClick={(): void => setExportSubOpen((p) => !p)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Download size={13} className="text-violet-400 shrink-0" />
-                      <span className="widget-title font-semibold">Export</span>
-                    </div>
-                    <ChevronDown
-                      size={11}
-                      className={`text-zinc-500 transition-transform duration-150 shrink-0 ${
-                        exportSubOpen ? 'rotate-180 text-zinc-300' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {exportSubOpen && (
-                    <div className="options-submenu-content">
-                      <div className="widget-menu-item compact" onClick={onExportHTML}>
-                        <div className="flex items-center gap-2">
-                          <Code2 size={12} className="text-zinc-400 shrink-0" />
-                          <span className="widget-title text-xs font-normal text-zinc-300">
-                            Export as HTML
-                          </span>
-                        </div>
-                      </div>
-                      <div className="widget-menu-item compact" onClick={onExportText}>
-                        <div className="flex items-center gap-2">
-                          <FileText size={12} className="text-zinc-400 shrink-0" />
-                          <span className="widget-title text-xs font-normal text-zinc-300">
-                            Export as Plain Text
-                          </span>
                         </div>
                       </div>
                     </div>
