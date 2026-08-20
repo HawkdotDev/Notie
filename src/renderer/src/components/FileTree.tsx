@@ -347,10 +347,17 @@ function FileTree({
             onDrop={(e): void => void handleDrop(e, node.path)}
           >
             <span className="tree-node-left">
+              <span className="tree-node-chevron shrink-0">
+                {isNodeExpanded ? (
+                  <ChevronDown size={12} strokeWidth={2} />
+                ) : (
+                  <ChevronRight size={12} strokeWidth={2} />
+                )}
+              </span>
               {isNodeExpanded ? (
-                <FolderOpen size={14} fill="currentColor" className="text-zinc-300 shrink-0" />
+                <FolderOpen size={14} className="text-zinc-400 shrink-0" />
               ) : (
-                <Folder size={14} fill="currentColor" className="text-zinc-400 shrink-0" />
+                <Folder size={14} className="text-zinc-400 shrink-0" />
               )}
               {renamingPath === node.path ? (
                 <form
@@ -372,20 +379,28 @@ function FileTree({
                 <span className="tree-node-label">{node.name}</span>
               )}
             </span>
-            <span className="tree-node-right">
+            <span className="tree-node-right opacity-0 group-hover:opacity-100 transition-opacity">
               <button
-                className="tree-node-dots-btn opacity-0 group-hover:opacity-100 p-0.5 hover:text-zinc-300 text-zinc-400 rounded transition-all"
+                className="tree-node-action-btn"
+                onClick={(e): void => {
+                  e.stopPropagation()
+                  setCreatingType({ parent: node.path, type: 'file' })
+                  setExpanded((prev) => ({ ...prev, [nodeKey]: true }))
+                }}
+                title="Add page inside"
+              >
+                <Plus size={12} />
+              </button>
+              <button
+                className="tree-node-action-btn"
                 onClick={(e): void => {
                   e.stopPropagation()
                   handleContextMenu(e, node.path, true, parentPath)
                 }}
                 title="Folder Options"
               >
-                <MoreHorizontal size={13} />
+                <MoreHorizontal size={12} />
               </button>
-              <span className="tree-node-chevron">
-                {isNodeExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-              </span>
             </span>
           </div>
 
@@ -479,14 +494,14 @@ function FileTree({
           <span className="tree-node-right">
             {isUnsaved && <span className="tree-node-active-dot" title="Unsaved changes" />}
             <button
-              className="tree-node-dots-btn opacity-0 group-hover:opacity-100 p-0.5 hover:text-zinc-300 text-zinc-400 rounded transition-all"
+              className="tree-node-action-btn opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={(e): void => {
                 e.stopPropagation()
                 handleContextMenu(e, node.path, false, parentPath)
               }}
-              title="File Options"
+              title="Page Options"
             >
-              <MoreHorizontal size={13} />
+              <MoreHorizontal size={12} />
             </button>
           </span>
         </div>

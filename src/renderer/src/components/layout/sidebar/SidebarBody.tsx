@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { Search, Plus } from 'lucide-react'
 import FileTree from '../../FileTree'
 import PluginsWidget from '../PluginsWidget'
 import SidebarSearch from './SidebarSearch'
@@ -13,7 +14,9 @@ interface SidebarBodyProps {
   showSearchInput: boolean
   searchQuery: string
   onSearchChange: (query: string) => void
+  onToggleSearchInput?: () => void
   onCloseSearch?: () => void
+  onCreateFileAtRoot?: () => void
   onFileSelect: (filePath: string) => void
   fileIcons: Record<string, string>
   onMetadataLoaded: (filePath: string, metadata: { icon?: string; banner?: string }) => void
@@ -29,7 +32,9 @@ function SidebarBody({
   showSearchInput,
   searchQuery,
   onSearchChange,
+  onToggleSearchInput,
   onCloseSearch,
+  onCreateFileAtRoot,
   onFileSelect,
   fileIcons,
   onMetadataLoaded,
@@ -37,6 +42,18 @@ function SidebarBody({
   onTogglePlugin,
   onOpenWorkspace
 }: SidebarBodyProps): React.JSX.Element {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault()
+        if (onToggleSearchInput) {
+          onToggleSearchInput()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return (): void => window.removeEventListener('keydown', handleKeyDown)
+  }, [onToggleSearchInput])
   if (activeView === 'plugins') {
     return (
       <div className="flex-1 overflow-hidden h-full">
@@ -51,7 +68,33 @@ function SidebarBody({
   if (workspacePath) {
     return (
       <div className="flex flex-col flex-1 h-full min-h-0 overflow-hidden">
-        {/* Collapsible/Expandable Search Input */}
+        {/* Top Notion Quick Navigation Links */}
+        <div className="notion-sidebar-quick-links">
+          <button
+            type="button"
+            className={`notion-quick-link-item ${showSearchInput ? 'active' : ''}`}
+            onClick={onToggleSearchInput}
+            title="Search notes"
+          >
+            <Search size={14} className="notion-quick-link-icon" />
+            <span className="notion-quick-link-text">Search</span>
+            <span className="notion-quick-link-shortcut">Ctrl+P</span>
+          </button>
+
+          {onCreateFileAtRoot && (
+            <button
+              type="button"
+              className="notion-quick-link-item"
+              onClick={onCreateFileAtRoot}
+              title="Add a new page"
+            >
+              <Plus size={14} className="notion-quick-link-icon" />
+              <span className="notion-quick-link-text">New page</span>
+            </button>
+          )}
+        </div>
+
+        {/* Collapsible/Expandable Search Filter Input */}
         {(showSearchInput || searchQuery) && (
           <SidebarSearch
             searchQuery={searchQuery}
@@ -59,6 +102,21 @@ function SidebarBody({
             onClose={onCloseSearch}
           />
         )}
+
+        {/* Notion Section Header */}
+        <div className="notion-sidebar-section-header group">
+          <span className="notion-section-title">PAGES</span>
+          {onCreateFileAtRoot && (
+            <button
+              type="button"
+              className="notion-section-add-btn"
+              onClick={onCreateFileAtRoot}
+              title="Add page"
+            >
+              <Plus size={12} />
+            </button>
+          )}
+        </div>
 
         {/* Tree Navigation */}
         <div className="sidebar-tree-wrapper flex-1 overflow-y-auto min-h-0">

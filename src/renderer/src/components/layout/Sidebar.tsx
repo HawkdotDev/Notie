@@ -89,8 +89,6 @@ function Sidebar({
           onRenameWorkspace={onRenameWorkspace}
           onCreateFileAtRoot={onCreateFileAtRoot}
           onToggleSidebar={onToggleSidebar}
-          showSearchInput={showSearchInput}
-          onToggleSearchInput={onToggleSearchInput}
         />
 
         {/* Main Body Area: Plugins, Tree, or Empty State */}
@@ -101,7 +99,9 @@ function Sidebar({
           showSearchInput={showSearchInput}
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
+          onToggleSearchInput={onToggleSearchInput}
           onCloseSearch={onToggleSearchInput}
+          onCreateFileAtRoot={onCreateFileAtRoot}
           onFileSelect={onFileSelect}
           fileIcons={fileIcons}
           onMetadataLoaded={onMetadataLoaded}
