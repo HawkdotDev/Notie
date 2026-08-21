@@ -1,6 +1,9 @@
 export interface MarkdownMetadata {
   icon?: string
   banner?: string
+  showIcon?: boolean
+  showCover?: boolean
+  showFileName?: boolean
 }
 
 export interface WorkerTaskPayload {
@@ -65,11 +68,18 @@ function parseMetadataWorker(fileContent: string): {
       const parts = line.split(':')
       if (parts.length >= 2) {
         const key = parts[0].trim()
-        const value = parts.slice(1).join(':').trim()
+        const rawVal = parts.slice(1).join(':').trim()
+        const cleanVal = rawVal.replace(/^['"]|['"]$/g, '')
         if (key === 'icon') {
-          metadata.icon = value.replace(/^['"]|['"]$/g, '')
+          metadata.icon = cleanVal
         } else if (key === 'banner') {
-          metadata.banner = value.replace(/^['"]|['"]$/g, '')
+          metadata.banner = cleanVal
+        } else if (key === 'showIcon') {
+          metadata.showIcon = cleanVal.toLowerCase() === 'true'
+        } else if (key === 'showCover') {
+          metadata.showCover = cleanVal.toLowerCase() === 'true'
+        } else if (key === 'showFileName') {
+          metadata.showFileName = cleanVal.toLowerCase() === 'true'
         }
       }
     }
@@ -80,7 +90,13 @@ function parseMetadataWorker(fileContent: string): {
 
 function serializeMetadataWorker(content: string, metadata: MarkdownMetadata): string {
   const body = stripFrontmatterWorker(content)
-  if (!metadata.icon && !metadata.banner) {
+  const hasIcon = Boolean(metadata.icon)
+  const hasBanner = Boolean(metadata.banner)
+  const hasShowIcon = metadata.showIcon !== undefined
+  const hasShowCover = metadata.showCover !== undefined
+  const hasShowFileName = metadata.showFileName !== undefined
+
+  if (!hasIcon && !hasBanner && !hasShowIcon && !hasShowCover && !hasShowFileName) {
     return body
   }
 
@@ -90,6 +106,15 @@ function serializeMetadataWorker(content: string, metadata: MarkdownMetadata): s
   }
   if (metadata.banner) {
     frontmatter += `banner: "${metadata.banner}"\n`
+  }
+  if (metadata.showCover !== undefined) {
+    frontmatter += `showCover: ${metadata.showCover}\n`
+  }
+  if (metadata.showIcon !== undefined) {
+    frontmatter += `showIcon: ${metadata.showIcon}\n`
+  }
+  if (metadata.showFileName !== undefined) {
+    frontmatter += `showFileName: ${metadata.showFileName}\n`
   }
   frontmatter += '---\n'
 

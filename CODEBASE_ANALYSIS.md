@@ -1,6 +1,6 @@
-# 🔍 Notie Codebase Deep Analysis, Audit & Optimization Roadmap
+# 🔍 Mink Codebase Deep Analysis, Audit & Optimization Roadmap
 
-This document provides a comprehensive technical audit of the **Notie** desktop application codebase, covering architecture, performance bottlenecks, memory management, security boundaries, and an actionable optimization roadmap.
+This document provides a comprehensive technical audit of the **Mink** desktop application codebase, covering architecture, performance bottlenecks, memory management, security boundaries, and an actionable optimization roadmap.
 
 ---
 

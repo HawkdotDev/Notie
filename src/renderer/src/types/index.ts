@@ -1,6 +1,9 @@
 export interface MarkdownMetadata {
   icon?: string
   banner?: string
+  showIcon?: boolean
+  showCover?: boolean
+  showFileName?: boolean
 }
 
 export interface ParsedDocument {

@@ -1,18 +1,46 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Eye, ChevronDown, Layers, ListTree, Check } from 'lucide-react'
+import {
+  Eye,
+  ChevronDown,
+  Layers,
+  ListTree,
+  Check,
+  Image,
+  Smile,
+  FileText,
+  FileCode
+} from 'lucide-react'
 
 interface ViewModeMenuProps {
   showTabs?: boolean
   onToggleTabs?: () => void
   showRightSidebar: boolean
   onToggleRightSidebar: () => void
+  showCover?: boolean
+  showIcon?: boolean
+  showFileName?: boolean
+  isOnlyThisFile?: boolean
+  activeFilePath?: string | null
+  onToggleCover?: () => void
+  onToggleIcon?: () => void
+  onToggleFileName?: () => void
+  onToggleOnlyThisFile?: () => void
 }
 
 function ViewModeMenu({
   showTabs = true,
   onToggleTabs,
   showRightSidebar,
-  onToggleRightSidebar
+  onToggleRightSidebar,
+  showCover = true,
+  showIcon = true,
+  showFileName = true,
+  isOnlyThisFile = false,
+  activeFilePath,
+  onToggleCover,
+  onToggleIcon,
+  onToggleFileName,
+  onToggleOnlyThisFile
 }: ViewModeMenuProps): React.JSX.Element {
   const [showViewMenu, setShowViewMenu] = useState<boolean>(false)
   const viewMenuRef = useRef<HTMLDivElement>(null)
@@ -40,7 +68,7 @@ function ViewModeMenu({
           e.stopPropagation()
           setShowViewMenu((prev) => !prev)
         }}
-        title="View Options & Typography"
+        title="View Options & Layout"
       >
         <Eye size={13} className={showViewMenu ? 'text-zinc-200' : ''} />
         <span>View</span>
@@ -92,6 +120,93 @@ function ViewModeMenu({
                 {showRightSidebar && <Check size={11} />}
               </div>
             </div>
+
+            {/* 3. Page Elements Section */}
+            {(onToggleCover || onToggleIcon || onToggleFileName) && (
+              <>
+                <div className="menu-divider my-1 border-t border-zinc-800" />
+                <div className="px-2 py-1 text-[10px] uppercase font-semibold text-zinc-500 tracking-wider">
+                  Page Elements
+                </div>
+
+                {/* Only this file option */}
+                {activeFilePath && onToggleOnlyThisFile && (
+                  <div
+                    className={`widget-menu-item ${isOnlyThisFile ? 'selected' : ''}`}
+                    onClick={onToggleOnlyThisFile}
+                    title="When enabled, display settings are saved to this file's frontmatter metadata"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileCode size={13} className="text-purple-400 shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="widget-title text-zinc-200">Only this file</span>
+                        <span className="widget-desc text-zinc-500">Save to file metadata</span>
+                      </div>
+                    </div>
+                    <div className={`widget-checkbox ${isOnlyThisFile ? 'checked' : ''}`}>
+                      {isOnlyThisFile && <Check size={11} />}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cover banner toggle */}
+                {onToggleCover && (
+                  <div
+                    className={`widget-menu-item ${showCover ? 'selected' : ''}`}
+                    onClick={onToggleCover}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Image size={13} className="text-zinc-400 shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="widget-title">Cover Banner</span>
+                        <span className="widget-desc">Top cover image/gradient</span>
+                      </div>
+                    </div>
+                    <div className={`widget-checkbox ${showCover ? 'checked' : ''}`}>
+                      {showCover && <Check size={11} />}
+                    </div>
+                  </div>
+                )}
+
+                {/* Page icon toggle */}
+                {onToggleIcon && (
+                  <div
+                    className={`widget-menu-item ${showIcon ? 'selected' : ''}`}
+                    onClick={onToggleIcon}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Smile size={13} className="text-zinc-400 shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="widget-title">Page Icon</span>
+                        <span className="widget-desc">Emoji icon badge</span>
+                      </div>
+                    </div>
+                    <div className={`widget-checkbox ${showIcon ? 'checked' : ''}`}>
+                      {showIcon && <Check size={11} />}
+                    </div>
+                  </div>
+                )}
+
+                {/* File name toggle */}
+                {onToggleFileName && (
+                  <div
+                    className={`widget-menu-item ${showFileName ? 'selected' : ''}`}
+                    onClick={onToggleFileName}
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileText size={13} className="text-zinc-400 shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="widget-title">File Name</span>
+                        <span className="widget-desc">Document title heading</span>
+                      </div>
+                    </div>
+                    <div className={`widget-checkbox ${showFileName ? 'checked' : ''}`}>
+                      {showFileName && <Check size={11} />}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}

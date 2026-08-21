@@ -56,7 +56,9 @@ const api = {
   window: {
     minimize: (): void => ipcRenderer.send('window:minimize'),
     maximize: (): void => ipcRenderer.send('window:maximize'),
-    close: (): void => ipcRenderer.send('window:close')
+    close: (): void => ipcRenderer.send('window:close'),
+    toggleFullScreen: (): void => ipcRenderer.send('window:toggleFullScreen'),
+    isFullScreen: (): Promise<boolean> => ipcRenderer.invoke('window:isFullScreen')
   }
 }
 

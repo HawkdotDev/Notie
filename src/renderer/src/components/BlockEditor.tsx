@@ -138,7 +138,7 @@ class VideoTool {
 
   render(): HTMLElement {
     this.wrapper = document.createElement('div')
-    this.wrapper.classList.add('notie-video-block')
+    this.wrapper.classList.add('mink-video-block')
 
     if (this.data && this.data.url) {
       this.renderVideo(this.data.url, this.data.caption || '')
@@ -152,26 +152,26 @@ class VideoTool {
   renderInput(): void {
     if (!this.wrapper) return
     this.wrapper.innerHTML = `
-      <div class="notie-media-input-box">
+      <div class="mink-media-input-box">
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2 text-xs text-zinc-300 font-medium">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
             <span>Embed or Upload Video</span>
           </div>
-          <label class="notie-media-upload-label">
+          <label class="mink-media-upload-label">
             <span>Upload file</span>
-            <input type="file" accept="video/*" class="notie-media-file-input" style="display: none;" />
+            <input type="file" accept="video/*" class="mink-media-file-input" style="display: none;" />
           </label>
         </div>
         <div class="flex gap-2">
-          <input type="text" class="notie-media-url-input" placeholder="Paste video URL (.mp4, .webm, direct link)..." />
-          <button type="button" class="notie-media-submit-btn">Embed</button>
+          <input type="text" class="mink-media-url-input" placeholder="Paste video URL (.mp4, .webm, direct link)..." />
+          <button type="button" class="mink-media-submit-btn">Embed</button>
         </div>
       </div>
     `
-    const input = this.wrapper.querySelector('.notie-media-url-input') as HTMLInputElement
-    const fileInput = this.wrapper.querySelector('.notie-media-file-input') as HTMLInputElement
-    const btn = this.wrapper.querySelector('.notie-media-submit-btn') as HTMLButtonElement
+    const input = this.wrapper.querySelector('.mink-media-url-input') as HTMLInputElement
+    const fileInput = this.wrapper.querySelector('.mink-media-file-input') as HTMLInputElement
+    const btn = this.wrapper.querySelector('.mink-media-submit-btn') as HTMLButtonElement
 
     const handleSubmit = (): void => {
       const url = input?.value?.trim()
@@ -205,14 +205,12 @@ class VideoTool {
   renderVideo(url: string, caption: string): void {
     if (!this.wrapper) return
     this.wrapper.innerHTML = `
-      <div class="notie-video-container group">
-        <video controls src="${url}" class="notie-video-player"></video>
-        <input type="text" class="notie-media-caption-input" placeholder="Add a caption..." value="${caption || ''}" />
+      <div class="mink-video-container group">
+        <video controls src="${url}" class="mink-video-player"></video>
+        <input type="text" class="mink-media-caption-input" placeholder="Add a caption..." value="${caption || ''}" />
       </div>
     `
-    const captionInput = this.wrapper.querySelector(
-      '.notie-media-caption-input'
-    ) as HTMLInputElement
+    const captionInput = this.wrapper.querySelector('.mink-media-caption-input') as HTMLInputElement
     captionInput?.addEventListener('input', () => {
       this.data.caption = captionInput.value
     })
@@ -220,9 +218,9 @@ class VideoTool {
 
   save(blockContent?: HTMLElement): VideoBlockData {
     if (blockContent) {
-      const input = blockContent.querySelector('.notie-media-url-input') as HTMLInputElement
+      const input = blockContent.querySelector('.mink-media-url-input') as HTMLInputElement
       const captionInput = blockContent.querySelector(
-        '.notie-media-caption-input'
+        '.mink-media-caption-input'
       ) as HTMLInputElement
       if (input && input.value) {
         this.data.url = input.value.trim()
@@ -294,7 +292,7 @@ class EmbedTool {
 
   render(): HTMLElement {
     this.wrapper = document.createElement('div')
-    this.wrapper.classList.add('notie-embed-block')
+    this.wrapper.classList.add('mink-embed-block')
 
     if (this.data && (this.data.embed || this.data.source)) {
       const url = this.data.embed || this.data.source || ''
@@ -309,19 +307,19 @@ class EmbedTool {
   renderInput(): void {
     if (!this.wrapper) return
     this.wrapper.innerHTML = `
-      <div class="notie-media-input-box">
+      <div class="mink-media-input-box">
         <div class="flex items-center gap-2 mb-2 text-xs text-zinc-300 font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
           <span>Embed Web Link (YouTube, Vimeo, CodePen, etc.)</span>
         </div>
         <div class="flex gap-2">
-          <input type="text" class="notie-media-url-input" placeholder="Paste link to embed..." />
-          <button type="button" class="notie-media-submit-btn">Embed</button>
+          <input type="text" class="mink-media-url-input" placeholder="Paste link to embed..." />
+          <button type="button" class="mink-media-submit-btn">Embed</button>
         </div>
       </div>
     `
-    const input = this.wrapper.querySelector('.notie-media-url-input') as HTMLInputElement
-    const btn = this.wrapper.querySelector('.notie-media-submit-btn') as HTMLButtonElement
+    const input = this.wrapper.querySelector('.mink-media-url-input') as HTMLInputElement
+    const btn = this.wrapper.querySelector('.mink-media-submit-btn') as HTMLButtonElement
 
     const handleSubmit = (): void => {
       const raw = input?.value?.trim()
@@ -343,14 +341,12 @@ class EmbedTool {
   renderEmbed(url: string, caption: string): void {
     if (!this.wrapper) return
     this.wrapper.innerHTML = `
-      <div class="notie-embed-container group">
-        <iframe src="${url}" class="notie-embed-iframe" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-        <input type="text" class="notie-media-caption-input" placeholder="Add a caption..." value="${caption || ''}" />
+      <div class="mink-embed-container group">
+        <iframe src="${url}" class="mink-embed-iframe" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        <input type="text" class="mink-media-caption-input" placeholder="Add a caption..." value="${caption || ''}" />
       </div>
     `
-    const captionInput = this.wrapper.querySelector(
-      '.notie-media-caption-input'
-    ) as HTMLInputElement
+    const captionInput = this.wrapper.querySelector('.mink-media-caption-input') as HTMLInputElement
     captionInput?.addEventListener('input', () => {
       this.data.caption = captionInput.value
     })
@@ -358,9 +354,9 @@ class EmbedTool {
 
   save(blockContent?: HTMLElement): EmbedBlockData {
     if (blockContent) {
-      const input = blockContent.querySelector('.notie-media-url-input') as HTMLInputElement
+      const input = blockContent.querySelector('.mink-media-url-input') as HTMLInputElement
       const captionInput = blockContent.querySelector(
-        '.notie-media-caption-input'
+        '.mink-media-caption-input'
       ) as HTMLInputElement
       if (input && input.value) {
         const raw = input.value.trim()
@@ -699,13 +695,20 @@ function allowWikilinksInSanitizer(toolClass: any): void {
 allowWikilinksInSanitizer(Header)
 allowWikilinksInSanitizer(List)
 allowWikilinksInSanitizer(Quote)
-allowWikilinksInSanitizer(ChecklistTool)
+interface BlockEditorProps {
+  value: string
+  onChange: (value: string) => void
+  activeFilePath: string
+  onWikilinkClick?: (path: string) => void
+  readOnly?: boolean
+}
 
 export default function BlockEditor({
   value,
   onChange,
   activeFilePath,
-  onWikilinkClick
+  onWikilinkClick,
+  readOnly = false
 }: BlockEditorProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const editorInstanceRef = useRef<EditorJS | null>(null)
@@ -896,6 +899,7 @@ export default function BlockEditor({
           inlineCode: InlineCode as unknown as InlineToolConstructable,
           marker: Marker as unknown as InlineToolConstructable
         },
+        readOnly: Boolean(readOnly),
         placeholder: "Press 'Tab' or click '+' to write...",
         onReady: () => {
           const inst = editorInstanceRef.current || editor
@@ -931,7 +935,7 @@ export default function BlockEditor({
         destroyingPromiseRef.current = destroyInstance(instanceToDestroy)
       }
     }
-  }, [activeFilePath])
+  }, [activeFilePath, readOnly])
 
   // Handle value updates from parent (e.g. external edits, reload, etc.)
   useEffect(() => {

@@ -1,169 +1,211 @@
-import React from 'react'
-import { FileText, Network, Search, Blocks } from 'lucide-react'
-import { ViewMode, WidgetState } from '../../types'
-import WidgetsMenu from './subheader/WidgetsMenu'
-import ViewModeMenu from './subheader/ViewModeMenu'
+import React, { useMemo, useState, useEffect } from 'react'
+import { ChevronsRight } from 'lucide-react'
 import ShareMenu from './subheader/ShareMenu'
+import PageActionsMenu from './subheader/PageActionsMenu'
+import { StatusStatsConfig } from '../../types'
 
 interface SubHeaderProps {
-  onSaveActiveFile?: () => void
-  viewMode: ViewMode
-  onToggleViewMode: () => void
-  setViewMode?: (mode: ViewMode) => void
+  sidebarCollapsed?: boolean
+  onToggleSidebar?: () => void
+  workspacePath: string | null
+  workspaceName: string
+  activeFilePath: string | null
+  fileContent?: string
   onOpenWorkspace?: () => void
-  onCreateFileAtRoot?: () => void
   autoSaveEnabled: boolean
   onToggleAutoSave: () => void
-  activeUnsaved: boolean
-  widgetState: WidgetState
-  onToggleWidget: (widget: keyof WidgetState) => void
-  showRightSidebar: boolean
-  onToggleRightSidebar: () => void
-  showSearchInput?: boolean
-  onToggleSearchInput?: () => void
-  showTabs?: boolean
-  onToggleTabs?: () => void
-  sidebarView?: 'explorer' | 'plugins'
-  sidebarCollapsed?: boolean
-  onTogglePluginsView?: () => void
-  onSwitchToFiles?: () => void
-  enabledPluginsCount?: number
   onExportHTML?: () => void
   onExportText?: () => void
   onExportMarkdown?: () => void
   onCopyLink?: () => void
+  lastEditedTime?: number | null
+  statsConfig?: StatusStatsConfig
+  onToggleStat?: (key: keyof StatusStatsConfig) => void
+  showCover?: boolean
+  showIcon?: boolean
+  showFileName?: boolean
+  isOnlyThisFile?: boolean
+  onToggleCover?: () => void
+  onToggleIcon?: () => void
+  onToggleFileName?: () => void
+  onToggleOnlyThisFile?: () => void
+  editorFontFamily: string
+  onChangeFontFamily: (family: string) => void
+  editorFontSize: number
+  onChangeFontSize: (size: number) => void
+  editorLineHeight?: string
+  onChangeLineHeight?: (val: string) => void
+  editorLetterSpacing?: string
+  onChangeLetterSpacing?: (val: string) => void
+  editorParagraphSpacing?: string
+  onChangeParagraphSpacing?: (val: string) => void
+  editorFontWeight?: string
+  onChangeFontWeight?: (val: string) => void
+  editorTextAlign?: string
+  onChangeTextAlign?: (val: string) => void
+  isFullScreen?: boolean
+  onToggleFullScreen?: () => void
+  isPageLocked?: boolean
+  onToggleLockPage?: () => void
+  onDuplicateFile?: () => void
+  onDeleteFile?: () => void
+  onOpenAI?: () => void
+  onUndo?: () => void
+  onImport?: () => void
+}
+
+function formatRelativeEditedTime(timestamp?: number | null): string {
+  if (!timestamp) return 'Edited recently'
+  const diffSeconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000))
+  if (diffSeconds < 10) return 'Edited just now'
+  if (diffSeconds < 60) return `Edited ${diffSeconds}s ago`
+  const diffMinutes = Math.floor(diffSeconds / 60)
+  if (diffMinutes < 60) return `Edited ${diffMinutes}m ago`
+  const diffHours = Math.floor(diffMinutes / 60)
+  if (diffHours < 24) return `Edited ${diffHours}h ago`
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffDays === 1) return 'Edited yesterday'
+  if (diffDays < 7) return `Edited ${diffDays}d ago`
+  return `Edited ${new Date(timestamp).toLocaleDateString()}`
 }
 
 function SubHeader({
-  viewMode,
-  onToggleViewMode,
-  setViewMode,
+  sidebarCollapsed = false,
+  onToggleSidebar,
+  workspacePath,
+  workspaceName,
+  activeFilePath,
+  fileContent,
+  onOpenWorkspace,
   autoSaveEnabled,
   onToggleAutoSave,
-  activeUnsaved,
-  widgetState,
-  onToggleWidget,
-  showRightSidebar,
-  onToggleRightSidebar,
-  showSearchInput,
-  onToggleSearchInput,
-  showTabs = true,
-  onToggleTabs,
-  sidebarView = 'explorer',
-  sidebarCollapsed = false,
-  onTogglePluginsView,
-  onSwitchToFiles,
-  enabledPluginsCount = 0,
   onExportHTML,
   onExportText,
   onExportMarkdown,
-  onCopyLink
+  onCopyLink,
+  lastEditedTime,
+  statsConfig,
+  onToggleStat,
+  showCover = true,
+  showIcon = true,
+  showFileName = true,
+  isOnlyThisFile = false,
+  onToggleCover,
+  onToggleIcon,
+  onToggleFileName,
+  onToggleOnlyThisFile,
+  editorFontFamily,
+  onChangeFontFamily,
+  editorFontSize,
+  onChangeFontSize,
+  editorLineHeight,
+  onChangeLineHeight,
+  editorLetterSpacing,
+  onChangeLetterSpacing,
+  editorParagraphSpacing,
+  onChangeParagraphSpacing,
+  editorFontWeight,
+  onChangeFontWeight,
+  editorTextAlign,
+  onChangeTextAlign,
+  isFullScreen = false,
+  onToggleFullScreen,
+  isPageLocked = false,
+  onToggleLockPage,
+  onDuplicateFile,
+  onDeleteFile,
+  onOpenAI,
+  onUndo,
+  onImport
 }: SubHeaderProps): React.JSX.Element {
+  const [tick, setTick] = useState(0)
+
+  useEffect(() => {
+    if (!lastEditedTime) return
+    const timer = setInterval(() => {
+      setTick((t) => t + 1)
+    }, 15000)
+    return (): void => clearInterval(timer)
+  }, [lastEditedTime])
+
+  const relativeParts = useMemo(() => {
+    if (!activeFilePath) return []
+    const rel = activeFilePath.replace(workspacePath || '', '').replace(/^[\\/]/, '')
+    return rel ? rel.split(/[\\/]/) : []
+  }, [activeFilePath, workspacePath])
+
+  const currentDisplayName =
+    workspaceName ||
+    (workspacePath ? workspacePath.split(/[\\/]/).filter(Boolean).pop() : '') ||
+    'Select Workspace'
+
+  const formattedEditedTime = useMemo(() => {
+    if (tick < 0) return ''
+    return formatRelativeEditedTime(lastEditedTime)
+  }, [lastEditedTime, tick])
+
   return (
-    <div className="app-actions-bar relative">
-      {/* Left Toolbar Action Pills */}
-      <div className="actions-bar-left">
-        {/* 1. File Editor Tab */}
-        <button
-          className={`action-pill-btn ${viewMode === 'editor' && (sidebarView === 'explorer' || sidebarCollapsed) ? 'active' : ''}`}
-          onClick={(): void => {
-            if (onSwitchToFiles) onSwitchToFiles()
-            if (setViewMode) setViewMode('editor')
-            else if (viewMode === 'graph') onToggleViewMode()
-          }}
-          title="Document Editor & File View"
-        >
-          <FileText
-            size={13}
-            fill="currentColor"
-            className={
-              viewMode === 'editor' && (sidebarView === 'explorer' || sidebarCollapsed)
-                ? 'text-zinc-300'
-                : ''
-            }
-          />
-          <span>Files</span>
-        </button>
-
-        {/* 2. Knowledge Graph Tab */}
-        <button
-          className={`action-pill-btn ${viewMode === 'graph' ? 'active' : ''}`}
-          onClick={(): void => {
-            if (setViewMode) setViewMode('graph')
-            else if (viewMode === 'editor') onToggleViewMode()
-          }}
-          title="Knowledge Graph View"
-        >
-          <Network
-            size={13}
-            fill="currentColor"
-            className={viewMode === 'graph' ? 'text-zinc-300' : ''}
-          />
-          <span>Graph</span>
-        </button>
-
-        {/* Divider between Graph and the rest of tabs */}
-        <div className="sub-header-divider" />
-
-        {/* 3. Document View Options Dropdown */}
-        <ViewModeMenu
-          showTabs={showTabs}
-          onToggleTabs={onToggleTabs}
-          showRightSidebar={showRightSidebar}
-          onToggleRightSidebar={onToggleRightSidebar}
-        />
-
-        {/* 4. Global Search Tab */}
-        {onToggleSearchInput && (
+    <div className="app-actions-bar select-none">
+      {/* Left Application Brand Logo & Navigation Breadcrumbs */}
+      <div className="actions-bar-left flex items-center gap-1.5 overflow-hidden">
+        {/* Sidebar Expand Button when collapsed */}
+        {sidebarCollapsed && onToggleSidebar && (
           <button
-            className={`action-pill-btn ${showSearchInput ? 'active' : ''}`}
-            onClick={onToggleSearchInput}
-            title="Toggle File Search"
+            type="button"
+            className="sidebar-expand-pill-btn"
+            onClick={onToggleSidebar}
+            title="Expand Sidebar"
           >
-            <Search size={13} className={showSearchInput ? 'text-zinc-300' : ''} />
-            <span>Search</span>
+            <ChevronsRight size={13} />
           </button>
         )}
 
-        {/* 5. Plugins Button */}
-        {onTogglePluginsView && (
-          <button
-            className={`action-pill-btn ${sidebarView === 'plugins' && !sidebarCollapsed ? 'active' : ''}`}
-            onClick={onTogglePluginsView}
-            title="Toggle Plugins & Extensions (replaces File View)"
-          >
-            <Blocks
-              size={13}
-              className={sidebarView === 'plugins' && !sidebarCollapsed ? 'text-zinc-200' : ''}
-            />
-            <span>Plugins</span>
-            {enabledPluginsCount !== undefined && enabledPluginsCount > 0 && (
-              <span className="text-[10px] px-1 py-0.2 bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono">
-                {enabledPluginsCount}
-              </span>
-            )}
-          </button>
-        )}
+        {/* Styled Minimal Breadcrumb Path Navigation */}
+        {(activeFilePath || workspacePath) && (
+          <div className="nav-breadcrumbs">
+            {/* First Folder in Breadcrumbs (Workspace Root) */}
+            <div
+              className="breadcrumb-item workspace-root"
+              title={`Workspace: ${currentDisplayName}`}
+              onClick={onOpenWorkspace}
+            >
+              <span className="max-w-35 truncate">{currentDisplayName}</span>
+            </div>
 
-        {/* 6. Floating Widgets Dropdown */}
-        <WidgetsMenu
-          widgetState={widgetState}
-          onToggleWidget={onToggleWidget}
-          activeUnsaved={activeUnsaved}
-          autoSaveEnabled={autoSaveEnabled}
-          onToggleAutoSave={onToggleAutoSave}
-        />
+            {relativeParts.map((part, idx) => {
+              const isLast = idx === relativeParts.length - 1
+              return (
+                <React.Fragment key={idx}>
+                  <span className="breadcrumb-separator">/</span>
+                  <div
+                    className={`breadcrumb-item ${isLast ? 'active-file' : 'directory'}`}
+                    title={part}
+                  >
+                    <span className="truncate max-w-44">{part}</span>
+                  </div>
+                </React.Fragment>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Right Toolbar Actions */}
       <div className="actions-bar-right flex items-center gap-2">
-        {/* Share & Export Dropdown */}
-        <ShareMenu
-          onExportHTML={onExportHTML}
-          onExportText={onExportText}
-          onExportMarkdown={onExportMarkdown}
-          onCopyLink={onCopyLink}
-        />
+        {/* Edited Time Indicator */}
+        {activeFilePath && (
+          <>
+            <span
+              className="edited-time-badge"
+              title={lastEditedTime ? new Date(lastEditedTime).toLocaleString() : undefined}
+            >
+              {formattedEditedTime}
+            </span>
+            <span className="actions-bar-pipe" aria-hidden="true">
+              |
+            </span>
+          </>
+        )}
 
         {/* Autosave Toggle Switch */}
         <div
@@ -176,6 +218,53 @@ function SubHeader({
             <div className="toggle-knob" />
           </div>
         </div>
+
+        {/* Share & Collaboration Dropdown */}
+        <ShareMenu activeFilePath={activeFilePath} onCopyLink={onCopyLink} />
+
+        {/* 3-Dots Page Actions Dropdown (includes Text Customisation, Customize Page, Import & Export) */}
+        <PageActionsMenu
+          activeFilePath={activeFilePath}
+          workspacePath={workspacePath}
+          fileContent={fileContent}
+          editorFontFamily={editorFontFamily}
+          onChangeFontFamily={onChangeFontFamily}
+          editorFontSize={editorFontSize}
+          onChangeFontSize={onChangeFontSize}
+          editorLineHeight={editorLineHeight}
+          onChangeLineHeight={onChangeLineHeight}
+          editorLetterSpacing={editorLetterSpacing}
+          onChangeLetterSpacing={onChangeLetterSpacing}
+          editorParagraphSpacing={editorParagraphSpacing}
+          onChangeParagraphSpacing={onChangeParagraphSpacing}
+          editorFontWeight={editorFontWeight}
+          onChangeFontWeight={onChangeFontWeight}
+          editorTextAlign={editorTextAlign}
+          onChangeTextAlign={onChangeTextAlign}
+          isFullScreen={isFullScreen}
+          onToggleFullScreen={onToggleFullScreen}
+          isPageLocked={isPageLocked}
+          onToggleLockPage={onToggleLockPage}
+          onDuplicateFile={onDuplicateFile}
+          onDeleteFile={onDeleteFile}
+          onOpenAI={onOpenAI}
+          onUndo={onUndo}
+          onImport={onImport}
+          onExportHTML={onExportHTML}
+          onExportText={onExportText}
+          onExportMarkdown={onExportMarkdown}
+          onCopyLink={onCopyLink}
+          statsConfig={statsConfig}
+          onToggleStat={onToggleStat}
+          showCover={showCover}
+          showIcon={showIcon}
+          showFileName={showFileName}
+          isOnlyThisFile={isOnlyThisFile}
+          onToggleCover={onToggleCover}
+          onToggleIcon={onToggleIcon}
+          onToggleFileName={onToggleFileName}
+          onToggleOnlyThisFile={onToggleOnlyThisFile}
+        />
       </div>
     </div>
   )

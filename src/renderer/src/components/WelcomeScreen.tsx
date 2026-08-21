@@ -1,5 +1,5 @@
 import React from 'react'
-import iconSvg from '../assets/icon.svg'
+import minkLogo from '../assets/mink.png'
 
 interface WelcomeScreenProps {
   workspacePath: string | null
@@ -10,11 +10,11 @@ export default function WelcomeScreen({ workspacePath }: WelcomeScreenProps): Re
     <div className="welcome-workspace">
       <div className="flex flex-col items-center mb-3">
         <img
-          src={iconSvg}
+          src={minkLogo}
           className="w-14 h-14 mb-2 opacity-95 hover:scale-105 transition-transform object-contain"
-          alt="Notie Logo"
+          alt="Mink Logo"
         />
-        <div className="welcome-logo">Notie</div>
+        <div className="welcome-logo">Mink</div>
       </div>
       <div className="welcome-tagline">A beautiful workspace</div>
       <div className="welcome-shortcuts">

@@ -10,14 +10,16 @@ import {
 } from 'electron'
 import { join, basename, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.svg?asset'
+import iconIco from '../../resources/mink.ico?asset'
+import iconPng from '../../resources/mink.png?asset'
 import * as fs from 'fs/promises'
 import { watch, type FSWatcher, readFileSync, readdirSync, statSync } from 'fs'
 
 let workspaceWatcher: FSWatcher | null = null
 
 function createWindow(): void {
-  const appIcon = nativeImage.createFromPath(icon)
+  const iconPath = process.platform === 'win32' ? iconIco : iconPng
+  const appIcon = nativeImage.createFromPath(iconPath)
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -66,6 +68,18 @@ function createWindow(): void {
     win?.close()
   })
 
+  ipcMain.on('window:toggleFullScreen', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win) {
+      win.setFullScreen(!win.isFullScreen())
+    }
+  })
+
+  ipcMain.handle('window:isFullScreen', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    return win ? win.isFullScreen() : false
+  })
+
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
@@ -82,7 +96,7 @@ app.whenReady().then(() => {
   // Force dark mode for native titlebar, menus, and system dialogs to blend the separator line
   nativeTheme.themeSource = 'dark'
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.notie.app')
+  electronApp.setAppUserModelId('com.mink.app')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

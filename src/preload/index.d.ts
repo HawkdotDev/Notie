@@ -36,6 +36,8 @@ interface WindowAPI {
   minimize(): void
   maximize(): void
   close(): void
+  toggleFullScreen(): void
+  isFullScreen(): Promise<boolean>
 }
 
 declare global {

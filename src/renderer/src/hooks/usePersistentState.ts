@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { PersistentAppState } from '../types'
 
-const PERSISTENT_APP_STATE_KEY = 'notie_app_state_v1'
+const PERSISTENT_APP_STATE_KEY = 'mink_app_state_v1'
 
 export function usePersistentState(): {
   savedState: Partial<PersistentAppState>

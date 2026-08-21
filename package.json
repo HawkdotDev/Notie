@@ -1,28 +1,34 @@
 {
-  "name": "notie",
+  "name": "mink",
+  "displayName": "Mink",
   "version": "0.1.0",
-  "description": "A modern, feature-rich, privacy-focused, and open-source note-taking app built for creators.",
+  "description": "Local-first, hybrid block-markdown knowledge base and workspace for creators and developers.",
   "author": {
     "name": "HawkdotDev",
     "url": "https://github.com/HawkdotDev"
   },
   "license": "MIT",
-  "homepage": "https://github.com/HawkdotDev/notie",
+  "homepage": "https://github.com/HawkdotDev/mink#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HawkdotDev/Notie.git"
+    "url": "https://github.com/HawkdotDev/mink.git"
   },
   "bugs": {
-    "url": "https://github.com/HawkdotDev/Notie/issues"
+    "url": "https://github.com/HawkdotDev/mink/issues"
   },
   "keywords": [
-    "notie",
+    "mink",
     "markdown",
-    "note-taking",
+    "local-first",
     "knowledge-base",
+    "notion-alternative",
+    "obsidian-alternative",
+    "block-editor",
     "graph-view",
+    "wikilinks",
     "electron",
     "react",
+    "typescript",
     "productivity",
     "desktop-app"
   ],

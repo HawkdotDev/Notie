@@ -9,7 +9,7 @@ const SNIPPETS = [
   {
     title: 'Python Main Template',
     lang: 'python',
-    code: `def main():\n    print("Hello from Notie Application!")\n\nif __name__ == "__main__":\n    main()`
+    code: `def main():\n    print("Hello from Mink Application!")\n\nif __name__ == "__main__":\n    main()`
   },
   {
     title: 'Markdown Table',

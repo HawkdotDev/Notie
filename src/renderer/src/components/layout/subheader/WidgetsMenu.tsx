@@ -19,7 +19,7 @@ function WidgetsMenu({
 }: WidgetsMenuProps): React.JSX.Element {
   const [showWidgetsMenu, setShowWidgetsMenu] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('notie_widgets_menu') === 'true'
+      return localStorage.getItem('mink_widgets_menu') === 'true'
     } catch {
       return false
     }
@@ -28,7 +28,7 @@ function WidgetsMenu({
 
   useEffect(() => {
     try {
-      localStorage.setItem('notie_widgets_menu', String(showWidgetsMenu))
+      localStorage.setItem('mink_widgets_menu', String(showWidgetsMenu))
     } catch {
       // ignore
     }

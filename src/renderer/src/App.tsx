@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react'
-import { ChevronsRight, Smile, Image, AppWindow, ListTree, X } from 'lucide-react'
+import { Smile, Image, AppWindow, ListTree, X, Minimize2 } from 'lucide-react'
 import BlockEditor from './components/BlockEditor'
 import EmojiPicker from './components/EmojiPicker'
 import BannerPicker from './components/BannerPicker'
@@ -46,20 +46,60 @@ export default function App(): React.JSX.Element {
 
   const [fileIcons, setFileIcons] = useState<Record<string, string>>({})
   const [fileBanners, setFileBanners] = useState<Record<string, string>>({})
+  const [fileMetadataMap, setFileMetadataMap] = useState<Record<string, MarkdownMetadata>>({})
+  const [lastEditedMap, setLastEditedMap] = useState<Record<string, number>>({})
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false)
   const [showBannerPicker, setShowBannerPicker] = useState<boolean>(false)
-  const [showCover, setShowCover] = useState<boolean>(true)
-  const [showIcon, setShowIcon] = useState<boolean>(true)
-  const [showFileName, setShowFileName] = useState<boolean>(true)
+  const [globalShowCover, setGlobalShowCover] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('mink_global_show_cover')
+      return saved !== null ? saved === 'true' : true
+    } catch {
+      return true
+    }
+  })
+  const [globalShowIcon, setGlobalShowIcon] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('mink_global_show_icon')
+      return saved !== null ? saved === 'true' : true
+    } catch {
+      return true
+    }
+  })
+  const [globalShowFileName, setGlobalShowFileName] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('mink_global_show_file_name')
+      return saved !== null ? saved === 'true' : true
+    } catch {
+      return true
+    }
+  })
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false)
 
   const [editorFontFamily, setEditorFontFamily] = useState<string>(
-    () => localStorage.getItem('notie_editor_font_family') || "'Inter', sans-serif"
+    () => localStorage.getItem('mink_editor_font_family') || "'Inter', sans-serif"
   )
   const [editorFontSize, setEditorFontSize] = useState<number>(() => {
-    const saved = localStorage.getItem('notie_editor_font_size')
+    const saved = localStorage.getItem('mink_editor_font_size')
     return saved ? parseInt(saved, 10) : 15
   })
+  const [editorLineHeight, setEditorLineHeight] = useState<string>(
+    () => localStorage.getItem('mink_editor_line_height') || '1.7'
+  )
+  const [editorLetterSpacing, setEditorLetterSpacing] = useState<string>(
+    () => localStorage.getItem('mink_editor_letter_spacing') || 'normal'
+  )
+  const [editorParagraphSpacing, setEditorParagraphSpacing] = useState<string>(
+    () => localStorage.getItem('mink_editor_paragraph_spacing') || '1.2em'
+  )
+  const [editorFontWeight, setEditorFontWeight] = useState<string>(
+    () => localStorage.getItem('mink_editor_font_weight') || '400'
+  )
+  const [editorTextAlign, setEditorTextAlign] = useState<string>(
+    () => localStorage.getItem('mink_editor_text_align') || 'left'
+  )
+  const [isFullScreen, setIsFullScreen] = useState<boolean>(false)
+  const [isPageLocked, setIsPageLocked] = useState<boolean>(false)
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => savedState.viewMode ?? 'editor')
   const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(
@@ -74,7 +114,7 @@ export default function App(): React.JSX.Element {
   )
   const [showTabs, setShowTabs] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('notie_show_tabs')
+      const saved = localStorage.getItem('mink_show_tabs')
       return saved !== null ? saved === 'true' : true
     } catch {
       return true
@@ -86,7 +126,7 @@ export default function App(): React.JSX.Element {
   const [searchQuery, setSearchQuery] = useState<string>(() => savedState.searchQuery ?? '')
   const [sidebarView, setSidebarView] = useState<'explorer' | 'plugins'>(() => {
     try {
-      const saved = localStorage.getItem('notie_sidebar_view')
+      const saved = localStorage.getItem('mink_sidebar_view')
       return (saved as 'explorer' | 'plugins') || 'explorer'
     } catch {
       return 'explorer'
@@ -94,7 +134,7 @@ export default function App(): React.JSX.Element {
   })
   const [enabledPlugins, setEnabledPlugins] = useState<Record<string, boolean>>(() => {
     try {
-      const saved = localStorage.getItem('notie_enabled_plugins')
+      const saved = localStorage.getItem('mink_enabled_plugins')
       if (saved) return JSON.parse(saved)
     } catch {
       // ignore
@@ -108,7 +148,7 @@ export default function App(): React.JSX.Element {
 
   useEffect(() => {
     try {
-      localStorage.setItem('notie_show_tabs', String(showTabs))
+      localStorage.setItem('mink_show_tabs', String(showTabs))
     } catch {
       // ignore
     }
@@ -116,7 +156,7 @@ export default function App(): React.JSX.Element {
 
   useEffect(() => {
     try {
-      localStorage.setItem('notie_sidebar_view', sidebarView)
+      localStorage.setItem('mink_sidebar_view', sidebarView)
     } catch {
       // ignore
     }
@@ -126,7 +166,7 @@ export default function App(): React.JSX.Element {
     setEnabledPlugins((prev) => {
       const updated = { ...prev, [pluginId]: !prev[pluginId] }
       try {
-        localStorage.setItem('notie_enabled_plugins', JSON.stringify(updated))
+        localStorage.setItem('mink_enabled_plugins', JSON.stringify(updated))
       } catch {
         // ignore
       }
@@ -160,6 +200,30 @@ export default function App(): React.JSX.Element {
     startLeftResize,
     startRightResize
   } = useSidebarResize(savedState.sidebarWidth ?? 240, savedState.rightSidebarWidth ?? 220)
+
+  // Per-file vs Global display options resolution
+  const activeRelKey = useMemo(() => {
+    if (!activeFilePath || !workspacePath) return ''
+    return getRelativePath(activeFilePath, workspacePath).toLowerCase()
+  }, [activeFilePath, workspacePath])
+
+  const activeFileMeta = fileMetadataMap[activeRelKey]
+
+  const isOnlyThisFile = useMemo(() => {
+    if (!activeFileMeta) return false
+    return (
+      activeFileMeta.showCover !== undefined ||
+      activeFileMeta.showIcon !== undefined ||
+      activeFileMeta.showFileName !== undefined
+    )
+  }, [activeFileMeta])
+
+  const effectiveShowCover =
+    activeFileMeta?.showCover !== undefined ? activeFileMeta.showCover : globalShowCover
+  const effectiveShowIcon =
+    activeFileMeta?.showIcon !== undefined ? activeFileMeta.showIcon : globalShowIcon
+  const effectiveShowFileName =
+    activeFileMeta?.showFileName !== undefined ? activeFileMeta.showFileName : globalShowFileName
 
   // Floating Widgets Manager custom hook
   const {
@@ -218,7 +282,7 @@ export default function App(): React.JSX.Element {
   // Workspace Icons custom emoji mapping
   const [workspaceIcons, setWorkspaceIcons] = useState<Record<string, string>>(() => {
     try {
-      const saved = localStorage.getItem('notie_workspace_icons')
+      const saved = localStorage.getItem('mink_workspace_icons')
       return saved ? JSON.parse(saved) : {}
     } catch {
       return {}
@@ -237,7 +301,7 @@ export default function App(): React.JSX.Element {
         next[wsPath] = icon
       }
       try {
-        localStorage.setItem('notie_workspace_icons', JSON.stringify(next))
+        localStorage.setItem('mink_workspace_icons', JSON.stringify(next))
       } catch {
         // ignore
       }
@@ -248,7 +312,7 @@ export default function App(): React.JSX.Element {
   // Granular Status Bar Stats Metrics Configuration
   const [statsConfig, setStatsConfig] = useState<StatusStatsConfig>(() => {
     try {
-      const saved = localStorage.getItem('notie_status_stats_config')
+      const saved = localStorage.getItem('mink_status_stats_config')
       if (saved) return JSON.parse(saved)
     } catch {
       // ignore
@@ -268,7 +332,7 @@ export default function App(): React.JSX.Element {
     setStatsConfig((prev) => {
       const next = { ...prev, [key]: !prev[key] }
       try {
-        localStorage.setItem('notie_status_stats_config', JSON.stringify(next))
+        localStorage.setItem('mink_status_stats_config', JSON.stringify(next))
       } catch {
         // ignore
       }
@@ -407,10 +471,15 @@ export default function App(): React.JSX.Element {
           if (parsed.metadata.banner) {
             setFileBanners((prev) => ({ ...prev, [relKey]: parsed.metadata.banner! }))
           }
+          setFileMetadataMap((prev) => ({
+            ...prev,
+            [relKey]: { ...parsed.metadata }
+          }))
         }
 
         setFileContents((prev) => ({ ...prev, [normPath]: bodyContent }))
         setOriginalFileContents((prev) => ({ ...prev, [normPath]: bodyContent }))
+        setLastEditedMap((prev) => (prev[normPath] ? prev : { ...prev, [normPath]: Date.now() }))
         return bodyContent
       } catch (err) {
         console.error(`Failed to read file ${normPath}:`, err)
@@ -516,18 +585,30 @@ export default function App(): React.JSX.Element {
     if (normPath.endsWith('.md')) {
       const rel = getRelativePath(normPath, workspacePath)
       const relKey = rel.toLowerCase()
+      const meta = fileMetadataMap[relKey] || {}
       if (fileIcons[relKey]) metadataEngine.setIcon(rel, fileIcons[relKey])
       if (fileBanners[relKey]) metadataEngine.setBanner(rel, fileBanners[relKey])
-      contentToSave = await metadataEngine.prepareForSaveAsync(contentToSave, rel)
+      metadataEngine.setShowCover(rel, meta.showCover)
+      metadataEngine.setShowIcon(rel, meta.showIcon)
+      metadataEngine.setShowFileName(rel, meta.showFileName)
+
+      contentToSave = await metadataEngine.prepareForSaveAsync(contentToSave, rel, {
+        icon: fileIcons[relKey],
+        banner: fileBanners[relKey],
+        showCover: meta.showCover,
+        showIcon: meta.showIcon,
+        showFileName: meta.showFileName
+      })
     }
 
     try {
       await window.api.fs.writeFile(normPath, contentToSave)
       setOriginalFileContents((prev) => ({ ...prev, [normPath]: fileContents[normPath] ?? '' }))
+      setLastEditedMap((prev) => ({ ...prev, [normPath]: Date.now() }))
     } catch (err) {
       alert(`Error saving file: ${err}`)
     }
-  }, [activeFilePath, fileContents, fileIcons, fileBanners, workspacePath])
+  }, [activeFilePath, fileContents, fileIcons, fileBanners, fileMetadataMap, workspacePath])
 
   // Autosave effect
   useEffect(() => {
@@ -547,15 +628,139 @@ export default function App(): React.JSX.Element {
     return (): void => clearTimeout(timer)
   }, [fileContents, originalFileContents, activeFilePath, autoSaveEnabled, handleSaveActiveFile])
 
+  const handleToggleOnlyThisFile = useCallback(() => {
+    if (!activeFilePath || !workspacePath) return
+    const rel = getRelativePath(activeFilePath, workspacePath)
+    const relKey = rel.toLowerCase()
+
+    setFileMetadataMap((prev) => {
+      const current = prev[relKey] || {}
+      const currentlyOnlyThisFile =
+        current.showCover !== undefined ||
+        current.showIcon !== undefined ||
+        current.showFileName !== undefined
+
+      const nextMeta = { ...current }
+      if (currentlyOnlyThisFile) {
+        delete nextMeta.showCover
+        delete nextMeta.showIcon
+        delete nextMeta.showFileName
+        metadataEngine.clearFileOverrides(rel)
+      } else {
+        nextMeta.showCover = effectiveShowCover
+        nextMeta.showIcon = effectiveShowIcon
+        nextMeta.showFileName = effectiveShowFileName
+        metadataEngine.setShowCover(rel, effectiveShowCover)
+        metadataEngine.setShowIcon(rel, effectiveShowIcon)
+        metadataEngine.setShowFileName(rel, effectiveShowFileName)
+      }
+      return { ...prev, [relKey]: nextMeta }
+    })
+
+    setTimeout(() => {
+      void handleSaveActiveFile()
+    }, 50)
+  }, [
+    activeFilePath,
+    workspacePath,
+    effectiveShowCover,
+    effectiveShowIcon,
+    effectiveShowFileName,
+    handleSaveActiveFile
+  ])
+
+  const handleToggleCover = useCallback(() => {
+    if (isOnlyThisFile && activeFilePath && workspacePath) {
+      const rel = getRelativePath(activeFilePath, workspacePath)
+      const relKey = rel.toLowerCase()
+      const nextVal = !effectiveShowCover
+      setFileMetadataMap((prev) => ({
+        ...prev,
+        [relKey]: { ...prev[relKey], showCover: nextVal }
+      }))
+      metadataEngine.setShowCover(rel, nextVal)
+      setTimeout(() => {
+        void handleSaveActiveFile()
+      }, 50)
+    } else {
+      setGlobalShowCover((prev) => {
+        const next = !prev
+        try {
+          localStorage.setItem('mink_global_show_cover', String(next))
+        } catch {
+          // ignore
+        }
+        return next
+      })
+    }
+  }, [isOnlyThisFile, activeFilePath, workspacePath, effectiveShowCover, handleSaveActiveFile])
+
+  const handleToggleIcon = useCallback(() => {
+    if (isOnlyThisFile && activeFilePath && workspacePath) {
+      const rel = getRelativePath(activeFilePath, workspacePath)
+      const relKey = rel.toLowerCase()
+      const nextVal = !effectiveShowIcon
+      setFileMetadataMap((prev) => ({
+        ...prev,
+        [relKey]: { ...prev[relKey], showIcon: nextVal }
+      }))
+      metadataEngine.setShowIcon(rel, nextVal)
+      setTimeout(() => {
+        void handleSaveActiveFile()
+      }, 50)
+    } else {
+      setGlobalShowIcon((prev) => {
+        const next = !prev
+        try {
+          localStorage.setItem('mink_global_show_icon', String(next))
+        } catch {
+          // ignore
+        }
+        return next
+      })
+    }
+  }, [isOnlyThisFile, activeFilePath, workspacePath, effectiveShowIcon, handleSaveActiveFile])
+
+  const handleToggleFileName = useCallback(() => {
+    if (isOnlyThisFile && activeFilePath && workspacePath) {
+      const rel = getRelativePath(activeFilePath, workspacePath)
+      const relKey = rel.toLowerCase()
+      const nextVal = !effectiveShowFileName
+      setFileMetadataMap((prev) => ({
+        ...prev,
+        [relKey]: { ...prev[relKey], showFileName: nextVal }
+      }))
+      metadataEngine.setShowFileName(rel, nextVal)
+      setTimeout(() => {
+        void handleSaveActiveFile()
+      }, 50)
+    } else {
+      setGlobalShowFileName((prev) => {
+        const next = !prev
+        try {
+          localStorage.setItem('mink_global_show_file_name', String(next))
+        } catch {
+          // ignore
+        }
+        return next
+      })
+    }
+  }, [isOnlyThisFile, activeFilePath, workspacePath, effectiveShowFileName, handleSaveActiveFile])
+
   const handleMetadataLoaded = useCallback(
     (filePath: string, metadata: MarkdownMetadata): void => {
       const rel = getRelativePath(filePath, workspacePath)
+      const relKey = rel.toLowerCase()
       if (metadata.icon) {
-        setFileIcons((prev) => ({ ...prev, [rel.toLowerCase()]: metadata.icon! }))
+        setFileIcons((prev) => ({ ...prev, [relKey]: metadata.icon! }))
       }
       if (metadata.banner) {
-        setFileBanners((prev) => ({ ...prev, [rel.toLowerCase()]: metadata.banner! }))
+        setFileBanners((prev) => ({ ...prev, [relKey]: metadata.banner! }))
       }
+      setFileMetadataMap((prev) => ({
+        ...prev,
+        [relKey]: { ...prev[relKey], ...metadata }
+      }))
     },
     [workspacePath]
   )
@@ -615,7 +820,7 @@ export default function App(): React.JSX.Element {
   const handleFontFamilyChange = useCallback((font: string) => {
     setEditorFontFamily(font)
     try {
-      localStorage.setItem('notie_editor_font_family', font)
+      localStorage.setItem('mink_editor_font_family', font)
     } catch {
       // ignore
     }
@@ -624,11 +829,102 @@ export default function App(): React.JSX.Element {
   const handleFontSizeChange = useCallback((size: number) => {
     setEditorFontSize(size)
     try {
-      localStorage.setItem('notie_editor_font_size', size.toString())
+      localStorage.setItem('mink_editor_font_size', size.toString())
     } catch {
       // ignore
     }
   }, [])
+
+  const handleLineHeightChange = useCallback((val: string) => {
+    setEditorLineHeight(val)
+    try {
+      localStorage.setItem('mink_editor_line_height', val)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const handleLetterSpacingChange = useCallback((val: string) => {
+    setEditorLetterSpacing(val)
+    try {
+      localStorage.setItem('mink_editor_letter_spacing', val)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const handleParagraphSpacingChange = useCallback((val: string) => {
+    setEditorParagraphSpacing(val)
+    try {
+      localStorage.setItem('mink_editor_paragraph_spacing', val)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const handleFontWeightChange = useCallback((val: string) => {
+    setEditorFontWeight(val)
+    try {
+      localStorage.setItem('mink_editor_font_weight', val)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const handleTextAlignChange = useCallback((val: string) => {
+    setEditorTextAlign(val)
+    try {
+      localStorage.setItem('mink_editor_text_align', val)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const handleToggleFullScreen = useCallback(() => {
+    setIsFullScreen((prev) => {
+      const next = !prev
+      try {
+        window.api?.window?.toggleFullScreen?.()
+      } catch {
+        // ignore
+      }
+      return next
+    })
+  }, [])
+
+  const handleToggleLockPage = useCallback(() => {
+    setIsPageLocked((prev) => !prev)
+  }, [])
+
+  const handleDuplicateFile = useCallback(async (): Promise<void> => {
+    if (!activeFilePath || !workspacePath) return
+    const lastSlash = Math.max(activeFilePath.lastIndexOf('/'), activeFilePath.lastIndexOf('\\'))
+    const dir = lastSlash > 0 ? activeFilePath.substring(0, lastSlash) : workspacePath
+    const baseName = activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || 'document'
+    const newFileName = `${baseName} (copy).md`
+    const newPath = normalizePath(`${dir}/${newFileName}`)
+    const content = fileContents[normalizePath(activeFilePath)] || ''
+    try {
+      await window.api.fs.createFile(dir, newFileName)
+      await window.api.fs.writeFile(newPath, content)
+      await handleFileSelect(newPath)
+    } catch (err) {
+      alert(`Failed to duplicate: ${err}`)
+    }
+  }, [activeFilePath, workspacePath, fileContents, handleFileSelect])
+
+  const handleDeleteFile = useCallback(async (): Promise<void> => {
+    if (!activeFilePath) return
+    const name = activeFilePath.split(/[\\/]/).pop() || 'file'
+    const confirmed = confirm(`Are you sure you want to move "${name}" to trash?`)
+    if (!confirmed) return
+    try {
+      await window.api.fs.deletePath(activeFilePath)
+      handleTabClose(activeFilePath)
+    } catch (err) {
+      alert(`Failed to delete: ${err}`)
+    }
+  }, [activeFilePath, handleTabClose])
 
   const handleExportHTML = useCallback(async () => {
     if (!activeFilePath) return
@@ -648,30 +944,33 @@ export default function App(): React.JSX.Element {
       line-height: 1.65;
       max-width: 800px;
       margin: 40px auto;
-      padding: 0 24px;
-      color: #1a1a1a;
-      background: #fafafa;
+      padding: 0 20px;
+      color: #e4e4e7;
+      background: #18181b;
     }
-    h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 600; line-height: 1.3; }
-    h1 { font-size: 2em; border-bottom: 1px solid #e5e5e5; padding-bottom: 0.3em; }
-    h2 { font-size: 1.5em; border-bottom: 1px solid #eaeaea; padding-bottom: 0.25em; }
-    h3 { font-size: 1.25em; }
+    h1, h2, h3, h4, h5, h6 { color: #f4f4f5; font-weight: 600; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2.2em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
+    h2 { font-size: 1.6em; border-bottom: 1px solid #27272a; padding-bottom: 0.3em; }
+    h3 { font-size: 1.3em; }
     p { margin-bottom: 1em; }
-    ul, ol { padding-left: 24px; margin-bottom: 1em; }
-    li { margin-bottom: 0.25em; }
-    code { background: rgba(0, 0, 0, 0.06); padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
-    blockquote { border-left: 4px solid #d1d5db; margin: 1.2em 0; padding: 0.5em 1em; color: #4b5563; background: rgba(0, 0, 0, 0.02); }
-    a { color: #2563eb; text-decoration: none; }
+    a { color: #3b82f6; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    img { max-width: 100%; height: auto; border-radius: 4px; }
+    code { background: #27272a; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+    pre { background: #27272a; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 1em 0; }
+    blockquote { border-left: 4px solid #3b82f6; margin: 1em 0; padding: 0.5em 1em; color: #a1a1aa; background: #202023; border-radius: 0 4px 4px 0; }
+    ul, ol { padding-left: 2em; margin-bottom: 1em; }
+    li { margin-bottom: 0.3em; }
+    hr { border: none; border-top: 1px solid #27272a; margin: 2em 0; }
+    img { max-width: 100%; border-radius: 6px; margin: 1em 0; }
+    table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+    th, td { border: 1px solid #27272a; padding: 8px 12px; text-align: left; }
+    th { background: #202023; }
   </style>
 </head>
 <body>
-  <h1>${baseName}</h1>
   ${htmlBody}
 </body>
 </html>`
-
     try {
       const savePath = await window.api.fs.showSaveDialog(`${baseName}.html`)
       if (savePath) {
@@ -686,7 +985,7 @@ export default function App(): React.JSX.Element {
     if (!activeFilePath) return
     const rawContent = fileContents[activeFilePath] || ''
     const baseName = activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || 'document'
-    const plainText = stripFrontmatter(rawContent)
+    const plainText = stripFrontmatter(rawContent).replace(/[#*_`~[\]()]/g, '')
     try {
       const savePath = await window.api.fs.showSaveDialog(`${baseName}.txt`)
       if (savePath) {
@@ -717,9 +1016,45 @@ export default function App(): React.JSX.Element {
     navigator.clipboard.writeText(`[[${baseName}]]`)
   }, [activeFilePath])
 
-  // Keyboard Shortcuts (Ctrl+S, Ctrl+O, Ctrl+N, Ctrl+W)
+  const handleImportFile = useCallback(async () => {
+    try {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.md,.markdown,.txt,.json'
+      input.onchange = async (e: Event): Promise<void> => {
+        const file = (e.target as HTMLInputElement).files?.[0]
+        if (!file) return
+        const text = await file.text()
+        const fileName = file.name
+        if (workspacePath) {
+          const newPath = normalizePath(`${workspacePath}/${fileName}`)
+          await window.api.fs.writeFile(newPath, text)
+          await handleFileSelect(newPath)
+        }
+      }
+      input.click()
+    } catch (err) {
+      alert(`Import error: ${err}`)
+    }
+  }, [workspacePath, handleFileSelect])
+
+  // Keyboard Shortcuts (Ctrl+S, Ctrl+O, Ctrl+N, Ctrl+W, F11, Esc)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape' && isFullScreen) {
+        setIsFullScreen(false)
+        try {
+          window.api?.window?.toggleFullScreen?.()
+        } catch {
+          // ignore
+        }
+        return
+      }
+      if (e.key === 'F11') {
+        e.preventDefault()
+        handleToggleFullScreen()
+        return
+      }
       if (e.ctrlKey || e.metaKey) {
         if (e.key.toLowerCase() === 's') {
           e.preventDefault()
@@ -743,10 +1078,12 @@ export default function App(): React.JSX.Element {
   }, [
     workspacePath,
     activeFilePath,
+    isFullScreen,
     handleSaveActiveFile,
     handleOpenWorkspace,
     handleTabClose,
-    handleCreateFileAtRoot
+    handleCreateFileAtRoot,
+    handleToggleFullScreen
   ])
 
   // Track unsaved file changes
@@ -769,10 +1106,6 @@ export default function App(): React.JSX.Element {
       fileContents[activeFilePath] !== originalFileContents[activeFilePath]
     : false
 
-  const activeRelKey = activeFilePath
-    ? getRelativePath(activeFilePath, workspacePath).toLowerCase()
-    : ''
-
   const activeFileIcon = activeFilePath ? fileIcons[activeRelKey] : undefined
   const activeFileBanner = activeFilePath ? fileBanners[activeRelKey] : undefined
 
@@ -789,61 +1122,57 @@ export default function App(): React.JSX.Element {
   }, [])
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${isFullScreen ? 'distraction-free-fullscreen' : ''}`}>
+      {/* Floating Exit Fullscreen Button in Distraction-Free Mode */}
+      {isFullScreen && (
+        <div className="fullscreen-exit-wrapper">
+          <button
+            type="button"
+            className="exit-fullscreen-floating-btn"
+            onClick={handleToggleFullScreen}
+            title="Exit Full Screen (Esc / F11)"
+          >
+            <Minimize2 size={13} />
+            <span>Exit Full Screen</span>
+          </button>
+        </div>
+      )}
+
       {/* ====== 1. TOP WINDOW TITLEBAR ====== */}
       <TopHeader
-        workspacePath={workspacePath}
-        workspaceName={workspaceName}
-        activeFilePath={activeFilePath}
-        fileIcons={fileIcons}
-        onOpenWorkspace={handleOpenWorkspace}
         onOpenSettings={(): void => setShowSettingsModal(true)}
-      />
-
-      {/* ====== 2. SUB-HEADER QUICK ACTIONS BAR ====== */}
-      <SubHeader
-        onSaveActiveFile={handleSaveActiveFile}
         viewMode={viewMode}
         onToggleViewMode={(): void => setViewMode((m) => (m === 'graph' ? 'editor' : 'graph'))}
         setViewMode={setViewMode}
-        onOpenWorkspace={handleOpenWorkspace}
-        onCreateFileAtRoot={handleCreateFileAtRoot}
-        autoSaveEnabled={autoSaveEnabled}
-        onToggleAutoSave={(): void => setAutoSaveEnabled((p) => !p)}
-        activeUnsaved={activeUnsaved}
-        widgetState={widgetState}
-        onToggleWidget={handleToggleWidget}
-        showRightSidebar={showRightSidebar}
-        onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
-        showSearchInput={showSearchInput}
-        onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
-        showTabs={showTabs}
-        onToggleTabs={(): void => setShowTabs((p) => !p)}
         sidebarView={sidebarView}
         sidebarCollapsed={sidebarCollapsed}
         onTogglePluginsView={handleTogglePluginsView}
         onSwitchToFiles={handleSwitchToFiles}
         enabledPluginsCount={Object.values(enabledPlugins).filter(Boolean).length}
-        onExportHTML={handleExportHTML}
-        onExportText={handleExportText}
-        onExportMarkdown={handleExportMarkdown}
-        onCopyLink={handleCopyLink}
+        showSearchInput={showSearchInput}
+        onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
+        showTabs={showTabs}
+        onToggleTabs={(): void => setShowTabs((p) => !p)}
+        showRightSidebar={showRightSidebar}
+        onToggleRightSidebar={(): void => setShowRightSidebar((p) => !p)}
+        widgetState={widgetState}
+        onToggleWidget={handleToggleWidget}
+        activeUnsaved={activeUnsaved}
+        autoSaveEnabled={autoSaveEnabled}
+        onToggleAutoSave={(): void => setAutoSaveEnabled((p) => !p)}
+        showCover={effectiveShowCover}
+        showIcon={effectiveShowIcon}
+        showFileName={effectiveShowFileName}
+        isOnlyThisFile={isOnlyThisFile}
+        activeFilePath={activeFilePath}
+        onToggleCover={handleToggleCover}
+        onToggleIcon={handleToggleIcon}
+        onToggleFileName={handleToggleFileName}
+        onToggleOnlyThisFile={handleToggleOnlyThisFile}
       />
 
-      {/* ====== 3. MAIN APP CONTENT CONTAINER ====== */}
+      {/* ====== 2. MAIN APP CONTENT CONTAINER ====== */}
       <div className="app-main">
-        {/* Floating Open Sidebar Button when collapsed */}
-        {sidebarCollapsed && (
-          <button
-            type="button"
-            className="floating-sidebar-toggle-btn"
-            onClick={(): void => setSidebarCollapsed(false)}
-            title="Expand Explorer Sidebar"
-          >
-            <ChevronsRight size={14} strokeWidth={1.75} />
-          </button>
-        )}
-
         {/* Sidebar Panel */}
         <Sidebar
           activeView={sidebarView}
@@ -877,6 +1206,57 @@ export default function App(): React.JSX.Element {
 
         {/* Editor Workspace & Split Area */}
         <div className={`editor-workspace ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+          {/* Sub-Header Actions & Breadcrumbs Bar (on same level as sidebar) */}
+          <SubHeader
+            sidebarCollapsed={sidebarCollapsed}
+            onToggleSidebar={(): void => setSidebarCollapsed((p) => !p)}
+            workspacePath={workspacePath}
+            workspaceName={workspaceName}
+            activeFilePath={activeFilePath}
+            onOpenWorkspace={handleOpenWorkspace}
+            autoSaveEnabled={autoSaveEnabled}
+            onToggleAutoSave={(): void => setAutoSaveEnabled((p) => !p)}
+            onExportHTML={handleExportHTML}
+            onExportText={handleExportText}
+            onExportMarkdown={handleExportMarkdown}
+            onCopyLink={handleCopyLink}
+            lastEditedTime={
+              activeFilePath ? lastEditedMap[normalizePath(activeFilePath)] || null : null
+            }
+            statsConfig={statsConfig}
+            onToggleStat={handleToggleStat}
+            showCover={effectiveShowCover}
+            showIcon={effectiveShowIcon}
+            showFileName={effectiveShowFileName}
+            isOnlyThisFile={isOnlyThisFile}
+            onToggleCover={handleToggleCover}
+            onToggleIcon={handleToggleIcon}
+            onToggleFileName={handleToggleFileName}
+            onToggleOnlyThisFile={handleToggleOnlyThisFile}
+            fileContent={activeFilePath ? fileContents[normalizePath(activeFilePath)] : ''}
+            editorFontFamily={editorFontFamily}
+            onChangeFontFamily={handleFontFamilyChange}
+            editorFontSize={editorFontSize}
+            onChangeFontSize={handleFontSizeChange}
+            editorLineHeight={editorLineHeight}
+            onChangeLineHeight={handleLineHeightChange}
+            editorLetterSpacing={editorLetterSpacing}
+            onChangeLetterSpacing={handleLetterSpacingChange}
+            editorParagraphSpacing={editorParagraphSpacing}
+            onChangeParagraphSpacing={handleParagraphSpacingChange}
+            editorFontWeight={editorFontWeight}
+            onChangeFontWeight={handleFontWeightChange}
+            editorTextAlign={editorTextAlign}
+            onChangeTextAlign={handleTextAlignChange}
+            isFullScreen={isFullScreen}
+            onToggleFullScreen={handleToggleFullScreen}
+            isPageLocked={isPageLocked}
+            onToggleLockPage={handleToggleLockPage}
+            onDuplicateFile={handleDuplicateFile}
+            onDeleteFile={handleDeleteFile}
+            onImport={handleImportFile}
+          />
+
           {viewMode !== 'graph' && showTabs && (
             <div className="editor-top-nav">
               <TabBar
@@ -914,12 +1294,17 @@ export default function App(): React.JSX.Element {
                   style={
                     {
                       '--editor-font-family': editorFontFamily,
-                      '--editor-font-size': `${editorFontSize}px`
+                      '--editor-font-size': `${editorFontSize}px`,
+                      '--editor-line-height': editorLineHeight,
+                      '--editor-letter-spacing': editorLetterSpacing,
+                      '--editor-paragraph-spacing': editorParagraphSpacing,
+                      '--editor-font-weight': editorFontWeight,
+                      '--editor-text-align': editorTextAlign
                     } as React.CSSProperties
                   }
                 >
                   {/* 1. NOTION-STYLE FULL-WIDTH COVER BANNER */}
-                  {showCover && activeFileBanner && (
+                  {effectiveShowCover && activeFileBanner && (
                     <div
                       className="notion-cover-banner group"
                       style={
@@ -960,16 +1345,17 @@ export default function App(): React.JSX.Element {
                   )}
 
                   <div
-                    className={`editor-wrapper ${showCover && activeFileBanner ? 'has-cover' : ''}`}
+                    className={`editor-wrapper ${effectiveShowCover && activeFileBanner ? 'has-cover' : ''}`}
                   >
                     {/* NOTION-STYLE PAGE HEADER */}
                     <div
-                      className={`notion-page-header ${showCover && activeFileBanner ? 'has-cover' : ''} ${showIcon && activeFileIcon ? 'has-icon' : ''}`}
+                      className={`notion-page-header ${effectiveShowCover && activeFileBanner ? 'has-cover' : ''} ${effectiveShowIcon && activeFileIcon ? 'has-icon' : ''}`}
                     >
                       {/* Top ghost buttons when no icon or cover exists */}
-                      {((showIcon && !activeFileIcon) || (showCover && !activeFileBanner)) && (
+                      {((effectiveShowIcon && !activeFileIcon) ||
+                        (effectiveShowCover && !activeFileBanner)) && (
                         <div className="notion-header-ghost-actions">
-                          {showIcon && !activeFileIcon && (
+                          {effectiveShowIcon && !activeFileIcon && (
                             <button
                               className="notion-ghost-btn"
                               onClick={(): void => setShowEmojiPicker(true)}
@@ -978,7 +1364,7 @@ export default function App(): React.JSX.Element {
                               <span>Add icon</span>
                             </button>
                           )}
-                          {showCover && !activeFileBanner && (
+                          {effectiveShowCover && !activeFileBanner && (
                             <button
                               className="notion-ghost-btn"
                               onClick={(): void => setShowBannerPicker(true)}
@@ -991,9 +1377,9 @@ export default function App(): React.JSX.Element {
                       )}
 
                       {/* Page Icon Display */}
-                      {showIcon && activeFileIcon && (
+                      {effectiveShowIcon && activeFileIcon && (
                         <div
-                          className={`notion-icon-container group ${showCover && activeFileBanner ? 'has-cover' : ''}`}
+                          className={`notion-icon-container group ${effectiveShowCover && activeFileBanner ? 'has-cover' : ''}`}
                         >
                           <button
                             className="notion-icon-btn"
@@ -1100,10 +1486,11 @@ export default function App(): React.JSX.Element {
                       )}
                     </div>
 
-                    {showFileName && (
+                    {effectiveShowFileName && (
                       <input
                         className="document-title-input"
                         type="text"
+                        disabled={isPageLocked}
                         value={
                           activeFilePath
                             ? activeFilePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || ''
@@ -1136,9 +1523,16 @@ export default function App(): React.JSX.Element {
 
                     <BlockEditor
                       value={fileContents[activeFilePath] || ''}
+                      readOnly={isPageLocked}
                       onChange={(value): void => {
                         if (activeFilePath) {
-                          setFileContents((prev) => ({ ...prev, [activeFilePath]: value }))
+                          const norm = normalizePath(activeFilePath)
+                          setFileContents((prev) => ({
+                            ...prev,
+                            [activeFilePath]: value,
+                            [norm]: value
+                          }))
+                          setLastEditedMap((prev) => ({ ...prev, [norm]: Date.now() }))
                         }
                       }}
                       activeFilePath={activeFilePath}
@@ -1147,7 +1541,7 @@ export default function App(): React.JSX.Element {
                   </div>
                 </div>
 
-                {/* Floating Stats, Tools & Autosave Pill inside Writing Area Viewport */}
+                {/* Floating Stats & Autosave Pill inside Writing Area Viewport */}
                 <StatusBar
                   activeFilePath={activeFilePath}
                   activeFileContent={activeFilePath ? fileContents[activeFilePath] : undefined}
@@ -1155,13 +1549,6 @@ export default function App(): React.JSX.Element {
                   autoSaveEnabled={autoSaveEnabled}
                   activeUnsaved={activeUnsaved}
                   statsConfig={statsConfig}
-                  onToggleStat={handleToggleStat}
-                  showCover={showCover}
-                  showIcon={showIcon}
-                  showFileName={showFileName}
-                  onToggleCover={(): void => setShowCover((prev) => !prev)}
-                  onToggleIcon={(): void => setShowIcon((prev) => !prev)}
-                  onToggleFileName={(): void => setShowFileName((prev) => !prev)}
                 />
               </div>
             ) : (
