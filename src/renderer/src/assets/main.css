@@ -781,6 +781,14 @@ body {
   background: #24242a;
 }
 
+.sub-header-divider {
+  width: 1px;
+  height: 16px;
+  background-color: rgba(255, 255, 255, 0.12);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
 .actions-bar-right {
   display: flex;
   align-items: center;
@@ -2140,12 +2148,17 @@ body {
   position: relative;
 }
 
-/* Tree hierarchy in Notion is borderless with clean depth-based padding */
+/* Tree hierarchy with crisp indentation guide lines */
 .tree-node-children {
   position: relative;
-  margin-left: 0;
-  border-left: none;
-  padding-left: 0;
+  margin-left: 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding-left: 4px;
+  transition: border-left-color 0.15s ease;
+}
+
+.tree-node-children:hover {
+  border-left-color: rgba(255, 255, 255, 0.18);
 }
 
 .tree-create-form {
@@ -2157,7 +2170,7 @@ body {
   align-items: center;
   justify-content: space-between;
   height: 28px;
-  padding-right: 8px;
+  padding: 0 8px;
   border-radius: 4px;
   cursor: pointer;
   color: #9b9a97;
@@ -2454,34 +2467,41 @@ body {
 /* Context menu popover */
 .context-menu-popover {
   position: fixed;
-  z-index: 9999;
-  background: #1e1e24;
-  border: 1px solid #323238;
+  z-index: 999999;
+  background: #1c1c20;
+  border: 1px solid #303038;
+  border-radius: 6px;
   padding: 4px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  min-width: 140px;
+  box-shadow:
+    0 16px 36px -4px rgba(0, 0, 0, 0.8),
+    0 4px 12px rgba(0, 0, 0, 0.5);
+  min-width: 150px;
   display: flex;
   flex-direction: column;
   gap: 1px;
+  user-select: none;
+  animation: fadeInFast 0.1s ease;
 }
 
 .context-menu-item {
   background: transparent;
   border: none;
-  color: var(--text-main);
-  font-size: 11.5px;
-  padding: 6px 10px;
+  border-radius: 4px;
+  color: #d4d4d8;
+  font-size: 12px;
+  padding: 5px 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
   text-align: left;
   width: 100%;
-  transition: background 0.1s ease;
+  transition: all 0.1s ease;
 }
 
 .context-menu-item:hover {
-  background: #2a2a32;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
 .context-menu-item.danger {
@@ -2489,13 +2509,14 @@ body {
 }
 
 .context-menu-item.danger:hover {
-  background: #2d1a1a;
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
 }
 
 .context-menu-divider {
   height: 1px;
-  background: #2a2a32;
-  margin: 3px 6px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 3px 4px;
 }
 
 /* Drag over highlight */

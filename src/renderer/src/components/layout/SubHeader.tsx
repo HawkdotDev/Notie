@@ -82,7 +82,7 @@ function SubHeader({
                 : ''
             }
           />
-          <span>File</span>
+          <span>Files</span>
         </button>
 
         {/* 2. Knowledge Graph Tab */}
@@ -101,6 +101,9 @@ function SubHeader({
           />
           <span>Graph</span>
         </button>
+
+        {/* Divider between Graph and the rest of tabs */}
+        <div className="sub-header-divider" />
 
         {/* 3. Document View Options Dropdown */}
         <ViewModeMenu

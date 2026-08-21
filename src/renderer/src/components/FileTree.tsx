@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Folder,
   FolderOpen,
@@ -70,9 +71,33 @@ function FileTree({
     (e: React.MouseEvent, path: string, isDir: boolean, parentPath: string): void => {
       e.preventDefault()
       e.stopPropagation()
+      const target = e.currentTarget as HTMLElement
+      const rect =
+        target && typeof target.getBoundingClientRect === 'function'
+          ? target.getBoundingClientRect()
+          : null
+      const menuWidth = 160
+      const menuHeight = isDir ? 160 : 110
+
+      let x = e.clientX
+      let y = e.clientY
+
+      if (rect && target.tagName === 'BUTTON') {
+        x = rect.right + 4
+        y = rect.top - 2
+      }
+
+      // Clamp to viewport edges
+      if (x + menuWidth > window.innerWidth - 8) {
+        x = (rect && target.tagName === 'BUTTON' ? rect.left : e.clientX) - menuWidth - 4
+      }
+      if (y + menuHeight > window.innerHeight - 8) {
+        y = Math.max(8, window.innerHeight - menuHeight - 8)
+      }
+
       setContextMenu({
-        x: e.clientX,
-        y: e.clientY,
+        x: Math.max(8, x),
+        y: Math.max(8, y),
         path,
         isDir,
         parentPath
@@ -316,11 +341,7 @@ function FileTree({
     [handleDrop, rootPath]
   )
 
-  const renderNode = (
-    node: FileNode,
-    parentPath: string,
-    depth: number = 0
-  ): React.JSX.Element | null => {
+  const renderNode = (node: FileNode, parentPath: string): React.JSX.Element | null => {
     const nodeKey = getPathKey(node.path)
     const isSelected = activeFilePath && getPathKey(activeFilePath) === nodeKey
 
@@ -339,7 +360,6 @@ function FileTree({
         <div key={nodeKey} className="tree-node">
           <div
             className={`tree-node-item group ${isNodeExpanded ? 'expanded-folder' : ''}`}
-            style={{ paddingLeft: `${8 + depth * 14}px` }}
             onClick={(e): void => {
               void toggleExpand(e, node.path)
             }}
@@ -415,7 +435,6 @@ function FileTree({
                 <form
                   onSubmit={(e): Promise<void> => handleCreateSubmit(e, node.path)}
                   className="tree-create-form"
-                  style={{ paddingLeft: `${8 + (depth + 1) * 14}px` }}
                 >
                   <input
                     autoFocus
@@ -431,7 +450,7 @@ function FileTree({
                   />
                 </form>
               )}
-              {children.map((child) => renderNode(child, node.path, depth + 1))}
+              {children.map((child) => renderNode(child, node.path))}
             </div>
           )}
         </div>
@@ -465,7 +484,6 @@ function FileTree({
       <div key={nodeKey} className="tree-node">
         <div
           className={fileClasses}
-          style={{ paddingLeft: `${8 + depth * 14}px` }}
           onClick={(): void => onFileSelect(node.path)}
           onContextMenu={(e): void => handleContextMenu(e, node.path, false, parentPath)}
           draggable={true}
@@ -541,95 +559,97 @@ function FileTree({
           />
         </form>
       )}
-      {(contents[rootKey] || []).map((node) => renderNode(node, rootPath, 0))}
+      {(contents[rootKey] || []).map((node) => renderNode(node, rootPath))}
 
-      {contextMenu && (
-        <div
-          className="context-menu-popover"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-          onClick={(e): void => e.stopPropagation()}
-        >
-          {contextMenu.isDir ? (
-            <>
-              <button
-                className="context-menu-item"
-                onClick={(): void => {
-                  setCreatingType({ parent: contextMenu.path, type: 'file' })
-                  setExpanded((prev) => ({ ...prev, [getPathKey(contextMenu.path)]: true }))
-                  setContextMenu(null)
-                }}
-              >
-                <Plus size={12} />
-                <span>New File</span>
-              </button>
-              <button
-                className="context-menu-item"
-                onClick={(): void => {
-                  setCreatingType({ parent: contextMenu.path, type: 'folder' })
-                  setExpanded((prev) => ({ ...prev, [getPathKey(contextMenu.path)]: true }))
-                  setContextMenu(null)
-                }}
-              >
-                <FolderPlus size={12} />
-                <span>New Folder</span>
-              </button>
-              {getPathKey(contextMenu.path) !== rootKey && (
-                <>
-                  <div className="context-menu-divider" />
-                  <button
-                    className="context-menu-item"
-                    onClick={(): void => {
-                      const name = contextMenu.path.split(/[\\/]/).pop() || ''
-                      setRenamingPath(contextMenu.path)
-                      setRenamingName(name)
-                      setContextMenu(null)
-                    }}
-                  >
-                    <Edit3 size={12} />
-                    <span>Rename</span>
-                  </button>
-                  <button
-                    className="context-menu-item danger"
-                    onClick={(): void => {
-                      handleDelete(null, contextMenu.path, contextMenu.parentPath)
-                      setContextMenu(null)
-                    }}
-                  >
-                    <Trash2 size={12} />
-                    <span>Delete Folder</span>
-                  </button>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <button
-                className="context-menu-item"
-                onClick={(): void => {
-                  const name = contextMenu.path.split(/[\\/]/).pop() || ''
-                  setRenamingPath(contextMenu.path)
-                  setRenamingName(name)
-                  setContextMenu(null)
-                }}
-              >
-                <Edit3 size={12} />
-                <span>Rename</span>
-              </button>
-              <div className="context-menu-divider" />
-              <button
-                className="context-menu-item danger"
-                onClick={(): void => {
-                  handleDelete(null, contextMenu.path, contextMenu.parentPath)
-                  setContextMenu(null)
-                }}
-              >
-                <Trash2 size={12} />
-                <span>Delete File</span>
-              </button>
-            </>
-          )}
-        </div>
-      )}
+      {contextMenu &&
+        createPortal(
+          <div
+            className="context-menu-popover"
+            style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
+            onClick={(e): void => e.stopPropagation()}
+          >
+            {contextMenu.isDir ? (
+              <>
+                <button
+                  className="context-menu-item"
+                  onClick={(): void => {
+                    setCreatingType({ parent: contextMenu.path, type: 'file' })
+                    setExpanded((prev) => ({ ...prev, [getPathKey(contextMenu.path)]: true }))
+                    setContextMenu(null)
+                  }}
+                >
+                  <Plus size={12} />
+                  <span>New File</span>
+                </button>
+                <button
+                  className="context-menu-item"
+                  onClick={(): void => {
+                    setCreatingType({ parent: contextMenu.path, type: 'folder' })
+                    setExpanded((prev) => ({ ...prev, [getPathKey(contextMenu.path)]: true }))
+                    setContextMenu(null)
+                  }}
+                >
+                  <FolderPlus size={12} />
+                  <span>New Folder</span>
+                </button>
+                {getPathKey(contextMenu.path) !== rootKey && (
+                  <>
+                    <div className="context-menu-divider" />
+                    <button
+                      className="context-menu-item"
+                      onClick={(): void => {
+                        const name = contextMenu.path.split(/[\\/]/).pop() || ''
+                        setRenamingPath(contextMenu.path)
+                        setRenamingName(name)
+                        setContextMenu(null)
+                      }}
+                    >
+                      <Edit3 size={12} />
+                      <span>Rename</span>
+                    </button>
+                    <button
+                      className="context-menu-item danger"
+                      onClick={(): void => {
+                        handleDelete(null, contextMenu.path, contextMenu.parentPath)
+                        setContextMenu(null)
+                      }}
+                    >
+                      <Trash2 size={12} />
+                      <span>Delete Folder</span>
+                    </button>
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                <button
+                  className="context-menu-item"
+                  onClick={(): void => {
+                    const name = contextMenu.path.split(/[\\/]/).pop() || ''
+                    setRenamingPath(contextMenu.path)
+                    setRenamingName(name)
+                    setContextMenu(null)
+                  }}
+                >
+                  <Edit3 size={12} />
+                  <span>Rename</span>
+                </button>
+                <div className="context-menu-divider" />
+                <button
+                  className="context-menu-item danger"
+                  onClick={(): void => {
+                    handleDelete(null, contextMenu.path, contextMenu.parentPath)
+                    setContextMenu(null)
+                  }}
+                >
+                  <Trash2 size={12} />
+                  <span>Delete File</span>
+                </button>
+              </>
+            )}
+          </div>,
+          document.body
+        )}
     </div>
   )
 }
