@@ -73,7 +73,7 @@ function WorkspaceSelector({
   }, [showWorkspaceMenu, showEmojiPicker, handleCloseAll])
 
   return (
-    <div className="relative flex-1 min-w-0 mr-1" ref={workspaceMenuRef}>
+    <div className="relative flex-1 min-w-0" ref={workspaceMenuRef}>
       {/* Selector Trigger Button */}
       <button
         type="button"

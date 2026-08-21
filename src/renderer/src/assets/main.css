@@ -765,6 +765,35 @@ body {
   overflow: visible;
 }
 
+.sidebar-toggle-bar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  margin: 0;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #888891;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-bar-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f4f4f5;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-toggle-bar-btn:active {
+  transform: scale(0.95);
+}
+
 .edited-time-badge {
   font-size: 11px;
   color: #71717a;
@@ -867,10 +896,12 @@ body {
   flex-shrink: 0;
   user-select: none;
   position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
   transition:
-    width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.22s ease;
-  will-change: width, opacity;
+    width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: width;
 }
 
 .sidebar.is-resizing {
@@ -878,12 +909,26 @@ body {
 }
 
 .sidebar.is-collapsed {
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  opacity: 0 !important;
+  border-right-color: transparent;
   pointer-events: none;
+}
+
+.sidebar-content {
+  height: 100%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
   overflow: hidden;
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar.is-collapsed .sidebar-content {
+  opacity: 0;
+  transform: translateX(-16px);
+  pointer-events: none;
 }
 
 /* Sidebar Top Actions: Explorer Title / Workspace Dropdown + Action Buttons */
@@ -891,13 +936,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 6px 0 8px;
+  padding: 0 4px;
   height: 38px;
   min-height: 38px;
   max-height: 38px;
   box-sizing: border-box;
   background: #101012;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  /* border-bottom: 1px solid rgba(255, 255, 255, 0.055); */
   position: relative;
   z-index: 50;
 }
@@ -919,8 +964,8 @@ body {
   gap: 8px;
   padding: 4px 8px;
   border-radius: 6px;
-  background: transparent;
-  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;
   width: 100%;
   text-align: left;
@@ -931,7 +976,8 @@ body {
 
 .sidebar-workspace-trigger:hover,
 .sidebar-workspace-trigger.active {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-workspace-avatar {
@@ -1957,21 +2003,7 @@ body {
 }
 
 .editor-workspace.sidebar-collapsed .editor-top-nav {
-  padding-left: 43px;
-}
-
-.editor-workspace.sidebar-collapsed .editor-top-nav::before {
-  content: '';
-  position: absolute;
-  left: 36px;
-  top: 9px;
-  width: 1px;
-  height: 14px;
-  background: #3f3f46;
-  opacity: 0.7;
-  z-index: 10;
-  pointer-events: none;
-  animation: floatingBtnSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-left: 0;
 }
 
 .sidebar-search-container {

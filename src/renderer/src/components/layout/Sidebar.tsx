@@ -23,7 +23,6 @@ interface SidebarProps {
   onSwitchWorkspace?: (path: string, name?: string) => void
   onRemoveRecentWorkspace?: (path: string) => void
   onRenameWorkspace?: () => void
-  onToggleSidebar?: () => void
   showSearchInput: boolean
   onToggleSearchInput?: () => void
   searchQuery: string
@@ -53,7 +52,6 @@ function Sidebar({
   onSwitchWorkspace,
   onRemoveRecentWorkspace,
   onRenameWorkspace,
-  onToggleSidebar,
   showSearchInput,
   onToggleSearchInput,
   searchQuery,
@@ -65,15 +63,20 @@ function Sidebar({
   onTogglePlugin
 }: SidebarProps): React.JSX.Element {
   return (
-    <div
+    <aside
       className={`sidebar ${sidebarCollapsed ? 'is-collapsed' : ''} ${isResizing ? 'is-resizing' : ''}`}
       style={{
-        width: sidebarCollapsed ? '0px' : `${sidebarWidth}px`,
-        minWidth: sidebarCollapsed ? '0px' : '240px',
-        maxWidth: sidebarCollapsed ? '0px' : '450px'
+        width: sidebarCollapsed ? 0 : `${sidebarWidth}px`
       }}
+      aria-hidden={sidebarCollapsed}
     >
-      <div className="sidebar-content flex flex-col h-full w-full min-w-0 relative">
+      <div
+        className="sidebar-content flex flex-col h-full min-w-0 relative"
+        style={{
+          width: `${sidebarWidth}px`,
+          minWidth: `${sidebarWidth}px`
+        }}
+      >
         {/* Top Action Row: Header + Workspace Selector */}
         <SidebarHeader
           activeView={activeView}
@@ -88,7 +91,6 @@ function Sidebar({
           onRemoveRecentWorkspace={onRemoveRecentWorkspace}
           onRenameWorkspace={onRenameWorkspace}
           onCreateFileAtRoot={onCreateFileAtRoot}
-          onToggleSidebar={onToggleSidebar}
         />
 
         {/* Main Body Area: Plugins, Tree, or Empty State */}
@@ -112,11 +114,13 @@ function Sidebar({
       </div>
 
       {/* Resize handle bar */}
-      <div
-        className={`sidebar-resizer ${isResizing ? 'is-active' : ''}`}
-        onMouseDown={onStartResize}
-      />
-    </div>
+      {!sidebarCollapsed && (
+        <div
+          className={`sidebar-resizer ${isResizing ? 'is-active' : ''}`}
+          onMouseDown={onStartResize}
+        />
+      )}
+    </aside>
   )
 }
 

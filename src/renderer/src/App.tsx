@@ -1171,7 +1171,58 @@ export default function App(): React.JSX.Element {
         onToggleOnlyThisFile={handleToggleOnlyThisFile}
       />
 
-      {/* ====== 2. MAIN APP CONTENT CONTAINER ====== */}
+      {/* ====== 2. SUB-HEADER ACTIONS & BREADCRUMBS BAR (Full width above sidebar) ====== */}
+      <SubHeader
+        sidebarCollapsed={sidebarCollapsed}
+        onToggleSidebar={(): void => setSidebarCollapsed((p) => !p)}
+        workspacePath={workspacePath}
+        workspaceName={workspaceName}
+        activeFilePath={activeFilePath}
+        onOpenWorkspace={handleOpenWorkspace}
+        autoSaveEnabled={autoSaveEnabled}
+        onToggleAutoSave={(): void => setAutoSaveEnabled((p) => !p)}
+        onExportHTML={handleExportHTML}
+        onExportText={handleExportText}
+        onExportMarkdown={handleExportMarkdown}
+        onCopyLink={handleCopyLink}
+        lastEditedTime={
+          activeFilePath ? lastEditedMap[normalizePath(activeFilePath)] || null : null
+        }
+        statsConfig={statsConfig}
+        onToggleStat={handleToggleStat}
+        showCover={effectiveShowCover}
+        showIcon={effectiveShowIcon}
+        showFileName={effectiveShowFileName}
+        isOnlyThisFile={isOnlyThisFile}
+        onToggleCover={handleToggleCover}
+        onToggleIcon={handleToggleIcon}
+        onToggleFileName={handleToggleFileName}
+        onToggleOnlyThisFile={handleToggleOnlyThisFile}
+        fileContent={activeFilePath ? fileContents[normalizePath(activeFilePath)] : ''}
+        editorFontFamily={editorFontFamily}
+        onChangeFontFamily={handleFontFamilyChange}
+        editorFontSize={editorFontSize}
+        onChangeFontSize={handleFontSizeChange}
+        editorLineHeight={editorLineHeight}
+        onChangeLineHeight={handleLineHeightChange}
+        editorLetterSpacing={editorLetterSpacing}
+        onChangeLetterSpacing={handleLetterSpacingChange}
+        editorParagraphSpacing={editorParagraphSpacing}
+        onChangeParagraphSpacing={handleParagraphSpacingChange}
+        editorFontWeight={editorFontWeight}
+        onChangeFontWeight={handleFontWeightChange}
+        editorTextAlign={editorTextAlign}
+        onChangeTextAlign={handleTextAlignChange}
+        isFullScreen={isFullScreen}
+        onToggleFullScreen={handleToggleFullScreen}
+        isPageLocked={isPageLocked}
+        onToggleLockPage={handleToggleLockPage}
+        onDuplicateFile={handleDuplicateFile}
+        onDeleteFile={handleDeleteFile}
+        onImport={handleImportFile}
+      />
+
+      {/* ====== 3. MAIN APP CONTENT CONTAINER (One level below breadcrumbs bar) ====== */}
       <div className="app-main">
         {/* Sidebar Panel */}
         <Sidebar
@@ -1192,7 +1243,6 @@ export default function App(): React.JSX.Element {
           onSwitchWorkspace={handleSwitchWorkspace}
           onRemoveRecentWorkspace={handleRemoveRecentWorkspace}
           onRenameWorkspace={handleRenameWorkspace}
-          onToggleSidebar={(): void => setSidebarCollapsed((p) => !p)}
           showSearchInput={showSearchInput}
           onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
           searchQuery={searchQuery}
@@ -1206,57 +1256,6 @@ export default function App(): React.JSX.Element {
 
         {/* Editor Workspace & Split Area */}
         <div className={`editor-workspace ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-          {/* Sub-Header Actions & Breadcrumbs Bar (on same level as sidebar) */}
-          <SubHeader
-            sidebarCollapsed={sidebarCollapsed}
-            onToggleSidebar={(): void => setSidebarCollapsed((p) => !p)}
-            workspacePath={workspacePath}
-            workspaceName={workspaceName}
-            activeFilePath={activeFilePath}
-            onOpenWorkspace={handleOpenWorkspace}
-            autoSaveEnabled={autoSaveEnabled}
-            onToggleAutoSave={(): void => setAutoSaveEnabled((p) => !p)}
-            onExportHTML={handleExportHTML}
-            onExportText={handleExportText}
-            onExportMarkdown={handleExportMarkdown}
-            onCopyLink={handleCopyLink}
-            lastEditedTime={
-              activeFilePath ? lastEditedMap[normalizePath(activeFilePath)] || null : null
-            }
-            statsConfig={statsConfig}
-            onToggleStat={handleToggleStat}
-            showCover={effectiveShowCover}
-            showIcon={effectiveShowIcon}
-            showFileName={effectiveShowFileName}
-            isOnlyThisFile={isOnlyThisFile}
-            onToggleCover={handleToggleCover}
-            onToggleIcon={handleToggleIcon}
-            onToggleFileName={handleToggleFileName}
-            onToggleOnlyThisFile={handleToggleOnlyThisFile}
-            fileContent={activeFilePath ? fileContents[normalizePath(activeFilePath)] : ''}
-            editorFontFamily={editorFontFamily}
-            onChangeFontFamily={handleFontFamilyChange}
-            editorFontSize={editorFontSize}
-            onChangeFontSize={handleFontSizeChange}
-            editorLineHeight={editorLineHeight}
-            onChangeLineHeight={handleLineHeightChange}
-            editorLetterSpacing={editorLetterSpacing}
-            onChangeLetterSpacing={handleLetterSpacingChange}
-            editorParagraphSpacing={editorParagraphSpacing}
-            onChangeParagraphSpacing={handleParagraphSpacingChange}
-            editorFontWeight={editorFontWeight}
-            onChangeFontWeight={handleFontWeightChange}
-            editorTextAlign={editorTextAlign}
-            onChangeTextAlign={handleTextAlignChange}
-            isFullScreen={isFullScreen}
-            onToggleFullScreen={handleToggleFullScreen}
-            isPageLocked={isPageLocked}
-            onToggleLockPage={handleToggleLockPage}
-            onDuplicateFile={handleDuplicateFile}
-            onDeleteFile={handleDeleteFile}
-            onImport={handleImportFile}
-          />
-
           {viewMode !== 'graph' && showTabs && (
             <div className="editor-top-nav">
               <TabBar

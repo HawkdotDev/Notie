@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import { ChevronsRight } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import ShareMenu from './subheader/ShareMenu'
 import PageActionsMenu from './subheader/PageActionsMenu'
 import { StatusStatsConfig } from '../../types'
@@ -147,16 +147,20 @@ function SubHeader({
   return (
     <div className="app-actions-bar select-none">
       {/* Left Application Brand Logo & Navigation Breadcrumbs */}
-      <div className="actions-bar-left flex items-center gap-1.5 overflow-hidden">
-        {/* Sidebar Expand Button when collapsed */}
-        {sidebarCollapsed && onToggleSidebar && (
+      <div className="actions-bar-left flex items-center gap-2 overflow-hidden">
+        {/* Open / Close Sidebar Button in Breadcrumbs bar */}
+        {onToggleSidebar && (
           <button
             type="button"
-            className="sidebar-expand-pill-btn"
+            className="sidebar-toggle-bar-btn"
             onClick={onToggleSidebar}
-            title="Expand Sidebar"
+            title={sidebarCollapsed ? 'Open sidebar (Ctrl+B)' : 'Close sidebar (Ctrl+B)'}
           >
-            <ChevronsRight size={13} />
+            {sidebarCollapsed ? (
+              <PanelLeftOpen size={15} strokeWidth={1.75} />
+            ) : (
+              <PanelLeftClose size={15} strokeWidth={1.75} />
+            )}
           </button>
         )}
 

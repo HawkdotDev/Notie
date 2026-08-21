@@ -1,5 +1,4 @@
 import React from 'react'
-import { ChevronsLeft } from 'lucide-react'
 import WorkspaceSelector from './WorkspaceSelector'
 
 interface SidebarHeaderProps {
@@ -15,7 +14,6 @@ interface SidebarHeaderProps {
   onRemoveRecentWorkspace?: (path: string) => void
   onRenameWorkspace?: () => void
   onCreateFileAtRoot: () => void
-  onToggleSidebar?: () => void
 }
 
 function SidebarHeader({
@@ -30,8 +28,7 @@ function SidebarHeader({
   onSwitchWorkspace,
   onRemoveRecentWorkspace,
   onRenameWorkspace,
-  onCreateFileAtRoot,
-  onToggleSidebar
+  onCreateFileAtRoot
 }: SidebarHeaderProps): React.JSX.Element {
   return (
     <div className="sidebar-top-actions">
@@ -54,20 +51,6 @@ function SidebarHeader({
           onCreateFileAtRoot={onCreateFileAtRoot}
         />
       )}
-
-      {/* Right Action Button: Sidebar Toggle */}
-      <div className="sidebar-header-buttons flex items-center">
-        {onToggleSidebar && (
-          <button
-            type="button"
-            className="sidebar-toggle-btn"
-            onClick={onToggleSidebar}
-            title="Collapse sidebar"
-          >
-            <ChevronsLeft size={14} strokeWidth={1.75} />
-          </button>
-        )}
-      </div>
 
       <div className="sidebar-header-divider" />
     </div>

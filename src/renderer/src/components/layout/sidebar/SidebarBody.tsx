@@ -80,18 +80,6 @@ function SidebarBody({
             <span className="notion-quick-link-text">Search</span>
             <span className="notion-quick-link-shortcut">Ctrl+P</span>
           </button>
-
-          {onCreateFileAtRoot && (
-            <button
-              type="button"
-              className="notion-quick-link-item"
-              onClick={onCreateFileAtRoot}
-              title="Add a new page"
-            >
-              <Plus size={14} className="notion-quick-link-icon" />
-              <span className="notion-quick-link-text">New page</span>
-            </button>
-          )}
         </div>
 
         {/* Collapsible/Expandable Search Filter Input */}
