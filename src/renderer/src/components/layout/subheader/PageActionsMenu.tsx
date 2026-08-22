@@ -208,7 +208,7 @@ function PageActionsMenu({
   const [copiedContent, setCopiedContent] = useState<boolean>(false)
   const [recentFonts, setRecentFonts] = useState<FontOption[]>(() => {
     try {
-      const saved = localStorage.getItem('mink_recent_fonts')
+      const saved = localStorage.getItem('oink_recent_fonts')
       if (saved) {
         const parsed = JSON.parse(saved)
         if (Array.isArray(parsed) && parsed.length > 0) return parsed.slice(0, 3)
@@ -261,7 +261,7 @@ function PageActionsMenu({
       const filtered = prev.filter((f) => f.family !== font.family)
       const updated = [font, ...filtered].slice(0, 3)
       try {
-        localStorage.setItem('mink_recent_fonts', JSON.stringify(updated))
+        localStorage.setItem('oink_recent_fonts', JSON.stringify(updated))
       } catch {
         // ignore
       }

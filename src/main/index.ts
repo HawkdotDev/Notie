@@ -10,8 +10,8 @@ import {
 } from 'electron'
 import { join, basename, dirname } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import iconIco from '../../resources/mink.ico?asset'
-import iconPng from '../../resources/mink.png?asset'
+import iconIco from '../../resources/oink.ico?asset'
+import iconPng from '../../resources/oink.png?asset'
 import * as fs from 'fs/promises'
 import { watch, type FSWatcher, readFileSync, readdirSync, statSync } from 'fs'
 
@@ -96,7 +96,7 @@ app.whenReady().then(() => {
   // Force dark mode for native titlebar, menus, and system dialogs to blend the separator line
   nativeTheme.themeSource = 'dark'
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.mink.app')
+  electronApp.setAppUserModelId('com.oink.app')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -104,9 +104,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
 
   // File System IPC handlers
   ipcMain.handle('fs:openDirectory', async (event) => {
@@ -181,6 +178,21 @@ app.whenReady().then(() => {
 
   ipcMain.handle('fs:renamePath', async (_, oldPath: string, newPath: string) => {
     await fs.rename(oldPath, newPath)
+  })
+
+  ipcMain.handle('fs:showItemInFolder', async (_, fullPath: string) => {
+    try {
+      shell.showItemInFolder(fullPath)
+      return true
+    } catch (error) {
+      console.error('Failed to show item in folder:', error)
+      try {
+        await shell.openPath(fullPath)
+        return true
+      } catch {
+        return false
+      }
+    }
   })
 
   ipcMain.handle('fs:showSaveDialog', async (event, defaultName: string) => {

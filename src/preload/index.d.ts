@@ -15,6 +15,7 @@ interface FileSystemAPI {
   createFolder(parentPath: string, name: string): Promise<string>
   deletePath(itemPath: string): Promise<void>
   renamePath(oldPath: string, newPath: string): Promise<void>
+  showItemInFolder(fullPath: string): Promise<boolean>
   showSaveDialog(defaultName: string): Promise<string | null>
   watchDirectory(dirPath: string): Promise<void>
   closeWatcher(): Promise<void>

@@ -9,7 +9,13 @@ import {
   ChevronRight,
   ChevronDown,
   MoreHorizontal,
-  Edit3
+  Edit3,
+  FilePlus,
+  FolderSearch,
+  FolderCog,
+  Copy,
+  Link,
+  Check
 } from 'lucide-react'
 import { FileNode, ContextMenuState, MarkdownMetadata } from '../types'
 import { normalizePath, getPathKey } from '../utils/pathUtils'
@@ -26,6 +32,7 @@ interface FileTreeProps {
   fileIcons?: Record<string, string>
   onMetadataLoaded?: (filePath: string, metadata: MarkdownMetadata) => void
   searchQuery?: string
+  onOpenSettings?: () => void
 }
 
 function FileTree({
@@ -35,7 +42,8 @@ function FileTree({
   onFileSelect,
   fileIcons,
   onMetadataLoaded,
-  searchQuery
+  searchQuery,
+  onOpenSettings
 }: FileTreeProps): React.JSX.Element {
   const normalizedRoot = useMemo(() => normalizePath(rootPath), [rootPath])
   const rootKey = useMemo(() => getPathKey(rootPath), [rootPath])
@@ -56,6 +64,7 @@ function FileTree({
   const [renamingName, setRenamingName] = useState('')
   const [dragOverPath, setDragOverPath] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [copiedType, setCopiedType] = useState<'path' | 'rel' | null>(null)
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
 
@@ -67,6 +76,19 @@ function FileTree({
 
   const loadedMetadataCache = useRef<Set<string>>(new Set())
 
+  const getRelativePath = useCallback(
+    (absPath: string): string => {
+      const normalizedAbs = normalizePath(absPath)
+      if (normalizedAbs.toLowerCase() === normalizedRoot.toLowerCase()) {
+        return '.'
+      }
+      return normalizedAbs.toLowerCase().startsWith(normalizedRoot.toLowerCase())
+        ? normalizedAbs.slice(normalizedRoot.length).replace(/^[\\/]/, '')
+        : normalizedAbs
+    },
+    [normalizedRoot]
+  )
+
   const handleContextMenu = useCallback(
     (e: React.MouseEvent, path: string, isDir: boolean, parentPath: string): void => {
       e.preventDefault()
@@ -76,8 +98,8 @@ function FileTree({
         target && typeof target.getBoundingClientRect === 'function'
           ? target.getBoundingClientRect()
           : null
-      const menuWidth = 160
-      const menuHeight = isDir ? 160 : 110
+      const menuWidth = 200
+      const menuHeight = 280
 
       let x = e.clientX
       let y = e.clientY
@@ -120,20 +142,48 @@ function FileTree({
       setRenamingPath(rootPath)
       setRenamingName(name)
     }
+    const handleSidebarContextMenu = (e: Event): void => {
+      const customEvent = e as CustomEvent<{ x: number; y: number }>
+      if (customEvent.detail) {
+        const syntheticEvent = {
+          preventDefault: (): void => {},
+          stopPropagation: (): void => {},
+          clientX: customEvent.detail.x,
+          clientY: customEvent.detail.y,
+          currentTarget: document.body
+        } as unknown as React.MouseEvent
+        handleContextMenu(syntheticEvent, rootPath, true, rootPath)
+      }
+    }
+
     window.addEventListener('create-root-folder', handleRootFolderEvent)
     window.addEventListener('create-root-file', handleRootFileEvent)
     window.addEventListener('rename-root-folder', handleRootRenameEvent)
+    window.addEventListener('sidebar-context-menu', handleSidebarContextMenu)
+
     return (): void => {
       window.removeEventListener('create-root-folder', handleRootFolderEvent)
       window.removeEventListener('create-root-file', handleRootFileEvent)
       window.removeEventListener('rename-root-folder', handleRootRenameEvent)
+      window.removeEventListener('sidebar-context-menu', handleSidebarContextMenu)
     }
-  }, [rootPath, rootKey])
+  }, [rootPath, rootKey, handleContextMenu])
 
   useEffect(() => {
-    const handleClickOutside = (): void => setContextMenu(null)
-    window.addEventListener('click', handleClickOutside)
-    return (): void => window.removeEventListener('click', handleClickOutside)
+    const handleClose = (): void => setContextMenu(null)
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setContextMenu(null)
+    }
+    window.addEventListener('click', handleClose)
+    window.addEventListener('blur', handleClose)
+    window.addEventListener('resize', handleClose)
+    window.addEventListener('keydown', handleKeyDown)
+    return (): void => {
+      window.removeEventListener('click', handleClose)
+      window.removeEventListener('blur', handleClose)
+      window.removeEventListener('resize', handleClose)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
 
   const loadDirectory = useCallback(async (dirPath: string): Promise<void> => {
@@ -188,12 +238,6 @@ function FileTree({
       isMounted = false
     }
   }, [rootPath, loadDirectory])
-
-  useEffect(() => {
-    const handleGlobalClick = (): void => setContextMenu(null)
-    window.addEventListener('click', handleGlobalClick)
-    return (): void => window.removeEventListener('click', handleGlobalClick)
-  }, [])
 
   const toggleExpand = useCallback(
     async (e: React.MouseEvent, dirPath: string): Promise<void> => {
@@ -341,6 +385,92 @@ function FileTree({
     [handleDrop, rootPath]
   )
 
+  const handleNewFile = useCallback((ctx: ContextMenuState): void => {
+    const parentDir = ctx.isDir
+      ? ctx.path
+      : ctx.parentPath ||
+        ctx.path.substring(0, Math.max(ctx.path.lastIndexOf('/'), ctx.path.lastIndexOf('\\')))
+    setCreatingType({ parent: parentDir, type: 'file' })
+    setExpanded((prev) => ({ ...prev, [getPathKey(parentDir)]: true }))
+    setContextMenu(null)
+  }, [])
+
+  const handleNewFolder = useCallback((ctx: ContextMenuState): void => {
+    const parentDir = ctx.isDir
+      ? ctx.path
+      : ctx.parentPath ||
+        ctx.path.substring(0, Math.max(ctx.path.lastIndexOf('/'), ctx.path.lastIndexOf('\\')))
+    setCreatingType({ parent: parentDir, type: 'folder' })
+    setExpanded((prev) => ({ ...prev, [getPathKey(parentDir)]: true }))
+    setContextMenu(null)
+  }, [])
+
+  const handleRevealInExplorer = useCallback(
+    async (targetPath: string): Promise<void> => {
+      const p = targetPath || rootPath
+      try {
+        if (window.api?.fs?.showItemInFolder) {
+          await window.api.fs.showItemInFolder(p)
+        }
+      } catch (err) {
+        console.error('Failed to reveal in file explorer:', err)
+      }
+      setContextMenu(null)
+    },
+    [rootPath]
+  )
+
+  const handleOpenFolderSettings = useCallback(
+    (targetPath: string): void => {
+      setContextMenu(null)
+      if (onOpenSettings) {
+        onOpenSettings()
+      } else {
+        window.dispatchEvent(
+          new CustomEvent('open-folder-settings', { detail: { path: targetPath || rootPath } })
+        )
+      }
+    },
+    [onOpenSettings, rootPath]
+  )
+
+  const handleCopyPath = useCallback(
+    async (targetPath: string): Promise<void> => {
+      const p = targetPath || rootPath
+      try {
+        await navigator.clipboard.writeText(p)
+        setCopiedType('path')
+        setTimeout(() => {
+          setCopiedType(null)
+          setContextMenu(null)
+        }, 350)
+      } catch (err) {
+        console.error('Failed to copy path:', err)
+        setContextMenu(null)
+      }
+    },
+    [rootPath]
+  )
+
+  const handleCopyRelativePath = useCallback(
+    async (targetPath: string): Promise<void> => {
+      const p = targetPath || rootPath
+      const rel = getRelativePath(p)
+      try {
+        await navigator.clipboard.writeText(rel)
+        setCopiedType('rel')
+        setTimeout(() => {
+          setCopiedType(null)
+          setContextMenu(null)
+        }, 350)
+      } catch (err) {
+        console.error('Failed to copy relative path:', err)
+        setContextMenu(null)
+      }
+    },
+    [rootPath, getRelativePath]
+  )
+
   const renderNode = (node: FileNode, parentPath: string): React.JSX.Element | null => {
     const nodeKey = getPathKey(node.path)
     const isSelected = activeFilePath && getPathKey(activeFilePath) === nodeKey
@@ -457,12 +587,6 @@ function FileTree({
       )
     }
 
-    const getRelativePath = (absPath: string): string => {
-      const normalizedAbs = normalizePath(absPath)
-      return normalizedAbs.toLowerCase().startsWith(normalizedRoot.toLowerCase())
-        ? normalizedAbs.slice(normalizedRoot.length).replace(/^[\\/]/, '')
-        : normalizedAbs
-    }
     const relPath = getRelativePath(node.path).toLowerCase()
     const customIcon = fileIcons ? fileIcons[relPath] : undefined
 
@@ -539,6 +663,9 @@ function FileTree({
       className={`file-tree-container ${isDragging ? 'dragging' : ''}`}
       onDragOver={handleDragOver}
       onDrop={handleContainerDrop}
+      onContextMenu={(e): void => {
+        handleContextMenu(e, rootPath, true, rootPath)
+      }}
     >
       {creatingType && getPathKey(creatingType.parent) === rootKey && (
         <form
@@ -568,60 +695,105 @@ function FileTree({
             style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
             onClick={(e): void => e.stopPropagation()}
           >
-            {contextMenu.isDir ? (
-              <>
-                <button
-                  className="context-menu-item"
-                  onClick={(): void => {
-                    setCreatingType({ parent: contextMenu.path, type: 'file' })
-                    setExpanded((prev) => ({ ...prev, [getPathKey(contextMenu.path)]: true }))
-                    setContextMenu(null)
+            <div className="context-menu-header">
+              {contextMenu.path
+                ? contextMenu.path.split(/[\\/]/).filter(Boolean).pop() || 'Workspace'
+                : 'Workspace'}
+            </div>
+
+            {/* 1. New File */}
+            <button className="context-menu-item" onClick={(): void => handleNewFile(contextMenu)}>
+              <FilePlus size={13} />
+              <span>New File</span>
+            </button>
+
+            {/* 2. New Folder */}
+            <button
+              className="context-menu-item"
+              onClick={(): void => handleNewFolder(contextMenu)}
+            >
+              <FolderPlus size={13} />
+              <span>New Folder</span>
+            </button>
+
+            <div className="context-menu-divider" />
+
+            {/* 3. Reveal in File Explorer */}
+            <button
+              className="context-menu-item"
+              onClick={(): void => void handleRevealInExplorer(contextMenu.path)}
+            >
+              <FolderSearch size={13} />
+              <span>Reveal in File Explorer</span>
+            </button>
+
+            {/* 4. Open Folder Settings */}
+            <button
+              className="context-menu-item"
+              onClick={(): void => handleOpenFolderSettings(contextMenu.path)}
+            >
+              <FolderCog size={13} />
+              <span>Open Folder Settings</span>
+            </button>
+
+            <div className="context-menu-divider" />
+
+            {/* 5. Copy Path */}
+            <button
+              className="context-menu-item"
+              onClick={(): void => void handleCopyPath(contextMenu.path)}
+              style={{ justifyContent: 'space-between' }}
+            >
+              <span className="flex items-center gap-2">
+                <Copy size={13} />
+                <span>Copy Path</span>
+              </span>
+              {copiedType === 'path' && (
+                <span
+                  style={{
+                    fontSize: '10px',
+                    color: '#34d399',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    fontWeight: 500
                   }}
                 >
-                  <Plus size={12} />
-                  <span>New File</span>
-                </button>
-                <button
-                  className="context-menu-item"
-                  onClick={(): void => {
-                    setCreatingType({ parent: contextMenu.path, type: 'folder' })
-                    setExpanded((prev) => ({ ...prev, [getPathKey(contextMenu.path)]: true }))
-                    setContextMenu(null)
+                  <Check size={10} /> Copied
+                </span>
+              )}
+            </button>
+
+            {/* 6. Copy Relative Path */}
+            <button
+              className="context-menu-item"
+              onClick={(): void => void handleCopyRelativePath(contextMenu.path)}
+              style={{ justifyContent: 'space-between' }}
+            >
+              <span className="flex items-center gap-2">
+                <Link size={13} />
+                <span>Copy Relative Path</span>
+              </span>
+              {copiedType === 'rel' && (
+                <span
+                  style={{
+                    fontSize: '10px',
+                    color: '#34d399',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    fontWeight: 500
                   }}
                 >
-                  <FolderPlus size={12} />
-                  <span>New Folder</span>
-                </button>
-                {getPathKey(contextMenu.path) !== rootKey && (
-                  <>
-                    <div className="context-menu-divider" />
-                    <button
-                      className="context-menu-item"
-                      onClick={(): void => {
-                        const name = contextMenu.path.split(/[\\/]/).pop() || ''
-                        setRenamingPath(contextMenu.path)
-                        setRenamingName(name)
-                        setContextMenu(null)
-                      }}
-                    >
-                      <Edit3 size={12} />
-                      <span>Rename</span>
-                    </button>
-                    <button
-                      className="context-menu-item danger"
-                      onClick={(): void => {
-                        handleDelete(null, contextMenu.path, contextMenu.parentPath)
-                        setContextMenu(null)
-                      }}
-                    >
-                      <Trash2 size={12} />
-                      <span>Delete Folder</span>
-                    </button>
-                  </>
-                )}
-              </>
-            ) : (
+                  <Check size={10} /> Copied
+                </span>
+              )}
+            </button>
+
+            {/* Optional Rename & Delete actions for non-root items */}
+            {contextMenu.path && getPathKey(contextMenu.path) !== rootKey && (
               <>
+                <div className="context-menu-divider" />
                 <button
                   className="context-menu-item"
                   onClick={(): void => {
@@ -631,10 +803,9 @@ function FileTree({
                     setContextMenu(null)
                   }}
                 >
-                  <Edit3 size={12} />
+                  <Edit3 size={13} />
                   <span>Rename</span>
                 </button>
-                <div className="context-menu-divider" />
                 <button
                   className="context-menu-item danger"
                   onClick={(): void => {
@@ -642,8 +813,8 @@ function FileTree({
                     setContextMenu(null)
                   }}
                 >
-                  <Trash2 size={12} />
-                  <span>Delete File</span>
+                  <Trash2 size={13} />
+                  <span>Delete {contextMenu.isDir ? 'Folder' : 'File'}</span>
                 </button>
               </>
             )}

@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { PersistentAppState } from '../types'
 
-const PERSISTENT_APP_STATE_KEY = 'mink_app_state_v1'
+const PERSISTENT_APP_STATE_KEY = 'oink_app_state_v1'
 
 export function usePersistentState(): {
   savedState: Partial<PersistentAppState>
@@ -27,8 +27,8 @@ export function usePersistentState(): {
     saveTimerRef.current = setTimeout(() => {
       try {
         localStorage.setItem(PERSISTENT_APP_STATE_KEY, JSON.stringify(state))
-      } catch (e) {
-        console.warn('Failed to persist app state:', e)
+      } catch {
+        // ignore storage quota or persistence exceptions
       }
     }, 300)
   }, [])

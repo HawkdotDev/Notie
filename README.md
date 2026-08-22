@@ -1,15 +1,15 @@
 <div align="center">
 
-<img src="./resources/mink.png" width="80" height="80" alt="Mink Logo" />
+<img src="./resources/oink.png" width="80" height="80" alt="Oink Logo" />
 
-# Mink
+# Oink
 
 <p align="center">
   <strong>Local-First • Hybrid Block-Markdown Knowledge Base • Canvas Graph Visualizer</strong>
 </p>
 
 <p align="center">
-  <a href="https://github.com/HawkdotDev/mink/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT" /></a>
+  <a href="https://github.com/HawkdotDev/oink/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-%3E%3D20.0.0-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js Version" /></a>
   <a href="https://www.electronjs.org"><img src="https://img.shields.io/badge/Electron-v39-47848F?style=flat-square&logo=electron&logoColor=white" alt="Electron" /></a>
   <a href="https://react.dev"><img src="https://img.shields.io/badge/React-v19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" /></a>
@@ -32,9 +32,9 @@
 
 ## Overview
 
-**Mink** is a modern, high-performance, local-first markdown workspace and knowledge management platform designed for developers, researchers, and creators.
+**Oink** is a modern, high-performance, local-first markdown workspace and knowledge management platform designed for developers, researchers, and creators.
 
-By combining the block-editing ergonomics of modern canvas tools with the portable, open-standards durability of plain text `.md` files, Mink offers a powerful editing environment with zero vendor lock-in, zero cloud telemetry, and complete offline privacy.
+By combining the block-editing ergonomics of modern canvas tools with the portable, open-standards durability of plain text `.md` files, Oink offers a powerful editing environment with zero vendor lock-in, zero cloud telemetry, and complete offline privacy.
 
 ---
 
@@ -105,8 +105,8 @@ Ensure you have the following installed on your machine:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/HawkdotDev/mink.git
-   cd mink
+   git clone https://github.com/HawkdotDev/oink.git
+   cd oink
    ```
 
 2. **Install dependencies:**
@@ -124,7 +124,7 @@ Ensure you have the following installed on your machine:
 
 ## Build & Distribution
 
-To package Mink as a native desktop binary:
+To package Oink as a native desktop binary:
 
 ```bash
 # Package for current OS (unpacked directory)
@@ -147,7 +147,7 @@ Output binaries will be generated in the `dist/` directory.
 ## Project Architecture
 
 ```
-mink/
+oink/
 ├── electron-builder.yml        # Distribution packaging configuration
 ├── electron.vite.config.ts     # Vite multi-target configuration (main, preload, renderer)
 ├── src/
@@ -193,7 +193,7 @@ mink/
 
 ## Code Quality & Standards
 
-Mink maintains strict type safety and code quality standards:
+Oink maintains strict type safety and code quality standards:
 
 ```bash
 # Type check TypeScript across all targets
@@ -228,5 +228,5 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more details
 
 <div align="center">
   <br />
-  <sub>Built with care by the Mink Open Source Community.</sub>
+  <sub>Built with care by the Oink Open Source Community.</sub>
 </div>

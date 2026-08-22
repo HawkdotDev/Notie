@@ -71,12 +71,13 @@ export interface PersistentAppState {
   sidebarWidth: number
   showRightSidebar: boolean
   rightSidebarWidth: number
-  showSearchInput: boolean
+  sidebarView?: 'explorer' | 'search' | 'plugins'
+  showSearchInput?: boolean
   showDiffToggle?: boolean
   showCover?: boolean
   showIcon?: boolean
   showFileName?: boolean
-  searchQuery: string
+  searchQuery?: string
   widgetState: WidgetState
   widgetZIndexes: Record<string, number>
   widgetPositions: Record<string, WidgetLayout>

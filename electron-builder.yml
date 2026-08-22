@@ -1,5 +1,5 @@
-appId: com.mink.app
-productName: Mink
+appId: com.oink.app
+productName: Oink
 directories:
   buildResources: build
 files:
@@ -13,7 +13,7 @@ asarUnpack:
   - resources/**
 win:
   icon: build/icon.ico
-  executableName: Mink
+  executableName: Oink
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

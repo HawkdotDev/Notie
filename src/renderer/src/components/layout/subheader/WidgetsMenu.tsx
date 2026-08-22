@@ -19,7 +19,7 @@ function WidgetsMenu({
 }: WidgetsMenuProps): React.JSX.Element {
   const [showWidgetsMenu, setShowWidgetsMenu] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('mink_widgets_menu') === 'true'
+      return localStorage.getItem('oink_widgets_menu') === 'true'
     } catch {
       return false
     }
@@ -28,7 +28,7 @@ function WidgetsMenu({
 
   useEffect(() => {
     try {
-      localStorage.setItem('mink_widgets_menu', String(showWidgetsMenu))
+      localStorage.setItem('oink_widgets_menu', String(showWidgetsMenu))
     } catch {
       // ignore
     }
@@ -59,11 +59,7 @@ function WidgetsMenu({
         }}
         title="Toggle Floating Widgets"
       >
-        <LayoutGrid
-          size={13}
-          fill="currentColor"
-          className={showWidgetsMenu ? 'text-zinc-200' : 'text-zinc-300'}
-        />
+        <LayoutGrid size={13} className={showWidgetsMenu ? 'text-zinc-200' : 'text-zinc-400'} />
         <span>Widgets</span>
         {activeUnsaved && <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />}
         <ChevronDown

@@ -1,5 +1,9 @@
 import React, { useEffect, useRef } from 'react'
-import EditorJS, { BlockToolConstructable, InlineToolConstructable } from '@editorjs/editorjs'
+import EditorJS, {
+  BlockToolConstructable,
+  InlineToolConstructable,
+  type LogLevels
+} from '@editorjs/editorjs'
 // @ts-ignore: Header does not provide official TypeScript typings
 import Header from '@editorjs/header'
 // @ts-ignore: List does not provide official TypeScript typings
@@ -138,7 +142,7 @@ class VideoTool {
 
   render(): HTMLElement {
     this.wrapper = document.createElement('div')
-    this.wrapper.classList.add('mink-video-block')
+    this.wrapper.classList.add('oink-video-block')
 
     if (this.data && this.data.url) {
       this.renderVideo(this.data.url, this.data.caption || '')
@@ -152,26 +156,26 @@ class VideoTool {
   renderInput(): void {
     if (!this.wrapper) return
     this.wrapper.innerHTML = `
-      <div class="mink-media-input-box">
+      <div class="oink-media-input-box">
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2 text-xs text-zinc-300 font-medium">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
             <span>Embed or Upload Video</span>
           </div>
-          <label class="mink-media-upload-label">
+          <label class="oink-media-upload-label">
             <span>Upload file</span>
-            <input type="file" accept="video/*" class="mink-media-file-input" style="display: none;" />
+            <input type="file" accept="video/*" class="oink-media-file-input" style="display: none;" />
           </label>
         </div>
         <div class="flex gap-2">
-          <input type="text" class="mink-media-url-input" placeholder="Paste video URL (.mp4, .webm, direct link)..." />
-          <button type="button" class="mink-media-submit-btn">Embed</button>
+          <input type="text" class="oink-media-url-input" placeholder="Paste video URL (.mp4, .webm, direct link)..." />
+          <button type="button" class="oink-media-submit-btn">Embed</button>
         </div>
       </div>
     `
-    const input = this.wrapper.querySelector('.mink-media-url-input') as HTMLInputElement
-    const fileInput = this.wrapper.querySelector('.mink-media-file-input') as HTMLInputElement
-    const btn = this.wrapper.querySelector('.mink-media-submit-btn') as HTMLButtonElement
+    const input = this.wrapper.querySelector('.oink-media-url-input') as HTMLInputElement
+    const fileInput = this.wrapper.querySelector('.oink-media-file-input') as HTMLInputElement
+    const btn = this.wrapper.querySelector('.oink-media-submit-btn') as HTMLButtonElement
 
     const handleSubmit = (): void => {
       const url = input?.value?.trim()
@@ -205,12 +209,12 @@ class VideoTool {
   renderVideo(url: string, caption: string): void {
     if (!this.wrapper) return
     this.wrapper.innerHTML = `
-      <div class="mink-video-container group">
-        <video controls src="${url}" class="mink-video-player"></video>
-        <input type="text" class="mink-media-caption-input" placeholder="Add a caption..." value="${caption || ''}" />
+      <div class="oink-video-container group">
+        <video controls src="${url}" class="oink-video-player"></video>
+        <input type="text" class="oink-media-caption-input" placeholder="Add a caption..." value="${caption || ''}" />
       </div>
     `
-    const captionInput = this.wrapper.querySelector('.mink-media-caption-input') as HTMLInputElement
+    const captionInput = this.wrapper.querySelector('.oink-media-caption-input') as HTMLInputElement
     captionInput?.addEventListener('input', () => {
       this.data.caption = captionInput.value
     })
@@ -218,9 +222,9 @@ class VideoTool {
 
   save(blockContent?: HTMLElement): VideoBlockData {
     if (blockContent) {
-      const input = blockContent.querySelector('.mink-media-url-input') as HTMLInputElement
+      const input = blockContent.querySelector('.oink-media-url-input') as HTMLInputElement
       const captionInput = blockContent.querySelector(
-        '.mink-media-caption-input'
+        '.oink-media-caption-input'
       ) as HTMLInputElement
       if (input && input.value) {
         this.data.url = input.value.trim()
@@ -292,7 +296,7 @@ class EmbedTool {
 
   render(): HTMLElement {
     this.wrapper = document.createElement('div')
-    this.wrapper.classList.add('mink-embed-block')
+    this.wrapper.classList.add('oink-embed-block')
 
     if (this.data && (this.data.embed || this.data.source)) {
       const url = this.data.embed || this.data.source || ''
@@ -307,19 +311,19 @@ class EmbedTool {
   renderInput(): void {
     if (!this.wrapper) return
     this.wrapper.innerHTML = `
-      <div class="mink-media-input-box">
+      <div class="oink-media-input-box">
         <div class="flex items-center gap-2 mb-2 text-xs text-zinc-300 font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
           <span>Embed Web Link (YouTube, Vimeo, CodePen, etc.)</span>
         </div>
         <div class="flex gap-2">
-          <input type="text" class="mink-media-url-input" placeholder="Paste link to embed..." />
-          <button type="button" class="mink-media-submit-btn">Embed</button>
+          <input type="text" class="oink-media-url-input" placeholder="Paste link to embed..." />
+          <button type="button" class="oink-media-submit-btn">Embed</button>
         </div>
       </div>
     `
-    const input = this.wrapper.querySelector('.mink-media-url-input') as HTMLInputElement
-    const btn = this.wrapper.querySelector('.mink-media-submit-btn') as HTMLButtonElement
+    const input = this.wrapper.querySelector('.oink-media-url-input') as HTMLInputElement
+    const btn = this.wrapper.querySelector('.oink-media-submit-btn') as HTMLButtonElement
 
     const handleSubmit = (): void => {
       const raw = input?.value?.trim()
@@ -341,12 +345,12 @@ class EmbedTool {
   renderEmbed(url: string, caption: string): void {
     if (!this.wrapper) return
     this.wrapper.innerHTML = `
-      <div class="mink-embed-container group">
-        <iframe src="${url}" class="mink-embed-iframe" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-        <input type="text" class="mink-media-caption-input" placeholder="Add a caption..." value="${caption || ''}" />
+      <div class="oink-embed-container group">
+        <iframe src="${url}" class="oink-embed-iframe" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        <input type="text" class="oink-media-caption-input" placeholder="Add a caption..." value="${caption || ''}" />
       </div>
     `
-    const captionInput = this.wrapper.querySelector('.mink-media-caption-input') as HTMLInputElement
+    const captionInput = this.wrapper.querySelector('.oink-media-caption-input') as HTMLInputElement
     captionInput?.addEventListener('input', () => {
       this.data.caption = captionInput.value
     })
@@ -354,9 +358,9 @@ class EmbedTool {
 
   save(blockContent?: HTMLElement): EmbedBlockData {
     if (blockContent) {
-      const input = blockContent.querySelector('.mink-media-url-input') as HTMLInputElement
+      const input = blockContent.querySelector('.oink-media-url-input') as HTMLInputElement
       const captionInput = blockContent.querySelector(
-        '.mink-media-caption-input'
+        '.oink-media-caption-input'
       ) as HTMLInputElement
       if (input && input.value) {
         const raw = input.value.trim()
@@ -742,8 +746,8 @@ export default function BlockEditor({
       if (typeof instance.destroy === 'function') {
         await instance.destroy()
       }
-    } catch (err) {
-      console.error('Error destroying EditorJS instance:', err)
+    } catch {
+      // Instance may have unmounted or already been destroyed
     }
   }
 
@@ -759,8 +763,8 @@ export default function BlockEditor({
       if (destroyingPromiseRef.current) {
         try {
           await destroyingPromiseRef.current
-        } catch (err) {
-          console.error('Previous destruction error:', err)
+        } catch {
+          // Ignore cleanup race condition
         }
         destroyingPromiseRef.current = null
       }
@@ -772,8 +776,8 @@ export default function BlockEditor({
         destroyingPromiseRef.current = destroyInstance(previousInstance)
         try {
           await destroyingPromiseRef.current
-        } catch (err) {
-          console.error('Instance destruction error:', err)
+        } catch {
+          // Ignore cleanup race condition
         }
         destroyingPromiseRef.current = null
       }
@@ -784,6 +788,7 @@ export default function BlockEditor({
 
       editor = new EditorJS({
         holder: containerRef.current || 'editorjs-container',
+        logLevel: 'ERROR' as unknown as LogLevels,
         data: parsedData,
         sanitizer: {
           a: {
@@ -951,8 +956,8 @@ export default function BlockEditor({
           editorInstanceRef.current?.blocks.render(parsedData)
           lastSerializedRef.current = value
         })
-        .catch((err) => {
-          console.error('EditorJS was not ready for external update:', err)
+        .catch(() => {
+          // Ignore if editor instance was unmounted
         })
     }
   }, [value])

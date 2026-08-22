@@ -3,7 +3,7 @@ import { Terminal as TerminalIcon, Play, Trash2, CheckCircle2 } from 'lucide-rea
 
 export default function QuickTerminalWidget(): React.JSX.Element {
   const [logs, setLogs] = useState<string[]>([
-    '[SYSTEM] Mink Desktop Engine v2.4 initialized',
+    '[SYSTEM] Oink Desktop Engine v2.4 initialized',
     '[PYTHON] 3.8.5 runtime connected (default)',
     '[WIDGETS] 4 floating widget windows active',
     '[GRAMMAR] Grammarly diagnostic scanner online: 0 critical errors'

@@ -52,7 +52,7 @@ export default function App(): React.JSX.Element {
   const [showBannerPicker, setShowBannerPicker] = useState<boolean>(false)
   const [globalShowCover, setGlobalShowCover] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('mink_global_show_cover')
+      const saved = localStorage.getItem('oink_global_show_cover')
       return saved !== null ? saved === 'true' : true
     } catch {
       return true
@@ -60,7 +60,7 @@ export default function App(): React.JSX.Element {
   })
   const [globalShowIcon, setGlobalShowIcon] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('mink_global_show_icon')
+      const saved = localStorage.getItem('oink_global_show_icon')
       return saved !== null ? saved === 'true' : true
     } catch {
       return true
@@ -68,7 +68,7 @@ export default function App(): React.JSX.Element {
   })
   const [globalShowFileName, setGlobalShowFileName] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('mink_global_show_file_name')
+      const saved = localStorage.getItem('oink_global_show_file_name')
       return saved !== null ? saved === 'true' : true
     } catch {
       return true
@@ -77,26 +77,26 @@ export default function App(): React.JSX.Element {
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false)
 
   const [editorFontFamily, setEditorFontFamily] = useState<string>(
-    () => localStorage.getItem('mink_editor_font_family') || "'Inter', sans-serif"
+    () => localStorage.getItem('oink_editor_font_family') || "'Inter', sans-serif"
   )
   const [editorFontSize, setEditorFontSize] = useState<number>(() => {
-    const saved = localStorage.getItem('mink_editor_font_size')
+    const saved = localStorage.getItem('oink_editor_font_size')
     return saved ? parseInt(saved, 10) : 15
   })
   const [editorLineHeight, setEditorLineHeight] = useState<string>(
-    () => localStorage.getItem('mink_editor_line_height') || '1.7'
+    () => localStorage.getItem('oink_editor_line_height') || '1.7'
   )
   const [editorLetterSpacing, setEditorLetterSpacing] = useState<string>(
-    () => localStorage.getItem('mink_editor_letter_spacing') || 'normal'
+    () => localStorage.getItem('oink_editor_letter_spacing') || 'normal'
   )
   const [editorParagraphSpacing, setEditorParagraphSpacing] = useState<string>(
-    () => localStorage.getItem('mink_editor_paragraph_spacing') || '1.2em'
+    () => localStorage.getItem('oink_editor_paragraph_spacing') || '1.2em'
   )
   const [editorFontWeight, setEditorFontWeight] = useState<string>(
-    () => localStorage.getItem('mink_editor_font_weight') || '400'
+    () => localStorage.getItem('oink_editor_font_weight') || '400'
   )
   const [editorTextAlign, setEditorTextAlign] = useState<string>(
-    () => localStorage.getItem('mink_editor_text_align') || 'left'
+    () => localStorage.getItem('oink_editor_text_align') || 'left'
   )
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false)
   const [isPageLocked, setIsPageLocked] = useState<boolean>(false)
@@ -114,27 +114,26 @@ export default function App(): React.JSX.Element {
   )
   const [showTabs, setShowTabs] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('mink_show_tabs')
+      const saved = localStorage.getItem('oink_show_tabs')
       return saved !== null ? saved === 'true' : true
     } catch {
       return true
     }
   })
-  const [showSearchInput, setShowSearchInput] = useState<boolean>(
-    () => savedState.showSearchInput ?? false
-  )
-  const [searchQuery, setSearchQuery] = useState<string>(() => savedState.searchQuery ?? '')
-  const [sidebarView, setSidebarView] = useState<'explorer' | 'plugins'>(() => {
+  const [sidebarView, setSidebarView] = useState<'explorer' | 'search' | 'plugins'>(() => {
     try {
-      const saved = localStorage.getItem('mink_sidebar_view')
-      return (saved as 'explorer' | 'plugins') || 'explorer'
+      const saved = localStorage.getItem('oink_sidebar_view')
+      if (saved === 'explorer' || saved === 'search' || saved === 'plugins') {
+        return saved as 'explorer' | 'search' | 'plugins'
+      }
+      return 'explorer'
     } catch {
       return 'explorer'
     }
   })
   const [enabledPlugins, setEnabledPlugins] = useState<Record<string, boolean>>(() => {
     try {
-      const saved = localStorage.getItem('mink_enabled_plugins')
+      const saved = localStorage.getItem('oink_enabled_plugins')
       if (saved) return JSON.parse(saved)
     } catch {
       // ignore
@@ -148,7 +147,7 @@ export default function App(): React.JSX.Element {
 
   useEffect(() => {
     try {
-      localStorage.setItem('mink_show_tabs', String(showTabs))
+      localStorage.setItem('oink_show_tabs', String(showTabs))
     } catch {
       // ignore
     }
@@ -156,7 +155,7 @@ export default function App(): React.JSX.Element {
 
   useEffect(() => {
     try {
-      localStorage.setItem('mink_sidebar_view', sidebarView)
+      localStorage.setItem('oink_sidebar_view', sidebarView)
     } catch {
       // ignore
     }
@@ -166,7 +165,7 @@ export default function App(): React.JSX.Element {
     setEnabledPlugins((prev) => {
       const updated = { ...prev, [pluginId]: !prev[pluginId] }
       try {
-        localStorage.setItem('mink_enabled_plugins', JSON.stringify(updated))
+        localStorage.setItem('oink_enabled_plugins', JSON.stringify(updated))
       } catch {
         // ignore
       }
@@ -184,6 +183,28 @@ export default function App(): React.JSX.Element {
       setSidebarView('plugins')
     }
   }, [sidebarCollapsed, sidebarView])
+
+  const handleToggleSearch = useCallback(() => {
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false)
+      setSidebarView('search')
+    } else if (sidebarView === 'search') {
+      setSidebarView('explorer')
+    } else {
+      setSidebarView('search')
+    }
+  }, [sidebarCollapsed, sidebarView])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault()
+        handleToggleSearch()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return (): void => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleToggleSearch])
 
   const handleSwitchToFiles = useCallback(() => {
     setSidebarView('explorer')
@@ -282,7 +303,7 @@ export default function App(): React.JSX.Element {
   // Workspace Icons custom emoji mapping
   const [workspaceIcons, setWorkspaceIcons] = useState<Record<string, string>>(() => {
     try {
-      const saved = localStorage.getItem('mink_workspace_icons')
+      const saved = localStorage.getItem('oink_workspace_icons')
       return saved ? JSON.parse(saved) : {}
     } catch {
       return {}
@@ -301,7 +322,7 @@ export default function App(): React.JSX.Element {
         next[wsPath] = icon
       }
       try {
-        localStorage.setItem('mink_workspace_icons', JSON.stringify(next))
+        localStorage.setItem('oink_workspace_icons', JSON.stringify(next))
       } catch {
         // ignore
       }
@@ -312,7 +333,7 @@ export default function App(): React.JSX.Element {
   // Granular Status Bar Stats Metrics Configuration
   const [statsConfig, setStatsConfig] = useState<StatusStatsConfig>(() => {
     try {
-      const saved = localStorage.getItem('mink_status_stats_config')
+      const saved = localStorage.getItem('oink_status_stats_config')
       if (saved) return JSON.parse(saved)
     } catch {
       // ignore
@@ -332,7 +353,7 @@ export default function App(): React.JSX.Element {
     setStatsConfig((prev) => {
       const next = { ...prev, [key]: !prev[key] }
       try {
-        localStorage.setItem('mink_status_stats_config', JSON.stringify(next))
+        localStorage.setItem('oink_status_stats_config', JSON.stringify(next))
       } catch {
         // ignore
       }
@@ -502,8 +523,6 @@ export default function App(): React.JSX.Element {
       sidebarWidth,
       showRightSidebar,
       rightSidebarWidth,
-      showSearchInput,
-      searchQuery,
       widgetState,
       widgetZIndexes,
       widgetPositions
@@ -519,8 +538,6 @@ export default function App(): React.JSX.Element {
     sidebarWidth,
     showRightSidebar,
     rightSidebarWidth,
-    showSearchInput,
-    searchQuery,
     widgetState,
     widgetZIndexes,
     widgetPositions,
@@ -686,7 +703,7 @@ export default function App(): React.JSX.Element {
       setGlobalShowCover((prev) => {
         const next = !prev
         try {
-          localStorage.setItem('mink_global_show_cover', String(next))
+          localStorage.setItem('oink_global_show_cover', String(next))
         } catch {
           // ignore
         }
@@ -712,7 +729,7 @@ export default function App(): React.JSX.Element {
       setGlobalShowIcon((prev) => {
         const next = !prev
         try {
-          localStorage.setItem('mink_global_show_icon', String(next))
+          localStorage.setItem('oink_global_show_icon', String(next))
         } catch {
           // ignore
         }
@@ -738,7 +755,7 @@ export default function App(): React.JSX.Element {
       setGlobalShowFileName((prev) => {
         const next = !prev
         try {
-          localStorage.setItem('mink_global_show_file_name', String(next))
+          localStorage.setItem('oink_global_show_file_name', String(next))
         } catch {
           // ignore
         }
@@ -820,7 +837,7 @@ export default function App(): React.JSX.Element {
   const handleFontFamilyChange = useCallback((font: string) => {
     setEditorFontFamily(font)
     try {
-      localStorage.setItem('mink_editor_font_family', font)
+      localStorage.setItem('oink_editor_font_family', font)
     } catch {
       // ignore
     }
@@ -829,7 +846,7 @@ export default function App(): React.JSX.Element {
   const handleFontSizeChange = useCallback((size: number) => {
     setEditorFontSize(size)
     try {
-      localStorage.setItem('mink_editor_font_size', size.toString())
+      localStorage.setItem('oink_editor_font_size', size.toString())
     } catch {
       // ignore
     }
@@ -838,7 +855,7 @@ export default function App(): React.JSX.Element {
   const handleLineHeightChange = useCallback((val: string) => {
     setEditorLineHeight(val)
     try {
-      localStorage.setItem('mink_editor_line_height', val)
+      localStorage.setItem('oink_editor_line_height', val)
     } catch {
       // ignore
     }
@@ -847,7 +864,7 @@ export default function App(): React.JSX.Element {
   const handleLetterSpacingChange = useCallback((val: string) => {
     setEditorLetterSpacing(val)
     try {
-      localStorage.setItem('mink_editor_letter_spacing', val)
+      localStorage.setItem('oink_editor_letter_spacing', val)
     } catch {
       // ignore
     }
@@ -856,7 +873,7 @@ export default function App(): React.JSX.Element {
   const handleParagraphSpacingChange = useCallback((val: string) => {
     setEditorParagraphSpacing(val)
     try {
-      localStorage.setItem('mink_editor_paragraph_spacing', val)
+      localStorage.setItem('oink_editor_paragraph_spacing', val)
     } catch {
       // ignore
     }
@@ -865,7 +882,7 @@ export default function App(): React.JSX.Element {
   const handleFontWeightChange = useCallback((val: string) => {
     setEditorFontWeight(val)
     try {
-      localStorage.setItem('mink_editor_font_weight', val)
+      localStorage.setItem('oink_editor_font_weight', val)
     } catch {
       // ignore
     }
@@ -874,7 +891,7 @@ export default function App(): React.JSX.Element {
   const handleTextAlignChange = useCallback((val: string) => {
     setEditorTextAlign(val)
     try {
-      localStorage.setItem('mink_editor_text_align', val)
+      localStorage.setItem('oink_editor_text_align', val)
     } catch {
       // ignore
     }
@@ -1149,8 +1166,6 @@ export default function App(): React.JSX.Element {
         onTogglePluginsView={handleTogglePluginsView}
         onSwitchToFiles={handleSwitchToFiles}
         enabledPluginsCount={Object.values(enabledPlugins).filter(Boolean).length}
-        showSearchInput={showSearchInput}
-        onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
         showTabs={showTabs}
         onToggleTabs={(): void => setShowTabs((p) => !p)}
         showRightSidebar={showRightSidebar}
@@ -1243,15 +1258,13 @@ export default function App(): React.JSX.Element {
           onSwitchWorkspace={handleSwitchWorkspace}
           onRemoveRecentWorkspace={handleRemoveRecentWorkspace}
           onRenameWorkspace={handleRenameWorkspace}
-          showSearchInput={showSearchInput}
-          onToggleSearchInput={(): void => setShowSearchInput((prev) => !prev)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
           fileIcons={fileIcons}
           onMetadataLoaded={handleMetadataLoaded}
           onStartResize={startLeftResize}
           enabledPlugins={enabledPlugins}
           onTogglePlugin={handleTogglePlugin}
+          onOpenSettings={(): void => setShowSettingsModal(true)}
+          onSwitchView={setSidebarView}
         />
 
         {/* Editor Workspace & Split Area */}

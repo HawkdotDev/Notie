@@ -11,7 +11,7 @@ export interface WorkspaceMetadataStore {
   customProps: Record<string, Record<string, unknown>>
 }
 
-class AsyncMinkMetadataEngine {
+class AsyncOinkMetadataEngine {
   private worker: Worker | null = null
   private pendingCallbacks = new Map<string, (result: unknown) => void>()
   private store: WorkspaceMetadataStore = {
@@ -41,8 +41,9 @@ class AsyncMinkMetadataEngine {
             this.pendingCallbacks.delete(id)
           }
         }
-      } catch (err) {
-        console.warn('Web Worker initialization fallback to sync:', err)
+      } catch {
+        // Fallback gracefully to synchronous parsing if worker cannot be initialized
+        this.worker = null
       }
     }
   }
@@ -254,4 +255,4 @@ class AsyncMinkMetadataEngine {
   }
 }
 
-export const metadataEngine = new AsyncMinkMetadataEngine()
+export const metadataEngine = new AsyncOinkMetadataEngine()

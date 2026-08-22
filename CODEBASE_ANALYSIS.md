@@ -1,6 +1,6 @@
-# 🔍 Mink Codebase Deep Analysis, Audit & Optimization Roadmap
+# 🔍 Oink Codebase Deep Analysis, Audit & Optimization Roadmap
 
-This document provides a comprehensive technical audit of the **Mink** desktop application codebase, covering architecture, performance bottlenecks, memory management, security boundaries, and an actionable optimization roadmap.
+This document provides a comprehensive technical audit of the **Oink** desktop application codebase, covering architecture, performance bottlenecks, memory management, security boundaries, and an actionable optimization roadmap.
 
 ---
 

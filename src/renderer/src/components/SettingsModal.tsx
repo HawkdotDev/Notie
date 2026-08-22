@@ -14,7 +14,7 @@ import {
   Blocks
 } from 'lucide-react'
 import PluginsWidget from './layout/PluginsWidget'
-import minkLogo from '../assets/mink.png'
+import oinkLogo from '../assets/oink.png'
 
 interface UserSettings {
   // General
@@ -79,7 +79,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   checkPassiveVoice: true
 }
 
-const SETTINGS_STORAGE_KEY = 'mink_user_preferences_v1'
+const SETTINGS_STORAGE_KEY = 'oink_user_preferences_v1'
 
 const FONT_OPTIONS = [
   { label: 'Inter (Modern Sans)', value: "'Inter', sans-serif" },
@@ -188,8 +188,8 @@ export default function SettingsModal({
       const next = { ...prev, [key]: value }
       try {
         localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(next))
-      } catch (err) {
-        console.warn('Failed to save settings:', err)
+      } catch {
+        // ignore storage quota exceptions
       }
       if (onSettingsChange) onSettingsChange(next)
       if (key === 'autoSaveEnabled' && onToggleAutoSave && value !== currentAutoSave) {
@@ -446,7 +446,7 @@ export default function SettingsModal({
                     <div className="settings-row-text">
                       <label className="settings-row-label">Restore Tabs on Startup</label>
                       <span className="settings-row-desc">
-                        Reopen all previously open documents when launching Mink
+                        Reopen all previously open documents when launching Oink
                       </span>
                     </div>
                     <label className="settings-toggle">
@@ -801,7 +801,7 @@ export default function SettingsModal({
                 <div className="settings-section-header shrink-0">
                   <h3>Extensions & Community Plugins</h3>
                   <p>
-                    Extend Mink with LaTeX formulas, daily notes, diagrams, code execution, and
+                    Extend Oink with LaTeX formulas, daily notes, diagrams, code execution, and
                     tools
                   </p>
                 </div>
@@ -970,19 +970,19 @@ export default function SettingsModal({
             {activeTab === 'about' && (
               <div className="settings-section">
                 <div className="settings-section-header">
-                  <h3>About Mink</h3>
+                  <h3>About Oink</h3>
                   <p>Application specifications and environment diagnostics</p>
                 </div>
 
                 <div className="settings-card">
                   <div className="flex items-center gap-4 pb-4 border-b border-zinc-800/80">
                     <img
-                      src={minkLogo}
-                      alt="Mink Logo"
+                      src={oinkLogo}
+                      alt="Oink Logo"
                       className="w-12 h-12 object-contain rounded p-1 bg-zinc-900 border border-zinc-700"
                     />
                     <div>
-                      <h4 className="text-sm font-semibold text-zinc-300">Mink Markdown IDE</h4>
+                      <h4 className="text-sm font-semibold text-zinc-300">Oink Markdown IDE</h4>
                       <p className="text-xs text-zinc-400">
                         Version 0.1.0 • Hybrid Brutalist &amp; Notion-Style Architecture
                       </p>

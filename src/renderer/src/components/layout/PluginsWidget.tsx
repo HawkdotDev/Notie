@@ -32,7 +32,7 @@ const AVAILABLE_PLUGINS: PluginDefinition[] = [
     id: 'katex-math',
     name: 'LaTeX & Math (KaTeX)',
     version: '1.4.2',
-    author: 'Mink Core',
+    author: 'Oink Core',
     description: 'Render inline $math$ formulas and display block $$equations$$ seamlessly.',
     category: 'Editor',
     icon: Sigma,
@@ -44,7 +44,7 @@ const AVAILABLE_PLUGINS: PluginDefinition[] = [
     id: 'daily-notes',
     name: 'Daily Notes & Journal',
     version: '2.1.0',
-    author: 'Mink Core',
+    author: 'Oink Core',
     description: 'Date-stamped daily journals, periodic logs, and reflection scratchpads.',
     category: 'Tools',
     icon: Calendar,
@@ -116,7 +116,7 @@ const AVAILABLE_PLUGINS: PluginDefinition[] = [
     id: 'pomodoro-timer',
     name: 'Focus Mode & Pomodoro',
     version: '1.0.2',
-    author: 'Mink Core',
+    author: 'Oink Core',
     description: 'Customizable 25/5 focus interval timer with status bar indicator.',
     category: 'Tools',
     icon: Timer,
@@ -343,7 +343,7 @@ export default function PluginsWidget({
         <span>
           {AVAILABLE_PLUGINS.length} Extensions • {activeCount} Active
         </span>
-        <span className="text-zinc-600">Mink v1.0</span>
+        <span className="text-zinc-600">Oink v1.0</span>
       </div>
     </div>
   )

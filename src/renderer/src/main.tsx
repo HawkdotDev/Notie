@@ -38,6 +38,7 @@ if (!window.api) {
       createFolder: (dir: string, name: string) => Promise.resolve(`${dir}/${name}`),
       deletePath: () => Promise.resolve(),
       renamePath: () => Promise.resolve(),
+      showItemInFolder: () => Promise.resolve(true),
       showSaveDialog: () => Promise.resolve('/workspace/untitled.md'),
       watchDirectory: () => Promise.resolve(),
       closeWatcher: () => Promise.resolve(),

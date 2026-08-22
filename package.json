@@ -1,6 +1,6 @@
 {
-  "name": "mink",
-  "displayName": "Mink",
+  "name": "oink",
+  "displayName": "Oink",
   "version": "0.1.0",
   "description": "Local-first, hybrid block-markdown knowledge base and workspace for creators and developers.",
   "author": {
@@ -8,16 +8,16 @@
     "url": "https://github.com/HawkdotDev"
   },
   "license": "MIT",
-  "homepage": "https://github.com/HawkdotDev/mink#readme",
+  "homepage": "https://github.com/HawkdotDev/oink#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HawkdotDev/mink.git"
+    "url": "https://github.com/HawkdotDev/oink.git"
   },
   "bugs": {
-    "url": "https://github.com/HawkdotDev/mink/issues"
+    "url": "https://github.com/HawkdotDev/oink/issues"
   },
   "keywords": [
-    "mink",
+    "oink",
     "markdown",
     "local-first",
     "knowledge-base",

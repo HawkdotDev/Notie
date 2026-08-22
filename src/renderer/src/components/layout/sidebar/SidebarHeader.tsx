@@ -1,8 +1,9 @@
 import React from 'react'
 import WorkspaceSelector from './WorkspaceSelector'
+import type { SidebarViewMode } from './SidebarBody'
 
 interface SidebarHeaderProps {
-  activeView?: 'explorer' | 'plugins'
+  activeView?: SidebarViewMode
   workspacePath: string | null
   workspaceName?: string
   workspaceIcons?: Record<string, string>

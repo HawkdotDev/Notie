@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Minus, Square, X, Bell, Settings, FileText, Network, Search, Blocks } from 'lucide-react'
-import minkLogo from '../../assets/mink.png'
+import { Minus, Square, X, Bell, Settings, FileText, Network, Blocks } from 'lucide-react'
+import oinkLogo from '../../assets/oink.png'
 import { ViewMode, WidgetState } from '../../types'
 import WidgetsMenu from './subheader/WidgetsMenu'
 import ViewModeMenu from './subheader/ViewModeMenu'
@@ -10,13 +10,11 @@ interface TopHeaderProps {
   viewMode: ViewMode
   onToggleViewMode: () => void
   setViewMode?: (mode: ViewMode) => void
-  sidebarView?: 'explorer' | 'plugins'
+  sidebarView?: 'explorer' | 'search' | 'plugins'
   sidebarCollapsed?: boolean
   onTogglePluginsView?: () => void
   onSwitchToFiles?: () => void
   enabledPluginsCount?: number
-  showSearchInput?: boolean
-  onToggleSearchInput?: () => void
   showTabs?: boolean
   onToggleTabs?: () => void
   showRightSidebar: boolean
@@ -47,8 +45,6 @@ function TopHeader({
   onTogglePluginsView,
   onSwitchToFiles,
   enabledPluginsCount = 0,
-  showSearchInput,
-  onToggleSearchInput,
   showTabs = true,
   onToggleTabs,
   showRightSidebar,
@@ -68,61 +64,63 @@ function TopHeader({
   onToggleFileName,
   onToggleOnlyThisFile
 }: TopHeaderProps): React.JSX.Element {
-  const [showAccountMenu, setShowAccountMenu] = useState(false)
-  const [showLogoPopover, setShowLogoPopover] = useState(false)
+  const [showBrandPopover, setShowBrandPopover] = useState<boolean>(false)
+  const [showAccountMenu, setShowAccountMenu] = useState<boolean>(false)
+  const brandPopoverRef = useRef<HTMLDivElement>(null)
   const accountMenuRef = useRef<HTMLDivElement>(null)
-  const logoRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
+      if (brandPopoverRef.current && !brandPopoverRef.current.contains(e.target as Node)) {
+        setShowBrandPopover(false)
+      }
       if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
         setShowAccountMenu(false)
       }
-      if (logoRef.current && !logoRef.current.contains(e.target as Node)) {
-        setShowLogoPopover(false)
-      }
     }
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') {
-        setShowAccountMenu(false)
-        setShowLogoPopover(false)
-      }
-    }
-    if (showAccountMenu || showLogoPopover) {
+    if (showBrandPopover || showAccountMenu) {
       document.addEventListener('mousedown', handleClickOutside)
-      document.addEventListener('keydown', handleKeyDown)
     }
     return (): void => {
       document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [showAccountMenu, showLogoPopover])
+  }, [showBrandPopover, showAccountMenu])
 
   return (
-    <div
-      className="app-top-header select-none"
+    <header
+      className="top-header select-none"
       onDoubleClick={(): void => window.api?.window?.maximize?.()}
     >
-      {/* Left Application Brand Logo & Navigation Action Tabs */}
-      <div className="top-header-left flex items-center gap-1.5">
-        {/* Brand App Logo Only (Hover / Click shows Name | Version) */}
-        <div className="relative" ref={logoRef}>
-          <div
-            className="header-brand-logo flex items-center justify-center cursor-pointer pl-1 rounded hover:bg-white/10 transition-colors"
-            onClick={(): void => setShowLogoPopover((prev) => !prev)}
-            title="Mink | v0.1.0"
+      {/* LEFT SECTION: Logo & Core View Switchers */}
+      <div className="top-header-left flex items-center gap-1.5 min-w-0">
+        {/* Brand Menu Trigger Popover */}
+        <div className="relative" ref={brandPopoverRef}>
+          <button
+            type="button"
+            className={`window-brand-btn ${showBrandPopover ? 'active' : ''}`}
+            onClick={(): void => setShowBrandPopover((prev) => !prev)}
+            title="Oink Application Menu"
           >
-            <img src={minkLogo} alt="Mink Logo" className="w-4 h-4 object-contain" />
-          </div>
+            <img src={oinkLogo} alt="Oink Logo" className="w-3.5 h-3.5 object-contain" />
+            <span className="window-title font-semibold tracking-tight text-xs">Oink</span>
+          </button>
 
-          {showLogoPopover && (
-            <div
-              className="notion-dropdown-popover header-brand-popover"
-              onClick={(e): void => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-2 px-3 py-2">
-                <img src={minkLogo} alt="Mink Logo" className="w-4 h-4 object-contain" />
-                <span className="text-xs font-semibold text-zinc-200">Mink</span>
+          {showBrandPopover && (
+            <div className="notion-dropdown-popover brand-menu-popover">
+              <div className="dropdown-section-title">APPLICATION</div>
+              <button
+                className="notion-menu-item"
+                onClick={(): void => {
+                  setShowBrandPopover(false)
+                  if (onOpenSettings) onOpenSettings()
+                }}
+              >
+                <Settings size={13} />
+                <span>Preferences & Settings</span>
+              </button>
+              <div className="notion-menu-divider" />
+              <div className="p-2 flex items-center justify-between text-zinc-500">
+                <span className="text-xs font-semibold text-zinc-200">Oink</span>
                 <span className="text-zinc-600 text-xs">|</span>
                 <span className="text-xs text-zinc-400 font-mono">v0.1.0</span>
               </div>
@@ -145,11 +143,10 @@ function TopHeader({
         >
           <FileText
             size={13}
-            fill="currentColor"
             className={
               viewMode === 'editor' && (sidebarView === 'explorer' || sidebarCollapsed)
-                ? 'text-zinc-300'
-                : ''
+                ? 'text-zinc-200'
+                : 'text-zinc-400'
             }
           />
           <span>Files</span>
@@ -164,16 +161,12 @@ function TopHeader({
           }}
           title="Knowledge Graph View"
         >
-          <Network
-            size={13}
-            fill="currentColor"
-            className={viewMode === 'graph' ? 'text-zinc-300' : ''}
-          />
+          <Network size={13} className={viewMode === 'graph' ? 'text-zinc-200' : 'text-zinc-400'} />
           <span>Graph</span>
         </button>
 
         {/* Divider between Graph and the rest of tabs */}
-        <div className="sub-header-divider" />
+        <div className="header-pipe-separator opacity-40" />
 
         {/* 3. Document View Options Dropdown */}
         <ViewModeMenu
@@ -192,19 +185,7 @@ function TopHeader({
           onToggleOnlyThisFile={onToggleOnlyThisFile}
         />
 
-        {/* 4. Global Search Tab */}
-        {onToggleSearchInput && (
-          <button
-            className={`action-pill-btn ${showSearchInput ? 'active' : ''}`}
-            onClick={onToggleSearchInput}
-            title="Toggle File Search"
-          >
-            <Search size={13} className={showSearchInput ? 'text-zinc-300' : ''} />
-            <span>Search</span>
-          </button>
-        )}
-
-        {/* 5. Plugins Button */}
+        {/* 4. Plugins Button */}
         {onTogglePluginsView && (
           <button
             className={`action-pill-btn ${sidebarView === 'plugins' && !sidebarCollapsed ? 'active' : ''}`}
@@ -263,7 +244,7 @@ function TopHeader({
             type="button"
             className={`header-user-avatar ${showAccountMenu ? 'active' : ''}`}
             onClick={(): void => setShowAccountMenu((prev) => !prev)}
-            title="Account & Settings (Mink User)"
+            title="Account & Settings (Oink User)"
           >
             <span>DN</span>
           </button>
@@ -271,9 +252,9 @@ function TopHeader({
           {showAccountMenu && (
             <div className="notion-dropdown-popover header-account-popover">
               <div className="notion-popover-header">
-                <img src={minkLogo} alt="Avatar" className="notion-popover-avatar" />
+                <img src={oinkLogo} alt="Avatar" className="notion-popover-avatar" />
                 <div className="notion-popover-user-info">
-                  <span className="notion-popover-name">Mink User</span>
+                  <span className="notion-popover-name">Oink User</span>
                   <span className="notion-popover-sub">dwaipayan.codes@gmail.com</span>
                 </div>
               </div>
@@ -302,7 +283,7 @@ function TopHeader({
                   className="notion-logout-btn"
                   onClick={(): void => {
                     setShowAccountMenu(false)
-                    alert('Signed out of Mink workspace account.')
+                    alert('Signed out of Oink workspace account.')
                   }}
                 >
                   Log out
@@ -343,7 +324,7 @@ function TopHeader({
           </button>
         </div>
       </div>
-    </div>
+    </header>
   )
 }
 

@@ -19,6 +19,8 @@ const api = {
     deletePath: (itemPath: string): Promise<void> => ipcRenderer.invoke('fs:deletePath', itemPath),
     renamePath: (oldPath: string, newPath: string): Promise<void> =>
       ipcRenderer.invoke('fs:renamePath', oldPath, newPath),
+    showItemInFolder: (fullPath: string): Promise<boolean> =>
+      ipcRenderer.invoke('fs:showItemInFolder', fullPath),
     showSaveDialog: (defaultName: string): Promise<string | null> =>
       ipcRenderer.invoke('fs:showSaveDialog', defaultName),
     watchDirectory: (dirPath: string): Promise<void> =>

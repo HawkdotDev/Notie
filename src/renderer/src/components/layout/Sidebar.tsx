@@ -23,15 +23,13 @@ interface SidebarProps {
   onSwitchWorkspace?: (path: string, name?: string) => void
   onRemoveRecentWorkspace?: (path: string) => void
   onRenameWorkspace?: () => void
-  showSearchInput: boolean
-  onToggleSearchInput?: () => void
-  searchQuery: string
-  onSearchChange: (query: string) => void
   fileIcons: Record<string, string>
   onMetadataLoaded: (filePath: string, metadata: { icon?: string; banner?: string }) => void
   onStartResize: (e: React.MouseEvent) => void
   enabledPlugins?: Record<string, boolean>
   onTogglePlugin?: (pluginId: string) => void
+  onOpenSettings?: () => void
+  onSwitchView?: (view: SidebarViewMode) => void
 }
 
 function Sidebar({
@@ -52,15 +50,13 @@ function Sidebar({
   onSwitchWorkspace,
   onRemoveRecentWorkspace,
   onRenameWorkspace,
-  showSearchInput,
-  onToggleSearchInput,
-  searchQuery,
-  onSearchChange,
   fileIcons,
   onMetadataLoaded,
   onStartResize,
   enabledPlugins = {},
-  onTogglePlugin
+  onTogglePlugin,
+  onOpenSettings,
+  onSwitchView
 }: SidebarProps): React.JSX.Element {
   return (
     <aside
@@ -98,11 +94,6 @@ function Sidebar({
           activeView={activeView}
           workspacePath={workspacePath}
           activeFilePath={activeFilePath}
-          showSearchInput={showSearchInput}
-          searchQuery={searchQuery}
-          onSearchChange={onSearchChange}
-          onToggleSearchInput={onToggleSearchInput}
-          onCloseSearch={onToggleSearchInput}
           onCreateFileAtRoot={onCreateFileAtRoot}
           onFileSelect={onFileSelect}
           fileIcons={fileIcons}
@@ -110,6 +101,8 @@ function Sidebar({
           enabledPlugins={enabledPlugins}
           onTogglePlugin={onTogglePlugin}
           onOpenWorkspace={onOpenWorkspace}
+          onOpenSettings={onOpenSettings}
+          onSwitchView={onSwitchView}
         />
       </div>
 
